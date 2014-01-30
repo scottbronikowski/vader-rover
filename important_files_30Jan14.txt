@@ -1,0 +1,14 @@
+. * *scheme*              4746  Inferior Scheme:
+    simple-gui.sc         4278  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/simple-gui.sc
+    arm-servoing-gui.s: 225677  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/arm-servoing-gui.sc
+    toollib-networking-c: 3349  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/toollib-networking-c.c
+ %  toollib-image-proc: 104436  Scheme		  /amd/upplysingaoflun/root/aux/home/dpbarret/imitate/tool/toollib-image-processing.sc
+    toollib-networking.: 11622  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/toollib-networking.sc
+ %  toollib-c.c|tool     72190  C/l		  /amd/upplysingaoflun/root/aux/home/dpbarret/imitate/tool/toollib-c.c
+ %  toollib-c.c|ideas     1991  C/l		  /amd/upplysingaoflun/root/aux/home/dpbarret/darpa-collaboration/ideas/toollib-c.c
+    toollib-cpp.cpp      24419  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/toollib-cpp.cpp
+    makefile             14525  GNUmakefile	  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/makefile
+ %  toollib-hog-hmm.sc  107355  Scheme		  /amd/upplysingaoflun/root/aux/home/dpbarret/darpa-collaboration/ideas/toollib-hog-hmm.sc
+ %  toollib-image-proc: 124889  Scheme		  /amd/upplysingaoflun/root/aux/home/dpbarret/darpa-collaboration/ideas/toollib-image-processing.sc
+    *scratch*              191  Lisp Interaction
+  * *Messages*            3438  Fundamental
