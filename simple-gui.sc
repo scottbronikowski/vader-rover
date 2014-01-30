@@ -63,6 +63,21 @@
   (define-button 3 7 "reverse_right_2" #f
   (lambda () 
           (system "ssh -p 22222 root@localhost \"~/test_code/motor_control reverse_right_2\"")))
+  (define-button 5 2 "camera_center" #f
+  (lambda () 
+          (system "ssh -p 22222 root@localhost \"echo 15000 > /dev/pwm9; echo 15000 > /dev/pwm10\"")))
+  (define-button 4 2 "camera_left" #f
+  (lambda () 
+          (system "ssh -p 22222 root@localhost \"echo 20000 > /dev/pwm10\"")))
+  (define-button 6 2 "camera_right" #f
+  (lambda () 
+          (system "ssh -p 22222 root@localhost \"echo 10000 > /dev/pwm10\"")))
+  (define-button 5 1 "camera_up" #f
+  (lambda () 
+          (system "ssh -p 22222 root@localhost \"echo 11000 > /dev/pwm9\"")))
+  (define-button 5 3 "camera_down" #f
+  (lambda () 
+          (system "ssh -p 22222 root@localhost \"echo 16500 > /dev/pwm9\"")))
 
 )
 
