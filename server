@@ -1,0 +1,26 @@
+#! /bin/bash
+
+start(){
+    echo "Starting rover-server on port 2222"
+    /home/sbroniko/vader-rover/rover-server 2222
+   
+}
+
+stop(){
+    kill $(ps -ef | grep "[/]home/sbroniko/vader-rover/rover-server" | awk '{print $2}')
+    echo "Killed rover-server process"
+}
+
+case $1 in
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    *)
+	echo "Usage: $0 {start|stop}"
+	RETVAL=1
+	;;
+esac
+exit 0
