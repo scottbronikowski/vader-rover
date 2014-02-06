@@ -1,0 +1,23 @@
+.   notes31JAN14.txt      1083  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/notes31JAN14.txt
+    ptgrey-gui.sc         7541  Scheme		  ~/imitate/ptgrey-gui/source/ptgrey-gui.sc
+    toollib-networking.: 11622  Scheme		  ~/imitate/tool/toollib-networking.sc
+ %  setup-scheme2c-bgc-c: 1576  Shell-script[bas  /home/abarbu/new-install/setup-scheme2c-bgc-custom-gc-amd64
+  * *shell*              80564  Shell:run	  ~/imitate/tool/x86_64-Linux-3.2.0-4-amd64/
+ %  new-install           2645  Dired by name	  /home/abarbu/new-install/
+    arm-servoing-gui.s: 225677  Scheme		  ~/imitate/tool/arm-servoing-gui.sc
+    skeleton.sc           8479  Scheme		  ~/imitate/tool/skeleton.sc
+    toollib-networking-c: 3349  C/l		  ~/imitate/tool/toollib-networking-c.c
+  * *shell*<2>            1007  Shell:run	  ~/Dropbox/grad school stuff/Purdue/research/
+    simple-skeleton-came: 4592  Scheme		  ~/imitate/tool/simple-skeleton-camera.sc
+    foo.sc                  27  Scheme		  /tmp/foo.sc
+    arm-calibration-gui: 34227  Scheme		  ~/imitate/tool/arm-calibration-gui.sc
+    define-command.text   1348  Text		  ~/QobiScheme/documentation/define-command.text
+    toollib-camera.sc    20563  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/toollib-camera.sc
+    toollib-misc.sc     113601  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/toollib-misc.sc
+    notes-13-jan.txt       364  Text		  ~/Dropbox/grad school stuff/Purdue/research/notes-13-jan.txt
+ %  *Process List*         133  Help
+    drive-robot.cc        3818  C++/l		  ~/imitate/tool/drive-robot.cc
+    mobile-fun.sc         2572  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/mobile-fun.sc
+    toollib-robot.sc     83430  Scheme		  ~/imitate/tool/toollib-robot.sc
+ %  tool                 11417  Dired by name	  ~/imitate/tool/
+  * *Messages*            2438  Fundamental

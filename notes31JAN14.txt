@@ -1,0 +1,32 @@
+;; This buffer is for notes you don't want to save, and for Lisp evaluation.
+;; If you want to create a file, visit that file with C-x C-f,
+;; then enter the text in that file's own buffer.
+
+completed these steps:
+rsync ~abarbu/new-install/scc ~/bin/$(architecture-path)/
+
+rsync -avz --progress ~abarbu/pkg/gc-7.2alpha4.tar.gz ~/pkg/
+cd ~/pkg/
+tar xvf gc-7.2alpha4.tar.gz
+cd ~/pkg/gc-7.2alpha4
+./configure --enable-option-checking  --enable-large-config --enable-threads=pthreads
+make
+
+mkdir -p ${HOME}/include/$(architecture-path)/gc/
+mkdir -p ${HOME}/lib/$(architecture-path)/include/gc/
+rsync -avz include/* ${HOME}/include/$(architecture-path)/gc/
+rsync -avz include/* ${HOME}/lib/$(architecture-path)/include/gc/
+
+mkdir -p ${HOME}/lib/$(architecture-path)
+rsync -avz .libs/*.so* ${HOME}/lib/$(architecture-path)
+rsync -avz .libs/*.a ${HOME}/lib/$(architecture-path)
+export LD_LIBRARY_PATH=${HOME}/lib/$(architecture-path):$LD_LIBRARY_PATH
+
+rsync -avz --progress ~abarbu/scheme2c-bgc ~/ --exclude .git
+cd ~/scheme2c-bgc/
+make forAMD64
+cd AMD64
+make 
+
+having errors finding gc.h
+
