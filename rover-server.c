@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
          if (pid == 0)  {
              close(sockfd);
 	     tempstr = inet_ntoa(cli_addr.sin_addr);
-	     //printf("Connection from IP: %s\n",tempstr);
+	     /* printf("Connection from IP: %s\n",tempstr); */
 	     dostuff(newsockfd,tempstr);
              exit(0);
          }
@@ -84,7 +84,7 @@ void dostuff (int sock, char* addrstr)
    bzero(buffer,256);
    n = read(sock,buffer,255);
    if (n < 0) error("ERROR reading from socket");
-   printf("Message received from IP %s: %s\n",addrstr,buffer);
+   printf("Message received from IP %s: %s",addrstr,buffer);
    strcpy(tempbuf, rec_msg);
    strcat(tempbuf, buffer);
    n = write(sock,tempbuf,sizeof(tempbuf));
