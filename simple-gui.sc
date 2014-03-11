@@ -119,7 +119,8 @@
  ;;; Redraw procedure:
  (lambda ()
   (display "redraw")
-  (let* ((image (imlib:load! "/net/rongovosai/tmp/frames/00001.ppm")))
+  (let* ((image (imlib:load! "/home/sbroniko/temp_photo.png")))
+  ;; (let* ((image (imlib:load! "/net/rongovosai/tmp/frames/00001.ppm")))
    (draw-imlib-pixmap image 0 0))
 	 
   )

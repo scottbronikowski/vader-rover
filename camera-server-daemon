@@ -1,0 +1,42 @@
+#!/bin/bash
+
+
+#! /bin/bash
+
+### BEGIN INIT INFO
+# Provides:        camera-server-daemon
+# Required-Start:  $network $local_fs $syslog
+# Required-Stop:   $network $local_fs $syslog
+# Default-Start:   2 3 4 5
+# Default-Stop:    0 1 6
+# Short-Description: Start/stop camera servers
+### END INIT INFO
+
+start(){
+    echo "Starting camera-server on ports 3601 and 3602"
+    ./camera-server 3601 &
+    ./camera-server 3602 &
+    echo "Camera servers started"
+}
+
+stop(){
+
+    kill $(ps -ef | grep "[.]/camera-server 3601" | awk '{print $2}')
+    echo "Killed camera-server on port 3601"
+    kill $(ps -ef | grep "[.]/camera-server 3602" | awk '{print $2}')
+    echo "Killed camera-server on port 3602"
+}
+
+case $1 in
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    *)
+	echo "Usage: $0 {start|stop}"
+	RETVAL=1
+	;;
+esac
+exit 0

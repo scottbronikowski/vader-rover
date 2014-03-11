@@ -1,0 +1,20 @@
+.   .bash_history         7756  Fundamental	  ~/.bash_history
+  * *shell*<2>          605599  Shell:run	  /
+    open_files_4feb.txt   1886  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/open_files_4feb.txt
+    makefile             11585  GNUmakefile	  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/makefile
+    georgelib-c.c       159141  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-c.c
+    georgelib-c.h        28129  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-c.h
+    ptgrey-guilib-c.h     4030  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/ptgrey-gui/source/ptgrey-guilib-c.h
+    ptgrey-guilib-c.c    17181  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/ptgrey-gui/source/ptgrey-guilib-c.c
+    georgelib-sc.sc      95501  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-sc.sc
+    simple-gui.sc         5023  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/simple-gui.sc
+    server                 380  Shell-script[bas  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server
+    server.sh              381  Shell-script[sh]  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server.sh
+    server.c              1583  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server.c
+    george.sc            22480  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/george.sc
+    georgelib-cpp.cpp    14657  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-cpp.cpp
+    toollib-camera.sc    20563  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/toollib-camera.sc
+    rover-server.c        2657  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/rover-server.c
+ %  *Completions*          259  Completion List
+  * *Messages*            3039  Fundamental
+  * *shell*              13962  Shell:run	  ~/
