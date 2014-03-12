@@ -26,7 +26,7 @@ void sigchld_handler(int s);
 void *get_in_addr(struct sockaddr *sa);
 int StartServer(const char* PORT);
 int AcceptConnection(int sockfd);
-int recvall(int s, char* buf, int* len);
+int recvall(int s, unsigned char* buf, int* len);
 
 int main(int argc, char** argv)
 {
@@ -82,32 +82,82 @@ int main(int argc, char** argv)
 	  //printf("forking %d, new_fd = %d\n",i,new_fd);
 	  //i++;
 	  close(sockfd); // child doesn't need the listener
+
 	  //here's where we do the magic
-	  int buflen;
+	  unsigned int width, height, depth;
+	  int img_size, retval;
 	  while(1)
 	    {
-	      //first receive size
-	      if (recv(new_fd, &buflen, sizeof(buflen), 0) <= 0)
+	      //first receive size (w, h, d)
+	      retval = recv(new_fd, &width, sizeof(width), 0);
+	      if (retval < 0)
 		{
-		  printf("Error receiveing buflen\n");
+		  printf("Error receiving width\n");
+		  break;
 		}
-	      printf("received: %d\n", buflen);
+	      if (retval == 0)
+		{
+		  printf("Sender stopped sending\n");
+		  break;
+		}
+	      if (recv(new_fd, &height, sizeof(height), 0) <= 0)
+		{
+		  printf("Error receiving height\n");
+		}
+	      if (recv(new_fd, &depth, sizeof(depth), 0) <= 0)
+		{
+		  printf("Error receiving depth\n");
+		}
+	      printf("Received w x h x d = %u x %u x %u\n", width, height, depth);
+
 	      //then receive data
-	      char* buf = malloc(buflen);
-	      if (recvall(new_fd, buf, &buflen) != 0)
+	      img_size = (int)(width * depth * height);
+	      unsigned char* buf = malloc(img_size);
+	      if (recvall(new_fd, buf, &img_size) != 0)
 		{
 		  printf("Error in recvall\n");
 		  break;
 		}
-	      printf("received: %s\n", buf);
+	      printf("Received %d bytes of image data\n", img_size);
 	      free(buf);
 	    }
+	  
+
+	  /* /\* first draft -- using strings with length sent before string *\/ */
+	  /* int buflen, retval; */
+	  /* while(1) */
+	  /*   { */
+	  /*     //first receive size */
+	  /*     retval = recv(new_fd, &buflen, sizeof(buflen), 0); */
+	  /*     if (retval < 0) */
+	  /* 	{ */
+	  /* 	  printf("Error receiveing buflen\n"); */
+	  /* 	  break; */
+	  /* 	} */
+	  /*     if (retval == 0) */
+	  /* 	{ */
+	  /* 	  printf("Sender stopped sending\n"); */
+	  /* 	  break; */
+	  /* 	} */
+	  /*     printf("received buflen: %d\n", buflen); */
+	  /*     //then receive data */
+	  /*     unsigned char* buf = malloc(buflen); */
+	  /*     if (recvall(new_fd, buf, &buflen) != 0) */
+	  /* 	{ */
+	  /* 	  printf("Error in recvall\n"); */
+	  /* 	  break; */
+	  /* 	} */
+	  /*     printf("received buf: %s\n", buf); */
+	  /*     free(buf); */
+	  /*   } */
+	  /* /\* end first draft *\/ */
+	  
 	  /* if (send(new_fd, "Hello, world!", 13, 0) == -1) */
 	  /* 	perror("send"); */
 	  
 	  //printf("closed sockfd\n");
 	  close(new_fd);
-	  //printf("closed new_fd\n");
+	  printf("exiting from fork\n");
 	  exit(0);
 	}
       //printf("after fork\n");
@@ -215,7 +265,7 @@ int AcceptConnection(int sockfd)
   return new_fd;
 }
 
-int recvall(int s, char* buf, int* len)
+int recvall(int s, unsigned char* buf, int* len)
 {
   int total = 0;        // how many bytes we've received
   int bytesleft = *len; // how many we have left to receive
@@ -229,6 +279,6 @@ int recvall(int s, char* buf, int* len)
   }
   
   *len = total; // return number actually sent here
-  printf("received %d\n", *len);
+  //printf("received %d\n", *len);
   return n==-1?-1:0; // return -1 on failure, 0 on success
 }
