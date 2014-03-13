@@ -1,7 +1,11 @@
 /*
-** server.c -- a stream socket server demo
-*/
+Implementation of server to receive camera data from rover
 
+Code adapted from http://www.beej.us/guide/bgnet/output/html/multipage/clientserver.html
+
+Author: Scott Bronikowski
+Date: 11 March 2014
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -14,6 +18,8 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
+
+
 
 
 //globals
