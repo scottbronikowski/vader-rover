@@ -19,6 +19,7 @@ Date: 11 March 2014
 #include <sys/wait.h>
 #include <signal.h>
 #include <Imlib2.h>
+#include <sys/stat.h>
 
 #include "FlyCapture2.h"
 using namespace FlyCapture2;
@@ -27,13 +28,14 @@ using namespace FlyCapture2;
 const char* k_FrontCamPort = "3601";
 const char* k_PanoCamPort = "3602";
 const int BACKLOG = 5;
+const char k_OutputDir[] = "/home/sbroniko/vader-rover/images/";
 
 //structures
 struct PointGrey_t2 {
   Image rawImage, convertedImage;
   PixelFormat pixFormat;
   BayerTileFormat bayerFormat;
-  unsigned char* pData;
+  //  unsigned char* pData;
   unsigned int rows, cols, stride, dataSize;
   Imlib_Image finalImage;
 };
@@ -44,6 +46,10 @@ void *get_in_addr(struct sockaddr *sa);
 int StartServer(const char* PORT);
 int AcceptConnection(int sockfd);
 int recvall(int s, unsigned char* buf, int* len);
+int CheckSaving(const char *dir);
+void PrintError( Error error );
+void CheckPGR(Error error);
+void PGR_SaveImage(PointGrey_t2* PG, const char* PORT);
 
 int main(int argc, char** argv)
 {
@@ -81,7 +87,12 @@ int main(int argc, char** argv)
       perror("sigaction");
       exit(1);
     }
-  
+  if (CheckSaving(k_OutputDir) != 0)
+    {
+      printf("Cannot save to %s, please check permissions\n",k_OutputDir);
+      exit(1);
+    }  
+
   printf("server: waiting for connections...\n");
   
   //int i = 0;
@@ -145,14 +156,22 @@ int main(int argc, char** argv)
 	      //then receive data
 	      img_size = (int)(PG->dataSize);
 
-	  //     unsigned char* buf = (unsigned char*) malloc(img_size);
-	  //     if (recvall(new_fd, buf, &img_size) != 0)
-	  // 	{
-	  // 	  printf("Error in recvall\n");
-	  // 	  break;
-	  // 	}
-	  //     printf("Received %d bytes of image data\n", img_size);
-	  //     free(buf);
+	      unsigned char* buf = (unsigned char*) malloc(img_size);
+	      if (recvall(new_fd, buf, &img_size) != 0)
+	  	{
+	  	  printf("Error in recvall\n");
+	  	  break;
+	  	}
+	      printf("Received %d bytes of image data\n", img_size);
+	      //now use data to build image and save it
+	      Image* tmpImage = new Image(PG->rows, PG->cols, PG->stride, buf,
+				       PG->dataSize, PG->pixFormat, 
+				       PG->bayerFormat);
+	      CheckPGR(tmpImage->Convert(PIXEL_FORMAT_BGR, &PG->convertedImage));
+	      PGR_SaveImage(PG, PORT);
+	      //clean up memory allocations
+	      delete tmpImage;
+	      free(buf);
 
 	    }
 	  
@@ -356,4 +375,59 @@ int recvall(int s, unsigned char* buf, int* len)
   *len = total; // return number actually sent here
   //printf("received %d\n", *len);
   return n==-1?-1:0; // return -1 on failure, 0 on success
+}
+
+int CheckSaving(const char *dir)
+{
+  struct stat sb;
+  if (!(stat(dir, &sb) == 0 && S_ISDIR(sb.st_mode)))
+  {
+    if (mkdir(dir, S_IRWXU | S_IRGRP | S_IROTH | S_IXGRP | S_IXOTH) != 0)
+    {
+      printf("Error creating directory %s\n",dir);
+      return -1;
+    }
+  }
+  char tempFileName[512];
+  sprintf(tempFileName, "%stest.txt",dir);
+  FILE* tempFile = fopen(tempFileName, "w+");
+  if (tempFile == NULL)
+  {
+    printf("Failed to create file in %s.  Please check permissions.\n", dir);
+    return -1;
+  }
+  fclose(tempFile);
+  remove(tempFileName);
+  //if we get here, we know the directory exists and we can write to it
+  return 0;
+}
+
+void PrintError( Error error )
+{
+    error.PrintErrorTrace();
+}
+
+void CheckPGR(Error error)
+{
+  if (error != PGRERROR_OK)
+  {
+    PrintError( error );
+    abort();
+    //return -1;
+  }
+  // else
+  // {
+  //   return 0;
+  // }
+}
+
+void PGR_SaveImage(PointGrey_t2* PG, const char* PORT)
+{
+  // Create a unique filename
+  char filename[512];
+  sprintf(filename, "%s%s-PGR-final.ppm", k_OutputDir, PORT);
+  // Save the image. If a file format is not passed in, then the file
+  // extension is parsed to attempt to determine the file format.
+  CheckPGR(PG->convertedImage.Save(filename));
+  printf("Saved %s\n",filename);
 }
