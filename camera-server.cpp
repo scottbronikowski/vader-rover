@@ -149,10 +149,10 @@ int main(int argc, char** argv)
 		  printf("Error receiving bayerFormat\n");
 		}
 	      //check received data
-	      printf("rows = %u, cols = %u, stride = %u, dataSize = %u\n",
-		     PG->rows, PG->cols, PG->stride, PG->dataSize);
-	      printf("pixFormat = %u, bayerFormat = %u\n", PG->pixFormat,
-		     PG->bayerFormat);
+	      // printf("rows = %u, cols = %u, stride = %u, dataSize = %u\n",
+	      // 	     PG->rows, PG->cols, PG->stride, PG->dataSize);
+	      // printf("pixFormat = %u, bayerFormat = %u\n", PG->pixFormat,
+	      // 	     PG->bayerFormat);
 	      //then receive data
 	      img_size = (int)(PG->dataSize);
 
@@ -162,7 +162,7 @@ int main(int argc, char** argv)
 	  	  printf("Error in recvall\n");
 	  	  break;
 	  	}
-	      printf("Received %d bytes of image data\n", img_size);
+	      //printf("Received %d bytes of image data\n", img_size);
 	      //now use data to build image and save it
 	      Image* tmpImage = new Image(PG->rows, PG->cols, PG->stride, buf,
 				       PG->dataSize, PG->pixFormat, 
