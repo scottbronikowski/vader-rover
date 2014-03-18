@@ -32,11 +32,11 @@ const char k_OutputDir[] = "/home/sbroniko/vader-rover/images/";
 
 //structures
 struct PointGrey_t2 {
-  Image rawImage, convertedImage;
-  PixelFormat pixFormat;
-  BayerTileFormat bayerFormat;
+  Image convertedImage; //, rawImage;
+  //PixelFormat pixFormat;
+  //BayerTileFormat bayerFormat;
   //  unsigned char* pData;
-  unsigned int rows, cols, stride, dataSize;
+  //unsigned int rows, cols, stride, dataSize;
   Imlib_Image finalImage;
 };
 
@@ -50,6 +50,12 @@ int CheckSaving(const char *dir);
 void PrintError( Error error );
 void CheckPGR(Error error);
 void PGR_SaveImage(PointGrey_t2* PG, const char* PORT);
+int ReceiveMetadata(int new_fd, unsigned int* rows, unsigned int* cols, 
+		    unsigned int* stride, unsigned int* dataSize, 
+		    PixelFormat* pixFormat, BayerTileFormat* bayerFormat);
+// int SetMetadata(PointGrey_t2* PG, const unsigned int rows, const unsigned int cols,
+// 		const unsigned int stride, const unsigned int dataSize, 
+// 		const PixelFormat pixFormat, const BayerTileFormat bayerFormat);
 
 int main(int argc, char** argv)
 {
@@ -113,48 +119,86 @@ int main(int argc, char** argv)
 
 	  //here's where we do the magic
 	  PointGrey_t2* PG = new PointGrey_t2;
-	  int img_size, retval;
+	  int img_size;
+	  // unsigned int* rows = new unsigned int;
+	  // unsigned int* cols = new unsigned int;
+	  // unsigned int* stride = new unsigned int;
+	  // unsigned int* dataSize = new unsigned int;
+	  // PixelFormat* pixFormat = new PixelFormat;
+	  // BayerTileFormat* bayerFormat = new BayerTileFormat;
+	  unsigned int rows, cols, stride, dataSize;
+	  PixelFormat pixFormat;
+	  BayerTileFormat bayerFormat;
+	  bool firstImage = true;
+	  
 	  while(1)
 	    {
-	      //first receive dimensions/metadata
-	      retval = recv(new_fd, &PG->cols, sizeof(PG->cols), 0);
-	      if (retval < 0)
-	  	{
-	  	  printf("Error receiving cols\n");
-	  	  break;
-	  	}
-	      if (retval == 0)
-	  	{
-	  	  printf("Sender stopped sending\n");
-	  	  break;
-	  	}
-	      if (recv(new_fd, &PG->rows, sizeof(PG->rows),0) <= 0)
+	      if (firstImage)
 		{
-		  printf("Error receiving rows\n");
+		  //first receive dimensions/metadata
+		  if (ReceiveMetadata(new_fd, &rows, &cols, &stride, &dataSize, 
+				      &pixFormat, &bayerFormat) != 0)
+		    {
+		      printf("Error receiving metadata\n");
+		      break;
+		    }
+		  img_size = (int)(dataSize);
+		  firstImage = false;
 		}
-	      if (recv(new_fd, &PG->stride, sizeof(PG->stride),0) <= 0)
-		{
-		  printf("Error receiving stride\n");
-		}
-	      if (recv(new_fd, &PG->dataSize, sizeof(PG->dataSize),0) <= 0)
-		{
-		  printf("Error receiving dataSize\n");
-		}
-	      if (recv(new_fd, &PG->pixFormat, sizeof(PG->pixFormat),0) <= 0)
-		{
-		  printf("Error receiving pixFormat\n");
-		}
-	      if (recv(new_fd, &PG->bayerFormat, sizeof(PG->bayerFormat),0) <= 0)
-		{
-		  printf("Error receiving bayerFormat\n");
-		}
+	      // retval = recv(new_fd, &PG->cols, sizeof(PG->cols), 0);
+	      // if (retval < 0)
+	      // 	{
+	      // 	  printf("Error receiving cols\n");
+	      // 	  break;
+	      // 	}
+	      // if (retval == 0)
+	      // 	{
+	      // 	  printf("Sender stopped sending\n");
+	      // 	  break;
+	      // 	}
+	      // if (recv(new_fd, &PG->rows, sizeof(PG->rows),0) <= 0)
+	      // 	{
+	      // 	  printf("Error receiving rows\n");
+	      // 	}
+	      // if (recv(new_fd, &PG->stride, sizeof(PG->stride),0) <= 0)
+	      // 	{
+	      // 	  printf("Error receiving stride\n");
+	      // 	}
+	      // if (recv(new_fd, &PG->dataSize, sizeof(PG->dataSize),0) <= 0)
+	      // 	{
+	      // 	  printf("Error receiving dataSize\n");
+	      // 	}
+	      // if (recv(new_fd, &PG->pixFormat, sizeof(PG->pixFormat),0) <= 0)
+	      // 	{
+	      // 	  printf("Error receiving pixFormat\n");
+	      // 	}
+	      // if (recv(new_fd, &PG->bayerFormat, sizeof(PG->bayerFormat),0) <= 0)
+	      // 	{
+	      // 	  printf("Error receiving bayerFormat\n");
+	      // 	}
+	      //check received data
+	      // printf("rows = %u, cols = %u, stride = %u, dataSize = %u\n",
+	      // 	     rows, cols, stride, dataSize);
+	      // printf("pixFormat = %u, bayerFormat = %u\n", pixFormat, bayerFormat);
+	      /*  DON"T THINK I NEED TO DO THIS */
+	      // if (SetMetadata(PG, rows, cols, stride, dataSize, 
+	      // 		      pixFormat, bayerFormat) != 0)
+	      // 	{
+	      // 	  printf("Error setting metadata\n");
+	      // 	  break;
+	      // 	}
+
+
 	      //check received data
 	      // printf("rows = %u, cols = %u, stride = %u, dataSize = %u\n",
 	      // 	     PG->rows, PG->cols, PG->stride, PG->dataSize);
-	      // printf("pixFormat = %u, bayerFormat = %u\n", PG->pixFormat,
-	      // 	     PG->bayerFormat);
+	      // printf("pixFormat = %u, bayerFormat = %u\n", PG->pixFormat, 
+	      //        PG->bayerFormat);
+	      
 	      //then receive data
-	      img_size = (int)(PG->dataSize);
+	      //img_size = (int)(PG->dataSize);
+	      
+
 
 	      unsigned char* buf = (unsigned char*) malloc(img_size);
 	      if (recvall(new_fd, buf, &img_size) != 0)
@@ -164,17 +208,26 @@ int main(int argc, char** argv)
 	  	}
 	      //printf("Received %d bytes of image data\n", img_size);
 	      //now use data to build image and save it
-	      Image* tmpImage = new Image(PG->rows, PG->cols, PG->stride, buf,
-				       PG->dataSize, PG->pixFormat, 
-				       PG->bayerFormat);
+	      Image* tmpImage = new Image(rows, cols, stride, buf, dataSize, 
+					  pixFormat, bayerFormat);
+	      
+	      // Image* tmpImage = new Image(PG->rows, PG->cols, PG->stride, buf,
+	      // 			       PG->dataSize, PG->pixFormat, 
+	      // 			       PG->bayerFormat);
 	      CheckPGR(tmpImage->Convert(PIXEL_FORMAT_BGR, &PG->convertedImage));
 	      PGR_SaveImage(PG, PORT);
 	      //clean up memory allocations
 	      delete tmpImage;
+	      // delete pixFormat;
+	      // delete bayerFormat;
+	      // delete rows;
+	      // delete cols;
+	      // delete stride;
+	      // delete dataSize;
 	      free(buf);
 
 	    }
-	  
+	  firstImage = true;
 	  /* second draft*/
 	  // unsigned int width, height, depth;
 	  // int img_size, retval;
@@ -431,3 +484,61 @@ void PGR_SaveImage(PointGrey_t2* PG, const char* PORT)
   CheckPGR(PG->convertedImage.Save(filename));
   printf("Saved %s\n",filename);
 }
+
+int ReceiveMetadata(int new_fd, unsigned int* rows, unsigned int* cols, 
+		    unsigned int* stride, unsigned int* dataSize, 
+		    PixelFormat* pixFormat, BayerTileFormat* bayerFormat)
+{
+  int retval = recv(new_fd, cols, sizeof(*cols), 0);
+  // printf("sizeof(cols) = %zu, sizeof(*cols) = %zu\n",
+  // 	 sizeof(cols), sizeof(*cols));
+  if (retval < 0)
+    {
+      printf("Error receiving cols\n");
+    }
+  if (retval == 0)
+    {
+      printf("Sender stopped sending\n");
+      return -1;
+    }
+  if (recv(new_fd, rows, sizeof(*rows),0) <= 0)
+    {
+      printf("Error receiving rows\n");
+    }
+  if (recv(new_fd, stride, sizeof(*stride),0) <= 0)
+    {
+      printf("Error receiving stride\n");
+    }
+  if (recv(new_fd, dataSize, sizeof(*dataSize),0) <= 0)
+    {
+      printf("Error receiving dataSize\n");
+    }
+  if (recv(new_fd, pixFormat, sizeof(*pixFormat),0) <= 0)
+    {
+      printf("Error receiving pixFormat\n");
+    }
+  if (recv(new_fd, bayerFormat, sizeof(*bayerFormat),0) <= 0)
+    {
+      printf("Error receiving bayerFormat\n");
+    }
+  //check received data
+  // printf("rows = %u, cols = %u, stride = %u, dataSize = %u\n",
+  // 	     rows, cols, stride, dataSize);
+  // printf("pixFormat = %u, bayerFormat = %u\n", pixFormat,
+  // 	     bayerFormat);
+  return 0;
+}
+
+
+// int SetMetadata(PointGrey_t2* PG, const unsigned int rows, const unsigned int cols,
+// 		const unsigned int stride, const unsigned int dataSize, 
+// 		const PixelFormat pixFormat, const BayerTileFormat bayerFormat)
+// {
+//   PG->rows = rows;
+//   PG->cols = cols;
+//   PG->stride = stride;
+//   PG->dataSize = dataSize;
+//   PG->pixFormat = pixFormat;
+//   PG->bayerFormat = bayerFormat;
+//   return 0;
+// }
