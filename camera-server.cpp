@@ -21,6 +21,8 @@ Date: 11 March 2014
 #include <Imlib2.h>
 #include <sys/stat.h>
 
+#include "miniz.c"
+
 #include "FlyCapture2.h"
 using namespace FlyCapture2;
 
