@@ -420,14 +420,16 @@ int recvall(int s, unsigned char* buf, int* len)
   
   while(total < *len) {
     n = recv(s, buf+total, bytesleft, 0);
-    if (n == -1) { break; }
+    //if (n == -1) { break; }
+    if (n <= 0) { break; }
     total += n;
     bytesleft -= n;
   }
   
   *len = total; // return number actually sent here
-  //printf("received %d\n", *len);
-  return n==-1?-1:0; // return -1 on failure, 0 on success
+  //printf("in recvall: received %d\n", *len);
+  //return n==-1?-1:0; // return -1 on failure, 0 on success
+  return n<=0?-1:0; // return -1 on failure, 0 on success
 }
 
 int CheckSaving(const char *dir)
@@ -492,6 +494,7 @@ int ReceiveMetadata(int new_fd, unsigned int* rows, unsigned int* cols,
   int retval = recv(new_fd, cols, sizeof(*cols), 0);
   // printf("sizeof(cols) = %zu, sizeof(*cols) = %zu\n",
   // 	 sizeof(cols), sizeof(*cols));
+  printf("in ReceiveMetadata\n");
   if (retval < 0)
     {
       printf("Error receiving cols\n");
