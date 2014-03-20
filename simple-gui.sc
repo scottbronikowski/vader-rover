@@ -119,9 +119,13 @@
  ;;; Redraw procedure:
  (lambda ()
   (display "redraw")
-  (let* ((image (imlib:load! "/home/sbroniko/temp_photo.png")))
+  (let loop ()
+  (let* ((image (imlib:load! "/home/sbroniko/vader-rover/images/3601-PGR-final.ppm")))
   ;; (let* ((image (imlib:load! "/net/rongovosai/tmp/frames/00001.ppm")))
-   (draw-imlib-pixmap image 0 0))
+   (draw-imlib-pixmap image 0 0)
+   (imlib:free image))
+  (display "hello") (newline)
+  (loop))
 	 
   )
  ;;; Listener procedure:

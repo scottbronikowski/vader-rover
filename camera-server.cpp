@@ -30,8 +30,8 @@ using namespace FlyCapture2;
 const char* k_FrontCamPort = "3601";
 const char* k_PanoCamPort = "3602";
 const int BACKLOG = 5;
-const char k_OutputDir[] = "/home/sbroniko/vader-rover/images/";
-
+//const char k_OutputDir[] = "/home/sbroniko/vader-rover/images/";
+const char k_OutputDir[] = "/aux/sbroniko/images/";
 //structures
 struct PointGrey_t2 {
   Image convertedImage; //, rawImage;
@@ -429,7 +429,7 @@ int recvall(int s, unsigned char* buf, int* len)
   }
   
   *len = total; // return number actually sent here
-  //printf("in recvall: received %d\n", *len);
+  printf("in recvall: received %d\n", *len);
   //return n==-1?-1:0; // return -1 on failure, 0 on success
   return n<=0?-1:0; // return -1 on failure, 0 on success
 }

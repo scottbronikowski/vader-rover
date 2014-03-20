@@ -1,0 +1,80 @@
+-- ***Got framerate to ~8 f/s/c (close to rate at which cameras produce) by 1) changing save location to /aux vice /home, and 2) changing pano cam to 640x480 greyscale
+
+
+look at hack track for gui (keeps gui responsive while getting images), or george gui
+
+check out cjpeg
+
+Qobischeme jpeg library
+
+
+
+Buffers
+---------------------------------------
+.   today.text            6132  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
+  * *shell*<3>         4972285  Shell:run	  ~/vader-rover/
+    camera-server.cpp    14943  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/camera-server.cpp
+    simple-gui.sc         5123  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/simple-gui.sc
+  * *shell*            8475005  Shell:run	  ~/bin/
+    INSTALL              15744  Fundamental	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/snappy-1.1.2/INSTALL
+    .bashrc               4924  Shell-script[bas  ~/.bashrc
+  * *shell*<2>         3758908  Shell:run	  ~/lib/
+  * *scratch*              193  Lisp Interaction
+    Makefile               830  GNUmakefile	  ~/vader-rover/Makefile
+    build-point-grey-2.5.: 729  Shell-script[bas  ~/darpa-collaboration/bin/build-point-grey-2.5.sh
+    georgelib-c.h        28129  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-c.h
+    georgelib-c.c       159141  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-c.c
+    jpeglib.h            43965  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/jpeglib.h
+    jpegtran.c           11206  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/jpegtran.c
+    djpeg.c              18704  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/djpeg.c
+    cjpeg.c              19797  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/cjpeg.c
+    nojpeg.c              5124  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/nojpeg.c
+    cdjpeg.c              4624  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/cdjpeg.c
+    jpegint.h            15486  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/jpegint.h
+    jpeg.h                1922  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/jpeg.h
+    point-grey.c         13455  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/point-grey/point-grey.c
+    ptgrey-gui.sc         7541  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/ptgrey-gui/source/ptgrey-gui.sc
+    open_files_4feb.txt   1886  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/open_files_4feb.txt
+    server.c              1583  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server.c
+    server2.c             2225  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server2.c
+    camera-server-daemon   813  Shell-script[bas  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/camera-server-daemon
+    server                 380  Shell-script[bas  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server
+    toollib-camera.sc    20563  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/toollib-camera.sc
+    ptgrey-guilib-c.h     4030  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/ptgrey-gui/source/ptgrey-guilib-c.h
+    ptgrey-guilib-c.c    17181  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/ptgrey-gui/source/ptgrey-guilib-c.c
+    georgelib-cpp.cpp    14657  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-cpp.cpp
+    george.sc            22480  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/george.sc
+    select-restart.c       876  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/select-restart.c
+    rover-server.c        2657  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/rover-server.c
+    point-grey.h          3067  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/point-grey/point-grey.h
+    point-grey-cpp.cpp     780  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/point-grey/point-grey-cpp.cpp
+    open-files-7-march.t: 2091  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/open-files-7-march.txt
+    georgelib-sc.sc      95501  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-sc.sc
+
+
+
+Old Notes
+----------
+14 Mar 14
+-- converted camera-server.c to cpp in order to use flycap libraries
+-- copied flycap headers and so files from vader-ubuntu, but wouldn't work bc version of flycap was too new (GLIBC conflict)-->put these files in ~/vader-rover/OLD/
+-- tried copying newer version of glibc (libc-2.15.so and ld-2.15.so) from vader-ubuntu, but this got really hairy really quick.  Then started on a full install of glibc-2.14.tar.gz into ~/vader-rover IOT use newer GLIBC, but abandoned this bc next bullet got working
+-- installed flycapture2-2.3.3.18 from ~/darpa-collaboration/bin/build-point-grey.sh in order to avoid conflict with GLIBC version (we have 2.13, flycapture2-2.5+ needs 2.14)
+-- created symlinks from ~/vader-rover to lib and include for flycapture
+   include -> /home/sbroniko/darpa-collaboration/include/x86_64-Linux-3.2.0-4-amd64/flycapture/
+    lib -> /home/sbroniko/darpa-collaboration/lib/x86_64-Linux-3.2.0-4-amd64/
+--added 'export LD_LIBRARY_PATH=${HOME}/darpa-collaboration/lib/`architecture-path`/arv:${HOME}/lib/`architecture-path`/:$LD_LIBRARY_PATH:${MATLAB}/bin/glnx86/:${MATLAB}/bin/glnxa64:/usr/local/lib/:~/darpa-collaboration/lib/`architecture-path`/:/usr/local/cuda/lib64/:/usr/share/cuda-toolkit/lib64/' to .bashrc in order to find flycapture libraries at runtime
+-- started on building struct and receiver function for raw PGR image...look at using Image() constructor in Image.h where I can pass all paramaters directly.
+
+17 Mar 14
+--First test of sending raw images across network successful, images saved via PGR methods into color PPM.  Getting ~1.2-1.3 frames/sec/cam.
+--Need to look at using Imlib calls in order to get an Imlib image as a return value.
+
+18 Mar 14
+-- Modified camera-server.c to only get image metadata on first image...still need to put in break condition when sender stops sending.
+
+19 Mar 14
+-- Finished mod of camera-server.cpp to break out of forked receive process when no image data received--no significant speedup.
+----
+-- Miniz.c turned out to be slower than sending uncompressed data...looking for different library
+-- Now trying 'snappy' from Google
