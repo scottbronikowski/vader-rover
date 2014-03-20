@@ -1,5 +1,4 @@
--- ***Got framerate to ~8 f/s/c (close to rate at which cameras produce) by 1) changing save location to /aux vice /home, and 2) changing pano cam to 640x480 greyscale
-
+-- working on incorporating snappy compression, bug in ReceiveMetadataCompressed
 
 look at hack track for gui (keeps gui responsive while getting images), or george gui
 
@@ -78,3 +77,6 @@ Old Notes
 ----
 -- Miniz.c turned out to be slower than sending uncompressed data...looking for different library
 -- Now trying 'snappy' from Google
+
+20 Mar 14
+-- ***Got framerate to ~8 f/s/c (close to rate at which cameras produce) by 1) changing save location to /aux vice /home, and 2) changing pano cam to 640x480 greyscale

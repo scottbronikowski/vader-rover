@@ -55,6 +55,10 @@ void PGR_SaveImage(PointGrey_t2* PG, const char* PORT);
 int ReceiveMetadata(int new_fd, unsigned int* rows, unsigned int* cols, 
 		    unsigned int* stride, unsigned int* dataSize, 
 		    PixelFormat* pixFormat, BayerTileFormat* bayerFormat);
+int ReceiveMetadataCompressed(int new_fd, unsigned int* rows, unsigned int* cols, 
+			      unsigned int* stride, unsigned int* dataSize, 
+			      PixelFormat* pixFormat, BayerTileFormat* bayerFormat,
+			      size_t* compressed_length);
 // int SetMetadata(PointGrey_t2* PG, const unsigned int rows, const unsigned int cols,
 // 		const unsigned int stride, const unsigned int dataSize, 
 // 		const PixelFormat pixFormat, const BayerTileFormat bayerFormat);
@@ -131,57 +135,36 @@ int main(int argc, char** argv)
 	  unsigned int rows, cols, stride, dataSize;
 	  PixelFormat pixFormat;
 	  BayerTileFormat bayerFormat;
-	  bool firstImage = true;
+	  //size_t compressed_length;
+	  Bool firstImage = true;
 	  
 	  while(1)
 	    {
+	      // // can't just send metadata once when sending compressed
+	      // if (ReceiveMetadataCompressed(new_fd, &rows, &cols, &stride, 
+	      // 				    &dataSize, &pixFormat, &bayerFormat,
+	      // 				    &compressed_length) != 0)
+	      // 	{
+	      // 	  printf("Error receiving metadata\n");
+	      // 	  break;
+	      // 	}
+	      // img_size = (int)(dataSize);
+
 	      if (firstImage)
-		{
-		  //first receive dimensions/metadata
-		  if (ReceiveMetadata(new_fd, &rows, &cols, &stride, &dataSize, 
-				      &pixFormat, &bayerFormat) != 0)
-		    {
-		      printf("Error receiving metadata\n");
-		      break;
-		    }
-		  img_size = (int)(dataSize);
-		  firstImage = false;
-		}
-	      // retval = recv(new_fd, &PG->cols, sizeof(PG->cols), 0);
-	      // if (retval < 0)
-	      // 	{
-	      // 	  printf("Error receiving cols\n");
-	      // 	  break;
-	      // 	}
-	      // if (retval == 0)
-	      // 	{
-	      // 	  printf("Sender stopped sending\n");
-	      // 	  break;
-	      // 	}
-	      // if (recv(new_fd, &PG->rows, sizeof(PG->rows),0) <= 0)
-	      // 	{
-	      // 	  printf("Error receiving rows\n");
-	      // 	}
-	      // if (recv(new_fd, &PG->stride, sizeof(PG->stride),0) <= 0)
-	      // 	{
-	      // 	  printf("Error receiving stride\n");
-	      // 	}
-	      // if (recv(new_fd, &PG->dataSize, sizeof(PG->dataSize),0) <= 0)
-	      // 	{
-	      // 	  printf("Error receiving dataSize\n");
-	      // 	}
-	      // if (recv(new_fd, &PG->pixFormat, sizeof(PG->pixFormat),0) <= 0)
-	      // 	{
-	      // 	  printf("Error receiving pixFormat\n");
-	      // 	}
-	      // if (recv(new_fd, &PG->bayerFormat, sizeof(PG->bayerFormat),0) <= 0)
-	      // 	{
-	      // 	  printf("Error receiving bayerFormat\n");
-	      // 	}
-	      //check received data
-	      // printf("rows = %u, cols = %u, stride = %u, dataSize = %u\n",
-	      // 	     rows, cols, stride, dataSize);
-	      // printf("pixFormat = %u, bayerFormat = %u\n", pixFormat, bayerFormat);
+	      	{
+	      	  //first receive dimensions/metadata
+	      	  if (ReceiveMetadata(new_fd, &rows, &cols, &stride, &dataSize, 
+	      			      &pixFormat, &bayerFormat) != 0)
+	      	    {
+	      	      printf("Error receiving metadata\n");
+	      	      break;
+	      	    }
+	      	  img_size = (int)(dataSize);
+	      	  firstImage = false;
+	      	}
+	      
+
+
 	      /*  DON"T THINK I NEED TO DO THIS */
 	      // if (SetMetadata(PG, rows, cols, stride, dataSize, 
 	      // 		      pixFormat, bayerFormat) != 0)
@@ -229,7 +212,10 @@ int main(int argc, char** argv)
 	      free(buf);
 
 	    }
+
 	  firstImage = true;
+
+
 	  /* second draft*/
 	  // unsigned int width, height, depth;
 	  // int img_size, retval;
@@ -496,7 +482,7 @@ int ReceiveMetadata(int new_fd, unsigned int* rows, unsigned int* cols,
   int retval = recv(new_fd, cols, sizeof(*cols), 0);
   // printf("sizeof(cols) = %zu, sizeof(*cols) = %zu\n",
   // 	 sizeof(cols), sizeof(*cols));
-  printf("in ReceiveMetadata\n");
+  //printf("in ReceiveMetadata\n");
   if (retval < 0)
     {
       printf("Error receiving cols\n");
@@ -534,6 +520,55 @@ int ReceiveMetadata(int new_fd, unsigned int* rows, unsigned int* cols,
   return 0;
 }
 
+int ReceiveMetadataCompressed(int new_fd, unsigned int* rows, unsigned int* cols, 
+			      unsigned int* stride, unsigned int* dataSize, 
+			      PixelFormat* pixFormat, BayerTileFormat* bayerFormat,
+			      size_t* compressed_length)
+{
+  int retval = recv(new_fd, cols, sizeof(*cols), 0);
+  // printf("sizeof(cols) = %zu, sizeof(*cols) = %zu\n",
+  // 	 sizeof(cols), sizeof(*cols));
+  //printf("in ReceiveMetadata\n");
+  if (retval < 0)
+    {
+      printf("Error receiving cols\n");
+    }
+  if (retval == 0)
+    {
+      printf("Sender stopped sending\n");
+      return -1;
+    }
+  if (recv(new_fd, rows, sizeof(*rows),0) <= 0)
+    {
+      printf("Error receiving rows\n");
+    }
+  if (recv(new_fd, stride, sizeof(*stride),0) <= 0)
+    {
+      printf("Error receiving stride\n");
+    }
+  if (recv(new_fd, dataSize, sizeof(*dataSize),0) <= 0)
+    {
+      printf("Error receiving dataSize\n");
+    }
+  if (recv(new_fd, pixFormat, sizeof(*pixFormat),0) <= 0)
+    {
+      printf("Error receiving pixFormat\n");
+    }
+  if (recv(new_fd, bayerFormat, sizeof(*bayerFormat),0) <= 0)
+    {
+      printf("Error receiving bayerFormat\n");
+    }
+    if (recv(new_fd, compressed_length, sizeof(*compressed_length),0) <= 0)
+    {
+      printf("Error receiving compressed_length\n");
+    }
+  //check received data
+  printf("rows = %u, cols = %u, stride = %u, dataSize = %u\n",
+	 *rows, *cols, *stride, *dataSize);
+  printf("pixFormat = %u, bayerFormat = %u, compressed_length = %zd\n", 
+	 *pixFormat, *bayerFormat, *compressed_length);
+  return 0;
+}
 
 // int SetMetadata(PointGrey_t2* PG, const unsigned int rows, const unsigned int cols,
 // 		const unsigned int stride, const unsigned int dataSize, 
