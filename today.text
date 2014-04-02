@@ -1,4 +1,6 @@
--- working on incorporating snappy compression, bug in ReceiveMetadataCompressed
+
+
+
 
 look at hack track for gui (keeps gui responsive while getting images), or george gui
 
@@ -80,3 +82,8 @@ Old Notes
 
 20 Mar 14
 -- ***Got framerate to ~8 f/s/c (close to rate at which cameras produce) by 1) changing save location to /aux vice /home, and 2) changing pano cam to 640x480 greyscale
+-------
+-- working on incorporating snappy compression, bug in ReceiveMetadataCompressed
+
+2 Apr 14
+-- Got OpenCV working for JPEG compression.  Can currently send compressed images across network (~15-30 kilobytes per image) and save them on seykhl at ~11.9-12.5 f/s/c as either .jpg or .png (file type doesn't seem to affect speed).
