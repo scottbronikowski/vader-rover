@@ -21,15 +21,10 @@ Date: 11 March 2014
 #include <Imlib2.h>
 #include <sys/stat.h>
 
-//#include "miniz.c"
-
 //for opencv
 #include <vector>
 #include <opencv2/opencv.hpp>
-//#include <opencv/cv.h>
-//#include "cv.h"
 #include <opencv2/highgui/highgui.hpp>
-//#include <opencv/highgui.h>
 
 #include "FlyCapture2.h"
 using namespace FlyCapture2;
@@ -38,38 +33,33 @@ using namespace FlyCapture2;
 const char* k_FrontCamPort = "3601";
 const char* k_PanoCamPort = "3602";
 const int BACKLOG = 5;
-//const char k_OutputDir[] = "/home/sbroniko/vader-rover/images/";
-const char k_OutputDir[] = "/aux/sbroniko/images/";
+const char* k_OutputDir = "/aux/sbroniko/images/";
 //structures
 struct PointGrey_t2 {
-  Image convertedImage; //, rawImage;
+  //Image convertedImage; //, rawImage;
   //PixelFormat pixFormat;
   //BayerTileFormat bayerFormat;
-  //  unsigned char* pData;
+  //unsigned char* pData;
   //unsigned int rows, cols, stride, dataSize;
-  Imlib_Image finalImage;
+  //Imlib_Image finalImage;
+  int new_fd;
+  int img_size;
+  cv::Mat uncompressedImage;
 };
 
 //prototypes
 void sigchld_handler(int s);
-void *get_in_addr(struct sockaddr *sa);
+//void* get_in_addr(struct sockaddr *sa);
 int StartServer(const char* PORT);
 int AcceptConnection(int sockfd);
-int recvall(int s, unsigned char* buf, int* len);
+//int recvall(int s, unsigned char* buf, int* len);
 int CheckSaving(const char *dir);
-void PrintError( Error error );
-void CheckPGR(Error error);
-void PGR_SaveImage(PointGrey_t2* PG, const char* PORT);
-int ReceiveMetadata(int new_fd, unsigned int* rows, unsigned int* cols, 
-		    unsigned int* stride, unsigned int* dataSize, 
-		    PixelFormat* pixFormat, BayerTileFormat* bayerFormat);
-int ReceiveMetadataCompressed(int new_fd, unsigned int* rows, unsigned int* cols, 
-			      unsigned int* stride, unsigned int* dataSize, 
-			      PixelFormat* pixFormat, BayerTileFormat* bayerFormat,
-			      size_t* compressed_length);
-// int SetMetadata(PointGrey_t2* PG, const unsigned int rows, const unsigned int cols,
-// 		const unsigned int stride, const unsigned int dataSize, 
-// 		const PixelFormat pixFormat, const BayerTileFormat bayerFormat);
+//void PGR_SaveImage(PointGrey_t2* PG, const char* PORT);
+//int ReceiveMetadata(int new_fd, unsigned int* rows, unsigned int* cols, 
+// 		    unsigned int* stride, unsigned int* dataSize, 
+// 		    PixelFormat* pixFormat, BayerTileFormat* bayerFormat);
+int OpenCV_ReceiveFrame(PointGrey_t2* PG);
+void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
 
 int main(int argc, char** argv)
 {
@@ -87,17 +77,12 @@ int main(int argc, char** argv)
       exit(1);
     }
   /* input is valid if we get here */
-      
-      
+    
   int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
   char* PORT = argv[1];
-  /* struct sockaddr_storage their_addr; // connector's address information */
-  /* socklen_t sin_size; */
   struct sigaction sa;
-  /* char s[INET6_ADDRSTRLEN]; */
   
   sockfd = StartServer(PORT);
-  //printf("sockfd = %d, port = %s\n",sockfd,PORT);
   
   sa.sa_handler = sigchld_handler; // reap all dead processes
   sigemptyset(&sa.sa_mask);
@@ -115,8 +100,6 @@ int main(int argc, char** argv)
 
   printf("server: waiting for connections...\n");
   
-  //int i = 0;
-  
   while(1) 
     {  // main accept() loop
       new_fd = AcceptConnection(sockfd);
@@ -127,233 +110,20 @@ int main(int argc, char** argv)
 	}
       if (!fork()) 
 	{ // this is the child process
-	  //printf("forking %d, new_fd = %d\n",i,new_fd);
-	  //i++;
 	  close(sockfd); // child doesn't need the listener
 
 	  //here's where we do the magic
 	  PointGrey_t2* PG = new PointGrey_t2;
-	  int img_size;
+	  PG->new_fd = new_fd;
 	  int imageCount = 0;
-	  // unsigned int* rows = new unsigned int;
-	  // unsigned int* cols = new unsigned int;
-	  // unsigned int* stride = new unsigned int;
-	  // unsigned int* dataSize = new unsigned int;
-	  // PixelFormat* pixFormat = new PixelFormat;
-	  // BayerTileFormat* bayerFormat = new BayerTileFormat;
 	
 	  while (1)
 	    {
-	      //first receive image size
-	      int retval = recv(new_fd, &img_size, sizeof(img_size), 0);
-	      if (retval < 0)
-		{
-		  printf("Error receiving image size\n");
-		  break;
-		}
-	      if (retval == 0)
-		{
-		  printf("Sender stopped sending\n");
-		  break;
-		}
-	      //if we get here, we got valid size data
-	      //printf("Received image size = %d\n", img_size);
-	      
-	      //then receive image data
-	      unsigned char* buf = (unsigned char*) malloc(img_size);
-	      if (recvall(new_fd, buf, &img_size) != 0)
-	  	{
-	  	  printf("Error in recvall\n");
-	  	  break;
-	  	}
-	      printf("Received %d bytes of image data\n", img_size);
-
-	      //copy buf into vector
-	      cv::vector<uchar> compressed(buf, buf+img_size);
-     	      
-	      //now use data to build image and save it
-	      cv::Mat jpegimage;
-
-	      // if (strcmp(PORT, k_FrontCamPort) == 0)
-	      jpegimage = imdecode(cv::Mat(compressed), CV_LOAD_IMAGE_COLOR);
-	      // else
-	      // 	jpegimage = imdecode(cv::Mat(compressed), CV_LOAD_IMAGE_GRAYSCALE);
-	      /* ***Don't seem to need to differentiate between color and */
-	      /* grayscale here -- gray images save gray even when loaded */
-	      /* as color.*** */
-
-	      char filename[512];
-	      sprintf(filename, "%s%s-OpenCV-%.3d.png", k_OutputDir, 
-	      	      PORT, imageCount);
-	      cv::imwrite(filename, jpegimage);
-
+	      if (OpenCV_ReceiveFrame(PG) != 0)
+		break;
+	      OpenCV_SaveFrame(PG, imageCount, PORT);
 	      imageCount++;
-
-	      //clean up memory allocations
-	      free(buf);
 	    }
-
-
-
-	  // // OLD sending stuff *******
-	  // unsigned int rows, cols, stride, dataSize;
-	  // PixelFormat pixFormat;
-	  // BayerTileFormat bayerFormat;
-	  // //size_t compressed_length;
-	  // Bool firstImage = true;
-	  
-	  // while(1)
-	  //   {
-	  //     // // can't just send metadata once when sending compressed
-	  //     // if (ReceiveMetadataCompressed(new_fd, &rows, &cols, &stride, 
-	  //     // 				    &dataSize, &pixFormat, &bayerFormat,
-	  //     // 				    &compressed_length) != 0)
-	  //     // 	{
-	  //     // 	  printf("Error receiving metadata\n");
-	  //     // 	  break;
-	  //     // 	}
-	  //     // img_size = (int)(dataSize);
-
-	  //     if (firstImage)
-	  //     	{
-	  //     	  //first receive dimensions/metadata
-	  //     	  if (ReceiveMetadata(new_fd, &rows, &cols, &stride, &dataSize, 
-	  //     			      &pixFormat, &bayerFormat) != 0)
-	  //     	    {
-	  //     	      printf("Error receiving metadata\n");
-	  //     	      break;
-	  //     	    }
-	  //     	  img_size = (int)(dataSize);
-	  //     	  firstImage = false;
-	  //     	}
-	      
-
-
-	  //     /*  DON"T THINK I NEED TO DO THIS */
-	  //     // if (SetMetadata(PG, rows, cols, stride, dataSize, 
-	  //     // 		      pixFormat, bayerFormat) != 0)
-	  //     // 	{
-	  //     // 	  printf("Error setting metadata\n");
-	  //     // 	  break;
-	  //     // 	}
-
-
-	  //     //check received data
-	  //     // printf("rows = %u, cols = %u, stride = %u, dataSize = %u\n",
-	  //     // 	     PG->rows, PG->cols, PG->stride, PG->dataSize);
-	  //     // printf("pixFormat = %u, bayerFormat = %u\n", PG->pixFormat, 
-	  //     //        PG->bayerFormat);
-	      
-	  //     //then receive data
-	  //     //img_size = (int)(PG->dataSize);
-	      
-
-
-	  //     unsigned char* buf = (unsigned char*) malloc(img_size);
-	  //     if (recvall(new_fd, buf, &img_size) != 0)
-	  // 	{
-	  // 	  printf("Error in recvall\n");
-	  // 	  break;
-	  // 	}
-	  //     //printf("Received %d bytes of image data\n", img_size);
-	  //     //now use data to build image and save it
-	  //     Image* tmpImage = new Image(rows, cols, stride, buf, dataSize, 
-	  // 				  pixFormat, bayerFormat);
-	      
-	  //     // Image* tmpImage = new Image(PG->rows, PG->cols, PG->stride, buf,
-	  //     // 			       PG->dataSize, PG->pixFormat, 
-	  //     // 			       PG->bayerFormat);
-	  //     CheckPGR(tmpImage->Convert(PIXEL_FORMAT_BGR, &PG->convertedImage));
-	  //     PGR_SaveImage(PG, PORT);
-	  //     //clean up memory allocations
-	  //     delete tmpImage;
-	  //     // delete pixFormat;
-	  //     // delete bayerFormat;
-	  //     // delete rows;
-	  //     // delete cols;
-	  //     // delete stride;
-	  //     // delete dataSize;
-	  //     free(buf);
-
-	  //   }
-
-	  // firstImage = true;
-
-
-	  /* second draft*/
-	  // unsigned int width, height, depth;
-	  // int img_size, retval;
-	  // while(1)
-	  //   {
-	  //     //first receive size (w, h, d)
-	  //     retval = recv(new_fd, &width, sizeof(width), 0);
-	  //     if (retval < 0)
-	  // 	{
-	  // 	  printf("Error receiving width\n");
-	  // 	  break;
-	  // 	}
-	  //     if (retval == 0)
-	  // 	{
-	  // 	  printf("Sender stopped sending\n");
-	  // 	  break;
-	  // 	}
-	  //     if (recv(new_fd, &height, sizeof(height), 0) <= 0)
-	  // 	{
-	  // 	  printf("Error receiving height\n");
-	  // 	}
-	  //     if (recv(new_fd, &depth, sizeof(depth), 0) <= 0)
-	  // 	{
-	  // 	  printf("Error receiving depth\n");
-	  // 	}
-	  //     printf("Received w x h x d = %u x %u x %u\n", width, height, depth);
-
-	  //     //then receive data
-	  //     img_size = (int)(width * depth * height);
-	  //     unsigned char* buf = (unsigned char*) malloc(img_size);
-	  //     if (recvall(new_fd, buf, &img_size) != 0)
-	  // 	{
-	  // 	  printf("Error in recvall\n");
-	  // 	  break;
-	  // 	}
-	  //     printf("Received %d bytes of image data\n", img_size);
-	  //     free(buf);
-	  //   }
-	  /* end second draft*/
-
-
-	  /* /\* first draft -- using strings with length sent before string *\/ */
-	  /* int buflen, retval; */
-	  /* while(1) */
-	  /*   { */
-	  /*     //first receive size */
-	  /*     retval = recv(new_fd, &buflen, sizeof(buflen), 0); */
-	  /*     if (retval < 0) */
-	  /* 	{ */
-	  /* 	  printf("Error receiveing buflen\n"); */
-	  /* 	  break; */
-	  /* 	} */
-	  /*     if (retval == 0) */
-	  /* 	{ */
-	  /* 	  printf("Sender stopped sending\n"); */
-	  /* 	  break; */
-	  /* 	} */
-	  /*     printf("received buflen: %d\n", buflen); */
-	  /*     //then receive data */
-	  /*     unsigned char* buf = malloc(buflen); */
-	  /*     if (recvall(new_fd, buf, &buflen) != 0) */
-	  /* 	{ */
-	  /* 	  printf("Error in recvall\n"); */
-	  /* 	  break; */
-	  /* 	} */
-	  /*     printf("received buf: %s\n", buf); */
-	  /*     free(buf); */
-	  /*   } */
-	  /* /\* end first draft *\/ */
-	  
-	  /* if (send(new_fd, "Hello, world!", 13, 0) == -1) */
-	  /* 	perror("send"); */
-	  
-	  //printf("closed sockfd\n");
 	  close(new_fd);
 	  delete PG;
 	  printf("exiting from fork\n");
@@ -371,7 +141,7 @@ void sigchld_handler(int s)
   while(waitpid(-1, NULL, WNOHANG) > 0);
 }
 
-void *get_in_addr(struct sockaddr *sa)
+void* get_in_addr(struct sockaddr *sa)
 {// get sockaddr, IPv4 or IPv6:
   if (sa->sa_family == AF_INET) 
     { 
@@ -456,7 +226,6 @@ int AcceptConnection(int sockfd)
       perror("accept");
       return new_fd;
     }
-  
   inet_ntop(their_addr.ss_family,
 	    get_in_addr((struct sockaddr *)&their_addr),
 	    s, sizeof(s));
@@ -509,140 +278,130 @@ int CheckSaving(const char *dir)
   return 0;
 }
 
-void PrintError( Error error )
-{
-    error.PrintErrorTrace();
-}
-
-void CheckPGR(Error error)
-{
-  if (error != PGRERROR_OK)
-  {
-    PrintError( error );
-    abort();
-    //return -1;
-  }
-  // else
-  // {
-  //   return 0;
-  // }
-}
-
-void PGR_SaveImage(PointGrey_t2* PG, const char* PORT)
-{
-  // Create a unique filename
-  char filename[512];
-  sprintf(filename, "%s%s-PGR-final.ppm", k_OutputDir, PORT);
-  // Save the image. If a file format is not passed in, then the file
-  // extension is parsed to attempt to determine the file format.
-  CheckPGR(PG->convertedImage.Save(filename));
-  printf("Saved %s\n",filename);
-}
-
-int ReceiveMetadata(int new_fd, unsigned int* rows, unsigned int* cols, 
-		    unsigned int* stride, unsigned int* dataSize, 
-		    PixelFormat* pixFormat, BayerTileFormat* bayerFormat)
-{
-  int retval = recv(new_fd, cols, sizeof(*cols), 0);
-  // printf("sizeof(cols) = %zu, sizeof(*cols) = %zu\n",
-  // 	 sizeof(cols), sizeof(*cols));
-  //printf("in ReceiveMetadata\n");
-  if (retval < 0)
-    {
-      printf("Error receiving cols\n");
-    }
-  if (retval == 0)
-    {
-      printf("Sender stopped sending\n");
-      return -1;
-    }
-  if (recv(new_fd, rows, sizeof(*rows),0) <= 0)
-    {
-      printf("Error receiving rows\n");
-    }
-  if (recv(new_fd, stride, sizeof(*stride),0) <= 0)
-    {
-      printf("Error receiving stride\n");
-    }
-  if (recv(new_fd, dataSize, sizeof(*dataSize),0) <= 0)
-    {
-      printf("Error receiving dataSize\n");
-    }
-  if (recv(new_fd, pixFormat, sizeof(*pixFormat),0) <= 0)
-    {
-      printf("Error receiving pixFormat\n");
-    }
-  if (recv(new_fd, bayerFormat, sizeof(*bayerFormat),0) <= 0)
-    {
-      printf("Error receiving bayerFormat\n");
-    }
-  //check received data
-  // printf("rows = %u, cols = %u, stride = %u, dataSize = %u\n",
-  // 	     rows, cols, stride, dataSize);
-  // printf("pixFormat = %u, bayerFormat = %u\n", pixFormat,
-  // 	     bayerFormat);
-  return 0;
-}
-
-int ReceiveMetadataCompressed(int new_fd, unsigned int* rows, unsigned int* cols, 
-			      unsigned int* stride, unsigned int* dataSize, 
-			      PixelFormat* pixFormat, BayerTileFormat* bayerFormat,
-			      size_t* compressed_length)
-{
-  int retval = recv(new_fd, cols, sizeof(*cols), 0);
-  // printf("sizeof(cols) = %zu, sizeof(*cols) = %zu\n",
-  // 	 sizeof(cols), sizeof(*cols));
-  //printf("in ReceiveMetadata\n");
-  if (retval < 0)
-    {
-      printf("Error receiving cols\n");
-    }
-  if (retval == 0)
-    {
-      printf("Sender stopped sending\n");
-      return -1;
-    }
-  if (recv(new_fd, rows, sizeof(*rows),0) <= 0)
-    {
-      printf("Error receiving rows\n");
-    }
-  if (recv(new_fd, stride, sizeof(*stride),0) <= 0)
-    {
-      printf("Error receiving stride\n");
-    }
-  if (recv(new_fd, dataSize, sizeof(*dataSize),0) <= 0)
-    {
-      printf("Error receiving dataSize\n");
-    }
-  if (recv(new_fd, pixFormat, sizeof(*pixFormat),0) <= 0)
-    {
-      printf("Error receiving pixFormat\n");
-    }
-  if (recv(new_fd, bayerFormat, sizeof(*bayerFormat),0) <= 0)
-    {
-      printf("Error receiving bayerFormat\n");
-    }
-    if (recv(new_fd, compressed_length, sizeof(*compressed_length),0) <= 0)
-    {
-      printf("Error receiving compressed_length\n");
-    }
-  //check received data
-  printf("rows = %u, cols = %u, stride = %u, dataSize = %u\n",
-	 *rows, *cols, *stride, *dataSize);
-  printf("pixFormat = %u, bayerFormat = %u, compressed_length = %zd\n", 
-	 *pixFormat, *bayerFormat, *compressed_length);
-  return 0;
-}
-
-// int SetMetadata(PointGrey_t2* PG, const unsigned int rows, const unsigned int cols,
-// 		const unsigned int stride, const unsigned int dataSize, 
-// 		const PixelFormat pixFormat, const BayerTileFormat bayerFormat)
+// void PrintError( Error error )
 // {
-//   PG->rows = rows;
-//   PG->cols = cols;
-//   PG->stride = stride;
-//   PG->dataSize = dataSize;
-//   PG->pixFormat = pixFormat;
-//   PG->bayerFormat = bayerFormat;
+//     error.PrintErrorTrace();
+// }
+
+// void CheckPGR(Error error)
+// {
+//   if (error != PGRERROR_OK)
+//   {
+//     PrintError( error );
+//     abort();
+//     //return -1;
+//   }
+//   // else
+//   // {
+//   //   return 0;
+//   // }
+// }
+
+// void PGR_SaveImage(PointGrey_t2* PG, const char* PORT)
+// {
+//   // Create a unique filename
+//   char filename[512];
+//   sprintf(filename, "%s%s-PGR-final.ppm", k_OutputDir, PORT);
+//   // Save the image. If a file format is not passed in, then the file
+//   // extension is parsed to attempt to determine the file format.
+//   CheckPGR(PG->convertedImage.Save(filename));
+//   printf("Saved %s\n",filename);
+// }
+
+// int ReceiveMetadata(int new_fd, unsigned int* rows, unsigned int* cols, 
+// 		    unsigned int* stride, unsigned int* dataSize, 
+// 		    PixelFormat* pixFormat, BayerTileFormat* bayerFormat)
+// {
+//   int retval = recv(new_fd, cols, sizeof(*cols), 0);
+//   // printf("sizeof(cols) = %zu, sizeof(*cols) = %zu\n",
+//   // 	 sizeof(cols), sizeof(*cols));
+//   //printf("in ReceiveMetadata\n");
+//   if (retval < 0)
+//     {
+//       printf("Error receiving cols\n");
+//     }
+//   if (retval == 0)
+//     {
+//       printf("Sender stopped sending\n");
+//       return -1;
+//     }
+//   if (recv(new_fd, rows, sizeof(*rows),0) <= 0)
+//     {
+//       printf("Error receiving rows\n");
+//     }
+//   if (recv(new_fd, stride, sizeof(*stride),0) <= 0)
+//     {
+//       printf("Error receiving stride\n");
+//     }
+//   if (recv(new_fd, dataSize, sizeof(*dataSize),0) <= 0)
+//     {
+//       printf("Error receiving dataSize\n");
+//     }
+//   if (recv(new_fd, pixFormat, sizeof(*pixFormat),0) <= 0)
+//     {
+//       printf("Error receiving pixFormat\n");
+//     }
+//   if (recv(new_fd, bayerFormat, sizeof(*bayerFormat),0) <= 0)
+//     {
+//       printf("Error receiving bayerFormat\n");
+//     }
+//   //check received data
+//   // printf("rows = %u, cols = %u, stride = %u, dataSize = %u\n",
+//   // 	     rows, cols, stride, dataSize);
+//   // printf("pixFormat = %u, bayerFormat = %u\n", pixFormat,
+//   // 	     bayerFormat);
 //   return 0;
 // }
+
+int OpenCV_ReceiveFrame(PointGrey_t2* PG)
+{
+  //first receive image size
+  int retval = recv(PG->new_fd, &PG->img_size, sizeof(PG->img_size), 0);
+  if (retval < 0)
+    {
+      printf("Error receiving image size\n");
+      return -1;
+    }
+  if (retval == 0)
+    {
+      printf("Sender stopped sending\n");
+      return -1;
+    }
+  //if we get here, we got valid size data
+  //printf("Received image size = %d\n", PG->img_size);
+  
+  //then receive image data
+  unsigned char* buf = (unsigned char*) malloc(PG->img_size);
+  if (recvall(PG->new_fd, buf, &PG->img_size) != 0)
+    {
+      printf("Error in recvall\n");
+      return -1;
+    }
+  printf("Received %d bytes of image data\n", PG->img_size);
+  
+  //copy buf into vector
+  cv::vector<uchar> compressed(buf, buf+PG->img_size);
+  
+  //clean up memory allocations
+  free(buf); 
+  
+  //now use data to build image and save it
+    
+  // if (strcmp(PORT, k_FrontCamPort) == 0)
+  PG->uncompressedImage = imdecode(cv::Mat(compressed), CV_LOAD_IMAGE_COLOR);
+  // else
+  // 	PG->uncompressedImage = imdecode(cv::Mat(compressed), CV_LOAD_IMAGE_GRAYSCALE);
+  /* ***Don't seem to need to differentiate between color and */
+  /* grayscale here -- gray images save gray even when loaded */
+  /* as color.*** */
+  return 0;
+}
+
+void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT)
+{
+  char filename[512];
+  sprintf(filename, "%s%s-OpenCV-%.3d.png", k_OutputDir, 
+	  PORT, imageCount);
+  cv::imwrite(filename, PG->uncompressedImage);
+  return;
+}
