@@ -1,0 +1,1 @@
+../ckconfig.c

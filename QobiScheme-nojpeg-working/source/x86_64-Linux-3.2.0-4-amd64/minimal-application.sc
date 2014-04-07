@@ -1,0 +1,1 @@
+../minimal-application.sc

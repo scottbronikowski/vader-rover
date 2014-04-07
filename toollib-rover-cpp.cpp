@@ -26,6 +26,14 @@ Date: 11 March 2014
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
+//#include <cv.h>
+//#include <highgui.h>
+
+
+
+//#include <jpeglib.h>
+//#include <jinclude.h>
+//#include <jerror.h>
 
 // #include "FlyCapture2.h"
 // using namespace FlyCapture2;
@@ -78,29 +86,71 @@ extern "C" int hello_world(int i)
   
 // }
 
+
+extern "C" int tutorial(void)
+{
+  using namespace cv;
+  char* imageName = "/home/sbroniko/temp_photo.jpg";
+  
+  Mat image;
+  image = imread( imageName, 1 );
+  
+  if( !image.data )
+    {
+      printf( " No image data \n " );
+   return -1;
+ }
+
+ Mat gray_image;
+ cvtColor( image, gray_image, CV_BGR2GRAY );
+
+ imwrite( "/home/sbroniko/Gray_Image.jpg", gray_image );
+
+ namedWindow( imageName, CV_WINDOW_AUTOSIZE );
+ namedWindow( "Gray image", CV_WINDOW_AUTOSIZE );
+
+ imshow( imageName, image );
+ imshow( "Gray image", gray_image );
+
+ waitKey(0);
+
+ return 0;
+}
+
+
 extern "C" void check_image_load_and_save(void)
 {
   printf("I am in check_image...\n");
+  // Imlib_Image imtemp = imlib_load_image("/home/sbroniko/temp_photo.jpg");
+  // imlib_context_set_image(imtemp);
+  // imlib_save_image("/aux/sbroniko/images/imlibtest.jpg");
+  // imlib_free_image_and_decache();
   cv::Mat temp;
-  printf("temp declared\n");
-  temp = (cv::Mat) cv::imread("/home/sbroniko/temp_photo.png", CV_LOAD_IMAGE_COLOR);
+  printf("temp declared\n"); 
+  temp = (cv::Mat) cv::imread("/home/sbroniko/temp_photo.jpg", CV_LOAD_IMAGE_COLOR);
   printf("after imread\n");
+  // cv::namedWindow("windowname");
+  // cv::imshow("windowname", temp);
+  // cv::waitKey(0);
 
   std::vector<int> params = std::vector<int>(2);
-  // params[0] = CV_IMWRITE_JPEG_QUALITY;
-  // params[1] = 75;
-  params[0] = CV_IMWRITE_PNG_COMPRESSION;
-  params[1] = 9;
+  params[0] = CV_IMWRITE_JPEG_QUALITY;
+  params[1] = 75;
+  //params[0] = CV_IMWRITE_PNG_COMPRESSION;
+  //params[1] = 9;
   cv::vector<uchar> compressed;
-  //cv::imencode(".jpg", temp, compressed, params);
-  cv::imencode(".png", temp, compressed, params);
+  //cv::imencode(".jpg", temp, compressed);
+  cv::imencode(".jpg", temp, compressed, params);
+  //cv::imencode(".png", temp, compressed, params);
   printf("after imencode\n");
 
   cv::Mat temp2;
   temp2 = cv::imdecode(cv::Mat(compressed), CV_LOAD_IMAGE_COLOR);
   printf("after imdecode\n");
 
-  if (!imwrite("/aux/sbroniko/images/test.png", temp2))
+  //cv::Mat temp2 = temp;
+
+  if (!imwrite("/aux/sbroniko/images/test.jpg", temp2))
     printf("ERROR!");
   printf("after imwrite\n");
 

@@ -1,0 +1,68 @@
+sbroniko@seykhl:[~/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64]$ gdb dsci
+GNU gdb (GDB) 7.4.1-debian
+Copyright (C) 2012 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>...
+Reading symbols from /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64/dsci...done.
+(gdb) run
+Starting program: /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64/dsci 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+***** INITIALIZEVAR Duplicately defined symbol +
+***** INITIALIZEVAR Duplicately defined symbol -
+***** INITIALIZEVAR Duplicately defined symbol *
+***** INITIALIZEVAR Duplicately defined symbol /
+***** INITIALIZEVAR Duplicately defined symbol SQRT
+***** INITIALIZEVAR Duplicately defined symbol EXP
+***** INITIALIZEVAR Duplicately defined symbol LOG
+***** INITIALIZEVAR Duplicately defined symbol EXPT
+***** INITIALIZEVAR Duplicately defined symbol SIN
+***** INITIALIZEVAR Duplicately defined symbol COS
+***** INITIALIZEVAR Duplicately defined symbol ATAN
+***** INITIALIZEVAR Duplicately defined symbol =
+***** INITIALIZEVAR Duplicately defined symbol <
+***** INITIALIZEVAR Duplicately defined symbol >
+***** INITIALIZEVAR Duplicately defined symbol <=
+***** INITIALIZEVAR Duplicately defined symbol >=
+***** INITIALIZEVAR Duplicately defined symbol ZERO?
+***** INITIALIZEVAR Duplicately defined symbol POSITIVE?
+***** INITIALIZEVAR Duplicately defined symbol NEGATIVE?
+***** INITIALIZEVAR Duplicately defined symbol REAL?
+Scheme->C -- 15mar93jfb -- Copyright 1989-1993 Digital Equipment Corporation
+> (check-image)
+I am in check_image...
+temp declared
+after imread
+OpenCV Error: Assertion failed (code) in imencode, file /tmp/buildd/opencv-2.3.1/modules/highgui/src/loadsave.cpp, line 423
+terminate called after throwing an instance of 'cv::Exception'
+  what():  /tmp/buildd/opencv-2.3.1/modules/highgui/src/loadsave.cpp:423: error: (-215) code in function imencode
+
+
+Program received signal SIGABRT, Aborted.
+0x00002aaab2d1a475 in *__GI_raise (sig=<optimized out>) at ../nptl/sysdeps/unix/sysv/linux/raise.c:64
+64	../nptl/sysdeps/unix/sysv/linux/raise.c: No such file or directory.
+(gdb) bt
+#0  0x00002aaab2d1a475 in *__GI_raise (sig=<optimized out>) at ../nptl/sysdeps/unix/sysv/linux/raise.c:64
+#1  0x00002aaab2d1d6f0 in *__GI_abort () at abort.c:92
+#2  0x00002aaab30d789d in __gnu_cxx::__verbose_terminate_handler() () from /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+#3  0x00002aaab30d5996 in ?? () from /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+#4  0x00002aaab30d59c3 in std::terminate() () from /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+#5  0x00002aaab30d5bee in __cxa_throw () from /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+#6  0x00002aaaaee71541 in cv::error(cv::Exception const&) () from /usr/lib/libopencv_core.so.2.3
+#7  0x00002aaaaf540d96 in cv::imencode(std::string const&, cv::_InputArray const&, std::vector<unsigned char, std::allocator<unsigned char> >&, std::vector<int, std::allocator<int> > const&) () from /usr/lib/libopencv_highgui.so.2.3
+#8  0x0000000000656119 in check_image_load_and_save () at toollib-rover-cpp.cpp:95
+#9  0x000000000062b2d4 in toollib_2drover_check_2dimage () at toollib-rover.c:82
+#10 0x00000000007f2edb in sc_apply_2dtwo ()
+#11 0x0000000000803f40 in sceval_exec ()
+#12 0x00000000008044c9 in sceval_eval ()
+#13 0x000000000080d71b in screp_rep ()
+#14 0x0000000000661e80 in obischeme_al_2dprint_cd6ff9e ()
+#15 0x00000000007f2edb in sc_apply_2dtwo ()
+#16 0x0000000000420f09 in dsci_main (a14283=0x111e9e3 "\001") at dsci.c:10934
+#17 0x0000000000420b69 in main (argc=1, argv=0x7fffffffdd58) at dsci.c:11078
+(gdb) 

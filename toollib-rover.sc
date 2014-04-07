@@ -14,3 +14,6 @@
 
 (define check-image
  (c-function void ("check_image_load_and_save")))
+
+(define tutorial
+ (c-function int ("tutorial")))
