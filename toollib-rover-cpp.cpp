@@ -22,6 +22,7 @@ Date: 11 March 2014
 #include <Imlib2.h>
 #include <sys/stat.h>
 
+
 //for opencv
 #include <vector>
 #include <opencv2/opencv.hpp>
@@ -90,7 +91,8 @@ extern "C" int hello_world(int i)
 extern "C" int tutorial(void)
 {
   using namespace cv;
-  char* imageName = "/home/sbroniko/temp_photo.jpg";
+  char imageName[100];
+  sprintf(imageName, "/home/sbroniko/temp_photo.jpg");
   
   Mat image;
   image = imread( imageName, 1 );
@@ -340,7 +342,7 @@ int recvall(int s, unsigned char* buf, int* len)
 {
   int total = 0;        // how many bytes we've received
   int bytesleft = *len; // how many we have left to receive
-  int n;
+  int n = 0;
   
   while(total < *len) {
     n = recv(s, buf+total, bytesleft, 0);
