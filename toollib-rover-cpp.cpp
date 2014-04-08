@@ -7,26 +7,27 @@ Code adapted from http://www.beej.us/guide/bgnet/output/html/multipage/clientser
 Author: Scott Bronikowski
 Date: 11 March 2014
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <sys/wait.h>
-#include <signal.h>
-#include <Imlib2.h>
-#include <sys/stat.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <unistd.h>
+// #include <errno.h>
+// #include <string.h>
+// #include <sys/types.h>
+// #include <sys/socket.h>
+// #include <netinet/in.h>
+// #include <netdb.h>
+// #include <arpa/inet.h>
+// #include <sys/wait.h>
+// #include <signal.h>
+// #include <Imlib2.h>
+// #include <sys/stat.h>
 
+#include "toollib-rover-cpp.h"
 
 //for opencv
-#include <vector>
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui/highgui.hpp>
+// #include <vector>
+// #include <opencv2/opencv.hpp>
+// #include <opencv2/highgui/highgui.hpp>
 //#include <cv.h>
 //#include <highgui.h>
 
@@ -39,7 +40,6 @@ Date: 11 March 2014
 // #include "FlyCapture2.h"
 // using namespace FlyCapture2;
 
-//#include "toollib-rover-cpp.h"
 
 //globals
 const char* k_FrontCamPort = "3601";
@@ -160,7 +160,8 @@ extern "C" void check_image_load_and_save(void)
 }
 
 
-extern "C" int rover_server(char* PORT, Imlib_Image* img_array[5])
+extern "C" int rover_server(char* PORT)
+//extern "C" int rover_server(char* PORT, Imlib_Image* img_array[5])
 {
   /* input error checking */
   // if (argc != 2)
@@ -516,7 +517,7 @@ int OpenCV_ReceiveFrame(PointGrey_t2* PG)
 void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT)
 {
   char filename[512];
-  sprintf(filename, "%s%s-OpenCV-%.3d.png", k_OutputDir, 
+  sprintf(filename, "%s%s-OpenCV-%.3d.jpg", k_OutputDir, 
 	  PORT, imageCount);
   cv::imwrite(filename, PG->uncompressedImage);
   //cvSaveImage(filename, &PG->uncompressedImage);
