@@ -220,7 +220,7 @@ extern "C" int rover_server(char* PORT, Imlib_Image* img_array[5])
 	    {
 	      if (OpenCV_ReceiveFrame(PG) != 0)
 		break;
-	      //OpenCV_SaveFrame(PG, imageCount, PORT);
+	      OpenCV_SaveFrame(PG, imageCount, PORT);
 	      // temp_img = Convert_OpenCV_to_Imlib(PG);
 	      // imlib_context_set_image(temp_img);
 	      // imlib_save_image("/aux/sbroniko/images/imlib/foo.jpg");
@@ -485,11 +485,11 @@ int OpenCV_ReceiveFrame(PointGrey_t2* PG)
   //copy buf into vector
   cv::vector<uchar> compressed(buf, buf+PG->img_size);
   //std::vector<uchar> compressed(buf, buf+PG->img_size);
-  for (int i = 17000; i < 17015; i++)
-    {
-      printf("%u", compressed[i]);
-    }
-  printf("\n");
+  // for (int i = 17000; i < 17015; i++)
+  //   {
+  //     printf("%u", compressed[i]);
+  //   }
+  // printf("\n");
   //printf("Size = %d\n", compressed.size());
   
   //clean up memory allocations
