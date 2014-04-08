@@ -41,24 +41,34 @@ Date: 11 March 2014
 // using namespace FlyCapture2;
 
 
-//globals
+//global constants;
 const char* k_FrontCamPort = "3601";
 const char* k_PanoCamPort = "3602";
 const int BACKLOG = 5;
 const char* k_OutputDir = "/aux/sbroniko/images/";
-// //structures
-// struct PointGrey_t2 {
-//   //Image convertedImage; //, rawImage;
-//   //PixelFormat pixFormat;
-//   //BayerTileFormat bayerFormat;
-//   //unsigned char* pData;
-//   //unsigned int rows, cols, stride, dataSize;
-//   //Imlib_Image finalImage;
-//   int new_fd;
-//   int img_size;
-//   cv::Mat uncompressedImage;
-//   //CvMat uncompressedImage;
-// };
+
+//global variables
+Imlib_Image* FrontCamArray[k_ImgBufSize];
+Imlib_Image* PanoCamArray[k_ImgBufSize];
+pthread_mutex_t FrontCamArrayLock[k_ImgBufSize];
+pthread_mutex_t PanoCamArrayLock[k_ImgBufSize];
+int FrontCamMostRecent = -1;
+int PanoCamMostRecent = -1;
+
+
+//structures
+struct PointGrey_t2 {
+  //Image convertedImage; //, rawImage;
+  //PixelFormat pixFormat;
+  //BayerTileFormat bayerFormat;
+  //unsigned char* pData;
+  //unsigned int rows, cols, stride, dataSize;
+  //Imlib_Image finalImage;
+  int new_fd;
+  int img_size;
+  cv::Mat uncompressedImage;
+  //CvMat uncompressedImage;
+};
  
 //prototypes
 // void sigchld_handler(int s);
@@ -67,9 +77,11 @@ const char* k_OutputDir = "/aux/sbroniko/images/";
 // int AcceptConnection(int sockfd);
 // //int recvall(int s, unsigned char* buf, int* len);
 // int CheckSaving(const char *dir);
-// int OpenCV_ReceiveFrame(PointGrey_t2* PG);
-// void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
-// Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
+
+//These need to be declared here because of PointGrey_t2
+int OpenCV_ReceiveFrame(PointGrey_t2* PG);
+void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
+Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
 
 // functions called from Scheme (must have extern "C" to prevent mangling)
 
@@ -81,7 +93,7 @@ const char* k_OutputDir = "/aux/sbroniko/images/";
 
 // extern "C" void start_rover_servers(void)
 // {
-  
+
 // }
 
 
@@ -97,23 +109,23 @@ extern "C" int tutorial(void)
   if( !image.data )
     {
       printf( " No image data \n " );
-   return -1;
- }
-
- Mat gray_image;
- cvtColor( image, gray_image, CV_BGR2GRAY );
-
- imwrite( "/home/sbroniko/Gray_Image.jpg", gray_image );
-
- namedWindow( imageName, CV_WINDOW_AUTOSIZE );
- namedWindow( "Gray image", CV_WINDOW_AUTOSIZE );
-
- imshow( imageName, image );
- imshow( "Gray image", gray_image );
-
- waitKey(0);
-
- return 0;
+      return -1;
+    }
+  
+  Mat gray_image;
+  cvtColor( image, gray_image, CV_BGR2GRAY );
+  
+  imwrite( "/home/sbroniko/Gray_Image.jpg", gray_image );
+  
+  namedWindow( imageName, CV_WINDOW_AUTOSIZE );
+  namedWindow( "Gray image", CV_WINDOW_AUTOSIZE );
+  
+  imshow( imageName, image );
+  imshow( "Gray image", gray_image );
+  
+  waitKey(0);
+   
+  return 0;
 }
 
 
@@ -157,7 +169,7 @@ extern "C" void check_image_load_and_save(void)
 }
 
 
-extern "C" int rover_server(char* PORT)
+extern "C" int rover_server_test (char* PORT)
 //extern "C" int rover_server(char* PORT, Imlib_Image* img_array[5])
 {
   int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
@@ -225,6 +237,120 @@ extern "C" int rover_server(char* PORT)
   
   return 0;
 }
+
+extern "C" int rover_server_setup(void)
+{
+  for (int i = 0; i < k_ImgBufSize; i++)
+    {
+      //FrontCamArrayLock[i] = PTHREAD_MUTEX_INITIALIZER;
+      //PanoCamArrayLock[i] = PTHREAD_MUTEX_INITIALIZER; 
+      pthread_mutex_init(&FrontCamArrayLock[i], NULL);
+      pthread_mutex_init(&PanoCamArrayLock[i], NULL);
+      FrontCamArray[i] = NULL;
+      PanoCamArray[i] = NULL;
+    }
+  printf("rover_server_setup succeeded\n");
+  return 0;
+}
+
+extern "C" int rover_server_start(void)
+{
+  rover_server_grab(k_FrontCamPort, FrontCamArray, FrontCamArrayLock, &FrontCamMostRecent);
+  // will we ever get here?
+  return 0;
+}
+
+extern "C" int rover_server_grab(const char* PORT, Imlib_Image* img_array[k_ImgBufSize],
+				 pthread_mutex_t img_array_lock[k_ImgBufSize],
+				 int* most_recent)
+{
+  int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
+  struct sigaction sa;
+  
+  sockfd = StartServer(PORT);
+  
+  sa.sa_handler = sigchld_handler; // reap all dead processes
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = SA_RESTART;
+  if (sigaction(SIGCHLD, &sa, NULL) == -1) 
+    {
+      perror("sigaction");
+      exit(1);
+    }
+
+
+  // if (CheckSaving(k_OutputDir) != 0)
+  //   {
+  //     printf("Cannot save to %s, please check permissions\n",k_OutputDir);
+  //     exit(1);
+  //   }  
+
+  printf("server: waiting for connections...\n");
+  
+  while(1) 
+    {  // main accept() loop
+      new_fd = AcceptConnection(sockfd);
+      if (new_fd == -1)
+	{
+	  printf("Error accepting connection\n");
+	  break;
+	}
+      if (!fork()) 
+	{ // this is the child process
+	  close(sockfd); // child doesn't need the listener
+
+	  //here's where we do the magic
+	  PointGrey_t2* PG = new PointGrey_t2;
+	  PG->new_fd = new_fd;
+	  // int imageCount = 0;
+	  Imlib_Image temp_img;
+	  // char tempFilename[512];
+	  // if (most_recent == -1)
+	  //   most_recent = 0;  //initialize most_recent
+	  int working;
+	  while (1)
+	    {
+	      working = ((*most_recent) + 1) % k_ImgBufSize;
+	      printf("working = %d\n", working);
+	      if (OpenCV_ReceiveFrame(PG) != 0)
+		break;
+	      // OpenCV_SaveFrame(PG, imageCount, PORT);
+	      temp_img = Convert_OpenCV_to_Imlib(PG);
+	      printf("convert\n");
+	      pthread_mutex_lock(&img_array_lock[working]);
+	      printf("locked\n");
+	      if (img_array[working] != NULL)
+		{ //clean up memory allocation
+		  printf("cleaning up memory\n");
+		  imlib_context_set_image(img_array[working]);
+		  imlib_free_image_and_decache();
+		}
+	      printf("done cleaning memory\n");
+	      img_array[working] = &temp_img;
+	      printf("assigned\n");
+	      pthread_mutex_unlock(&img_array_lock[working]);
+	      printf("unlocked\n");
+	      *most_recent = working;
+	      printf("*most_recent = %d\n", *most_recent);
+	      // imlib_context_set_image(temp_img);
+	      // sprintf(tempFilename, "/aux/sbroniko/images/imlib/%s-%.3d.jpg", 
+	      // 	      PORT, imageCount);
+	      // imlib_save_image(tempFilename);
+	      // imlib_free_image_and_decache();
+	      // imageCount++;
+	    }
+	  close(new_fd);
+	  delete PG;
+	  printf("exiting from fork\n");
+	  exit(0);
+	}
+      //printf("after fork\n");
+      close(new_fd);  // parent doesn't need this
+    }
+  
+  return 0;
+}
+
 
 
 // functions not called from Scheme

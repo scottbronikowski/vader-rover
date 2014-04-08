@@ -43,40 +43,40 @@
   (lambda () 
           (system "ssh -p 22222 root@localhost \"~/test_code/motor_control pivot_left_1\"")))
   (define-button 0 5 "pivot_left_2" #f
-  (lambda () 
+   (lambda () 
           (system "ssh -p 22222 root@localhost \"~/test_code/motor_control pivot_left_2\"")))
   (define-button 1 6 "reverse_left_1" #f
-  (lambda () 
+   (lambda () 
           (system "ssh -p 22222 root@localhost \"~/test_code/motor_control reverse_left_1\"")))
   (define-button 1 7 "reverse_left_2" #f
-  (lambda () 
+   (lambda () 
           (system "ssh -p 22222 root@localhost \"~/test_code/motor_control reverse_left_2\"")))
  (define-button 3 5 "pivot_right_1" #f
   (lambda () 
           (system "ssh -p 22222 root@localhost \"~/test_code/motor_control pivot_right_1\"")))
   (define-button 4 5 "pivot_right_2" #f
-  (lambda () 
+   (lambda () 
           (system "ssh -p 22222 root@localhost \"~/test_code/motor_control pivot_right_2\"")))
   (define-button 3 6 "reverse_right_1" #f
-  (lambda () 
+   (lambda () 
           (system "ssh -p 22222 root@localhost \"~/test_code/motor_control reverse_right_1\"")))
   (define-button 3 7 "reverse_right_2" #f
-  (lambda () 
+   (lambda () 
           (system "ssh -p 22222 root@localhost \"~/test_code/motor_control reverse_right_2\"")))
   (define-button 5 2 "camera_center" #f
-  (lambda () 
+   (lambda () 
           (system "ssh -p 22222 root@localhost \"echo 15000 > /dev/pwm9; echo 15000 > /dev/pwm10\"")))
   (define-button 4 2 "camera_left" #f
-  (lambda () 
+   (lambda () 
           (system "ssh -p 22222 root@localhost \"echo 20000 > /dev/pwm10\"")))
   (define-button 6 2 "camera_right" #f
-  (lambda () 
+   (lambda () 
           (system "ssh -p 22222 root@localhost \"echo 10000 > /dev/pwm10\"")))
   (define-button 5 1 "camera_up" #f
-  (lambda () 
+   (lambda () 
           (system "ssh -p 22222 root@localhost \"echo 11000 > /dev/pwm9\"")))
   (define-button 5 3 "camera_down" #f
-  (lambda () 
+   (lambda () 
           (system "ssh -p 22222 root@localhost \"echo 16500 > /dev/pwm9\"")))
 
 )
@@ -105,6 +105,7 @@
   (format #t "Calling Pre-init~%")
   (define-buttons)
   (define-keys)
+  (rover-server-setup)
   (dtrace "Finished calling the god-damned pre-initialize function" "")
   
   )
@@ -119,13 +120,13 @@
  ;;; Redraw procedure:
  (lambda ()
   (display "redraw")
-  (let loop ()
-  (let* ((image (imlib:load! "/home/sbroniko/vader-rover/images/3601-PGR-final.ppm")))
-  ;; (let* ((image (imlib:load! "/net/rongovosai/tmp/frames/00001.ppm")))
-   (draw-imlib-pixmap image 0 0)
-   (imlib:free image))
-  (display "hello") (newline)
-  (loop))
+  ;; (let loop ()
+  ;; (let* ((image (imlib:load! "/home/sbroniko/vader-rover/GR-final.ppm")))
+  ;; ;; (let* ((image (imlib:load! "/net/rongovosai/tmp/frames/00001.ppm")))
+  ;;  (draw-imlib-pixmap image 0 0)
+  ;;  (imlib:free image))
+  ;; (display "hello") (newline)
+  ;; (loop))
 	 
   )
  ;;; Listener procedure:

@@ -57,25 +57,38 @@
     }                                                           \
   }
 
-// structures
-struct PointGrey_t2 {
-  //Image convertedImage; //, rawImage;
-  //PixelFormat pixFormat;
-  //BayerTileFormat bayerFormat;
-  //unsigned char* pData;
-  //unsigned int rows, cols, stride, dataSize;
-  //Imlib_Image finalImage;
-  int new_fd;
-  int img_size;
-  cv::Mat uncompressedImage;
-  //CvMat uncompressedImage;
-};
+//my defines
+#define k_ImgBufSize 5
 
-//globals
+// structures
+//HAS to be defined in toollib-rover-cpp.cpp because of cv::Mat
+// struct PointGrey_t2 {
+//   //Image convertedImage; //, rawImage;
+//   //PixelFormat pixFormat;
+//   //BayerTileFormat bayerFormat;
+//   //unsigned char* pData;
+//   //unsigned int rows, cols, stride, dataSize;
+//   //Imlib_Image finalImage;
+//   int new_fd;
+//   int img_size;
+//   cv::Mat uncompressedImage;
+//   //CvMat uncompressedImage;
+// };
+
+//global constants
 extern const char* k_FrontCamPort;
 extern const char* k_PanoCamPort;
 extern const int BACKLOG;
 extern const char* k_OutputDir;
+//extern const int k_ImgBufSize = 5;
+
+//global variables
+extern Imlib_Image* FrontCamArray[k_ImgBufSize];
+extern Imlib_Image* PanoCamArray[k_ImgBufSize];
+extern pthread_mutex_t FrontCamArrayLock[k_ImgBufSize];
+extern pthread_mutex_t PanoCamArrayLock[k_ImgBufSize];
+extern int FrontCamMostRecent;
+extern int PanoCamMostRecent;
 
 
 // functions called from Scheme
@@ -88,7 +101,27 @@ extern const char* k_OutputDir;
 #ifdef __cplusplus
 extern "C"
 #endif
-int rover_server(char* PORT);
+int rover_server_test(char* PORT);
+
+#ifdef __cplusplus
+extern "C"
+#endif
+int rover_server_setup(void);
+
+#ifdef __cplusplus
+extern "C"
+#endif
+int rover_server_start(void);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+int rover_server_grab(const char* PORT, Imlib_Image* img_array[k_ImgBufSize],
+		      pthread_mutex_t img_array_lock[k_ImgBufSize],
+		      int* most_recent);
+#ifdef __cplusplus
+}
+#endif
 
 #ifdef __cplusplus
 extern "C"
@@ -108,8 +141,9 @@ int StartServer(const char* PORT);
 int AcceptConnection(int sockfd);
 int recvall(int s, unsigned char* buf, int* len);
 int CheckSaving(const char *dir);
-int OpenCV_ReceiveFrame(PointGrey_t2* PG);
-void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
-Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
+// These can't be declared here b/c PointGrey_t2 not defined yet
+// int OpenCV_ReceiveFrame(PointGrey_t2* PG);
+// void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
+// Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
 
 #endif

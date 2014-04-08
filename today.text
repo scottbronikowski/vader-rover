@@ -9,6 +9,8 @@ check out cjpeg
 Qobischeme jpeg library
 
 
+(define duplicates (removeq #f (map-indexed (lambda (line i) (if (> (length (removeq #f (map-indexed (lambda (other j) (and (equal? other line) (not (equal? i j)))) symtable))) 0) line #f)) symtable)))
+
 
 Buffers
 ---------------------------------------
@@ -91,5 +93,10 @@ Old Notes
 7 Apr 14
 --Got QobiScheme to work with jpegs in OpenCV.  Removed references to jpeg* functions in original QobiScheme source files and compiled new QobiScheme-AD.a (./QobiScheme-nojpeg-working/source/x86_64-Linux-3.2.0-4-amd64/QobiScheme-AD.a).  Compiled into dsci and was able to read and write jpeg
 
+8 Apr 14
+--Separated toollib-rover-cpp.cpp declarations/includes/etc into toollib-rover-cpp.h as much as possible.
+--Built rover-server-test, rover-server-setup, rover-server-start, rover-server-grab functions into toolib-rover*.
+--Have rover-server-setup working (initializes global varaibles used by rover-server-grab)
+--First draft of rover-server-start complete.  Can call a single instance of rover-server-grab to listen and receive images on one port.  Put basic thread-safety guards into rover-server-grab.  Need to implement threading in rover-server-start IOT enable both ports to listen simultaneously.
+--Also need to develop functions that are the consumers to rover-server-grab's producer.  Envision two functions, one that takes the image and displays it, and one that takes the image and saves it to a video.
 
-(define duplicates (removeq #f (map-indexed (lambda (line i) (if (> (length (removeq #f (map-indexed (lambda (other j) (and (equal? other line) (not (equal? i j)))) symtable))) 0) line #f)) symtable)))
