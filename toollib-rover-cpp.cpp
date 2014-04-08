@@ -25,7 +25,7 @@ Date: 11 March 2014
 #include "toollib-rover-cpp.h"
 
 //for opencv
-// #include <vector>
+//#include <vector>
 // #include <opencv2/opencv.hpp>
 // #include <opencv2/highgui/highgui.hpp>
 //#include <cv.h>
@@ -46,41 +46,38 @@ const char* k_FrontCamPort = "3601";
 const char* k_PanoCamPort = "3602";
 const int BACKLOG = 5;
 const char* k_OutputDir = "/aux/sbroniko/images/";
-//structures
-struct PointGrey_t2 {
-  //Image convertedImage; //, rawImage;
-  //PixelFormat pixFormat;
-  //BayerTileFormat bayerFormat;
-  //unsigned char* pData;
-  //unsigned int rows, cols, stride, dataSize;
-  //Imlib_Image finalImage;
-  int new_fd;
-  int img_size;
-  cv::Mat uncompressedImage;
-  //CvMat uncompressedImage;
-};
-
+// //structures
+// struct PointGrey_t2 {
+//   //Image convertedImage; //, rawImage;
+//   //PixelFormat pixFormat;
+//   //BayerTileFormat bayerFormat;
+//   //unsigned char* pData;
+//   //unsigned int rows, cols, stride, dataSize;
+//   //Imlib_Image finalImage;
+//   int new_fd;
+//   int img_size;
+//   cv::Mat uncompressedImage;
+//   //CvMat uncompressedImage;
+// };
+ 
 //prototypes
-void sigchld_handler(int s);
-//void* get_in_addr(struct sockaddr *sa);
-int StartServer(const char* PORT);
-int AcceptConnection(int sockfd);
-//int recvall(int s, unsigned char* buf, int* len);
-int CheckSaving(const char *dir);
-//void PGR_SaveImage(PointGrey_t2* PG, const char* PORT);
-//int ReceiveMetadata(int new_fd, unsigned int* rows, unsigned int* cols, 
-// 		    unsigned int* stride, unsigned int* dataSize, 
-// 		    PixelFormat* pixFormat, BayerTileFormat* bayerFormat);
-int OpenCV_ReceiveFrame(PointGrey_t2* PG);
-void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
-Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
+// void sigchld_handler(int s);
+// //void* get_in_addr(struct sockaddr *sa);
+// int StartServer(const char* PORT);
+// int AcceptConnection(int sockfd);
+// //int recvall(int s, unsigned char* buf, int* len);
+// int CheckSaving(const char *dir);
+// int OpenCV_ReceiveFrame(PointGrey_t2* PG);
+// void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
+// Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
 
+// functions called from Scheme (must have extern "C" to prevent mangling)
 
-extern "C" int hello_world(int i)
-{
-  printf("hello\n");
-  return i+1;
-} 
+// extern "C" int hello_world(int i)
+// {
+//   printf("hello\n");
+//   return i+1;
+// } 
 
 // extern "C" void start_rover_servers(void)
 // {
@@ -163,23 +160,7 @@ extern "C" void check_image_load_and_save(void)
 extern "C" int rover_server(char* PORT)
 //extern "C" int rover_server(char* PORT, Imlib_Image* img_array[5])
 {
-  /* input error checking */
-  // if (argc != 2)
-  //   {
-  //     fprintf(stderr, "Usage: %s portnumber (%s or %s)\n",
-  // 	      argv[0], k_FrontCamPort, k_PanoCamPort);
-  //     exit(1);
-  //   }
-  // if ((strcmp(argv[1], k_FrontCamPort) != 0) &&
-  //     (strcmp(argv[1], k_PanoCamPort) != 0))
-  //   {
-  //     fprintf(stderr, "Invalid port number chosen\n");
-  //     exit(1);
-  //   }
-  /* input is valid if we get here */
-    
   int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
-  //char* PORT = port;//argv[1];
   struct sigaction sa;
   
   sockfd = StartServer(PORT);
@@ -218,16 +199,19 @@ extern "C" int rover_server(char* PORT)
 	  PointGrey_t2* PG = new PointGrey_t2;
 	  PG->new_fd = new_fd;
 	  int imageCount = 0;
-	  //Imlib_Image temp_img;
+	  Imlib_Image temp_img;
+	  char tempFilename[512];
 	  while (1)
 	    {
 	      if (OpenCV_ReceiveFrame(PG) != 0)
 		break;
 	      OpenCV_SaveFrame(PG, imageCount, PORT);
-	      // temp_img = Convert_OpenCV_to_Imlib(PG);
-	      // imlib_context_set_image(temp_img);
-	      // imlib_save_image("/aux/sbroniko/images/imlib/foo.jpg");
-	      // imlib_free_image_and_decache();
+	      temp_img = Convert_OpenCV_to_Imlib(PG);
+	      imlib_context_set_image(temp_img);
+	      sprintf(tempFilename, "/aux/sbroniko/images/imlib/%s-%.3d.jpg", 
+		      PORT, imageCount);
+	      imlib_save_image(tempFilename);
+	      imlib_free_image_and_decache();
 	      imageCount++;
 	    }
 	  close(new_fd);
@@ -242,6 +226,8 @@ extern "C" int rover_server(char* PORT)
   return 0;
 }
 
+
+// functions not called from Scheme
 void sigchld_handler(int s)
 {
   while(waitpid(-1, NULL, WNOHANG) > 0);
@@ -345,14 +331,14 @@ int recvall(int s, unsigned char* buf, int* len)
   int bytesleft = *len; // how many we have left to receive
   int n = 0;
   
-  while(total < *len) {
-    n = recv(s, buf+total, bytesleft, 0);
-    //if (n == -1) { break; }
-    if (n <= 0) { break; }
-    total += n;
-    bytesleft -= n;
-  }
-  
+  while(total < *len) 
+    {
+      n = recv(s, buf+total, bytesleft, 0);
+      //if (n == -1) { break; }
+      if (n <= 0) { break; }
+      total += n;
+      bytesleft -= n;
+    }
   *len = total; // return number actually sent here
   //printf("in recvall: received %d\n", *len);
   //return n==-1?-1:0; // return -1 on failure, 0 on success
@@ -384,81 +370,6 @@ int CheckSaving(const char *dir)
   return 0;
 }
 
-// void PrintError( Error error )
-// {
-//     error.PrintErrorTrace();
-// }
-
-// void CheckPGR(Error error)
-// {
-//   if (error != PGRERROR_OK)
-//   {
-//     PrintError( error );
-//     abort();
-//     //return -1;
-//   }
-//   // else
-//   // {
-//   //   return 0;
-//   // }
-// }
-
-// void PGR_SaveImage(PointGrey_t2* PG, const char* PORT)
-// {
-//   // Create a unique filename
-//   char filename[512];
-//   sprintf(filename, "%s%s-PGR-final.ppm", k_OutputDir, PORT);
-//   // Save the image. If a file format is not passed in, then the file
-//   // extension is parsed to attempt to determine the file format.
-//   CheckPGR(PG->convertedImage.Save(filename));
-//   printf("Saved %s\n",filename);
-// }
-
-// int ReceiveMetadata(int new_fd, unsigned int* rows, unsigned int* cols, 
-// 		    unsigned int* stride, unsigned int* dataSize, 
-// 		    PixelFormat* pixFormat, BayerTileFormat* bayerFormat)
-// {
-//   int retval = recv(new_fd, cols, sizeof(*cols), 0);
-//   // printf("sizeof(cols) = %zu, sizeof(*cols) = %zu\n",
-//   // 	 sizeof(cols), sizeof(*cols));
-//   //printf("in ReceiveMetadata\n");
-//   if (retval < 0)
-//     {
-//       printf("Error receiving cols\n");
-//     }
-//   if (retval == 0)
-//     {
-//       printf("Sender stopped sending\n");
-//       return -1;
-//     }
-//   if (recv(new_fd, rows, sizeof(*rows),0) <= 0)
-//     {
-//       printf("Error receiving rows\n");
-//     }
-//   if (recv(new_fd, stride, sizeof(*stride),0) <= 0)
-//     {
-//       printf("Error receiving stride\n");
-//     }
-//   if (recv(new_fd, dataSize, sizeof(*dataSize),0) <= 0)
-//     {
-//       printf("Error receiving dataSize\n");
-//     }
-//   if (recv(new_fd, pixFormat, sizeof(*pixFormat),0) <= 0)
-//     {
-//       printf("Error receiving pixFormat\n");
-//     }
-//   if (recv(new_fd, bayerFormat, sizeof(*bayerFormat),0) <= 0)
-//     {
-//       printf("Error receiving bayerFormat\n");
-//     }
-//   //check received data
-//   // printf("rows = %u, cols = %u, stride = %u, dataSize = %u\n",
-//   // 	     rows, cols, stride, dataSize);
-//   // printf("pixFormat = %u, bayerFormat = %u\n", pixFormat,
-//   // 	     bayerFormat);
-//   return 0;
-// }
-
 int OpenCV_ReceiveFrame(PointGrey_t2* PG)
 {
   //first receive image size
@@ -487,25 +398,13 @@ int OpenCV_ReceiveFrame(PointGrey_t2* PG)
   
   //copy buf into vector
   cv::vector<uchar> compressed(buf, buf+PG->img_size);
-  //std::vector<uchar> compressed(buf, buf+PG->img_size);
-  // for (int i = 17000; i < 17015; i++)
-  //   {
-  //     printf("%u", compressed[i]);
-  //   }
-  // printf("\n");
-  //printf("Size = %d\n", compressed.size());
-  
   //clean up memory allocations
   free(buf); 
    
   //now use data to build image and save it
     
   // if (strcmp(PORT, k_FrontCamPort) == 0)
-
   PG->uncompressedImage = cv::imdecode(cv::Mat(compressed), CV_LOAD_IMAGE_COLOR);
-  //PG->uncompressedImage = cvDecodeImageM((CvMat) compressed, CV_LOAD_IMAGE_COLOR);
-
-  //imshow("temp",PG->uncompressedImage);
   // else
   // 	PG->uncompressedImage = imdecode(cv::Mat(compressed), CV_LOAD_IMAGE_GRAYSCALE);
   /* ***Don't seem to need to differentiate between color and */
@@ -520,14 +419,14 @@ void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT)
   sprintf(filename, "%s%s-OpenCV-%.3d.jpg", k_OutputDir, 
 	  PORT, imageCount);
   cv::imwrite(filename, PG->uncompressedImage);
-  //cvSaveImage(filename, &PG->uncompressedImage);
-  
   return;
 }
 
 Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG)
 {
+  cv::Mat tempMat;
+  cvtColor(PG->uncompressedImage, tempMat, CV_BGR2BGRA);
   return imlib_create_image_using_copied_data(PG->uncompressedImage.cols,
 					      PG->uncompressedImage.rows,
-					      (unsigned int*) PG->uncompressedImage.data);
-} 
+					      (unsigned int*) tempMat.data);}
+				

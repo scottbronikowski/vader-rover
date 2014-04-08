@@ -6,8 +6,8 @@
 
 (c-include "toollib-rover-cpp.h")
 
-(define hello-world
- (c-function int ("hello_world" int)))
+;; (define hello-world
+;;  (c-function int ("hello_world" int)))
 
 (define rover-server
  (c-function int ("rover_server" string)))
