@@ -54,6 +54,9 @@ pthread_mutex_t FrontCamArrayLock[k_ImgBufSize];
 pthread_mutex_t PanoCamArrayLock[k_ImgBufSize];
 int FrontCamMostRecent = -1;
 int PanoCamMostRecent = -1;
+struct CamGrab_t* FrontCam;
+struct CamGrab_t* PanoCam;
+pthread_t grab_threads[k_numCams];
 
 
 //structures
@@ -90,11 +93,6 @@ Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
 //   printf("hello\n");
 //   return i+1;
 // } 
-
-// extern "C" void start_rover_servers(void)
-// {
-
-// }
 
 
 extern "C" int tutorial(void)
@@ -240,34 +238,59 @@ extern "C" int rover_server_test (char* PORT)
 
 extern "C" int rover_server_setup(void)
 {
+  FrontCam = (struct CamGrab_t*) malloc(sizeof(struct CamGrab_t));
+  PanoCam = (struct CamGrab_t*) malloc(sizeof(struct CamGrab_t));
+  FrontCam->MostRecent = -1;
+  PanoCam->MostRecent = -1;
+  FrontCam->PortNumber = (char*) malloc(sizeof(char) * 10);
+  strcpy(FrontCam->PortNumber, k_FrontCamPort);
+  PanoCam->PortNumber = (char*) malloc(sizeof(char) * 10);
+  strcpy(PanoCam->PortNumber, k_PanoCamPort);
   for (int i = 0; i < k_ImgBufSize; i++)
     {
-      //FrontCamArrayLock[i] = PTHREAD_MUTEX_INITIALIZER;
-      //PanoCamArrayLock[i] = PTHREAD_MUTEX_INITIALIZER; 
       pthread_mutex_init(&FrontCamArrayLock[i], NULL);
       pthread_mutex_init(&PanoCamArrayLock[i], NULL);
       FrontCamArray[i] = NULL;
       PanoCamArray[i] = NULL;
+      //new style
+      pthread_mutex_init(&FrontCam->ImgArrayLock[i], NULL);
+      pthread_mutex_init(&PanoCam->ImgArrayLock[i], NULL);
+      FrontCam->ImgArray[i] = NULL;
+      PanoCam->ImgArray[i] = NULL;
     }
   printf("rover_server_setup succeeded\n");
   return 0;
 }
 
-extern "C" int rover_server_start(void)
+extern "C" void rover_server_start(void)
 {
-  rover_server_grab(k_FrontCamPort, FrontCamArray, FrontCamArrayLock, &FrontCamMostRecent);
+  
+  // rover_server_grab(k_FrontCamPort, FrontCamArray, FrontCamArrayLock, &FrontCamMostRecent);
+  pthread_attr_t attributes;
+  pthread_attr_init(&attributes);
+  pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_JOINABLE);
+  pthread_create(&grab_threads[0], &attributes, rover_server_grab, (void *)FrontCam);
+  pthread_create(&grab_threads[1], &attributes, rover_server_grab, (void *)PanoCam);
+  pthread_attr_destroy(&attributes);
+  
   // will we ever get here?
-  return 0;
-}
+  //return 0;
+  printf("at end of rover_server_start\n");
+} 
 
-extern "C" int rover_server_grab(const char* PORT, Imlib_Image* img_array[k_ImgBufSize],
-				 pthread_mutex_t img_array_lock[k_ImgBufSize],
-				 int* most_recent)
+// extern "C" int rover_server_grab(const char* PORT, Imlib_Image* img_array[k_ImgBufSize],
+// 				 pthread_mutex_t img_array_lock[k_ImgBufSize],
+// 				 int* most_recent)
+//extern "C" 
+void* rover_server_grab(void* args)
 {
+  struct CamGrab_t* my_args = (struct CamGrab_t*)args;
   int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
   struct sigaction sa;
-  
-  sockfd = StartServer(PORT);
+  // char* PORT;
+  // strcpy(PORT, my_args->PortNumber);
+  // sockfd = StartServer(PORT);
+  sockfd = StartServer(my_args->PortNumber);
   
   sa.sa_handler = sigchld_handler; // reap all dead processes
   sigemptyset(&sa.sa_mask);
@@ -310,28 +333,28 @@ extern "C" int rover_server_grab(const char* PORT, Imlib_Image* img_array[k_ImgB
 	  int working;
 	  while (1)
 	    {
-	      working = ((*most_recent) + 1) % k_ImgBufSize;
-	      printf("working = %d\n", working);
+	      working = ((my_args->MostRecent) + 1) % k_ImgBufSize;
+	      printf("%s-working = %d\n", my_args->PortNumber, working);
 	      if (OpenCV_ReceiveFrame(PG) != 0)
 		break;
 	      // OpenCV_SaveFrame(PG, imageCount, PORT);
 	      temp_img = Convert_OpenCV_to_Imlib(PG);
-	      printf("convert\n");
-	      pthread_mutex_lock(&img_array_lock[working]);
-	      printf("locked\n");
-	      if (img_array[working] != NULL)
+	      //printf("convert\n");
+	      pthread_mutex_lock(&my_args->ImgArrayLock[working]);
+	      //printf("locked\n");
+	      if (my_args->ImgArray[working] != NULL)
 		{ //clean up memory allocation
-		  printf("cleaning up memory\n");
-		  imlib_context_set_image(img_array[working]);
+		  //printf("cleaning up memory\n");
+		  imlib_context_set_image(my_args->ImgArray[working]);
 		  imlib_free_image_and_decache();
 		}
-	      printf("done cleaning memory\n");
-	      img_array[working] = &temp_img;
-	      printf("assigned\n");
-	      pthread_mutex_unlock(&img_array_lock[working]);
-	      printf("unlocked\n");
-	      *most_recent = working;
-	      printf("*most_recent = %d\n", *most_recent);
+	      //printf("done cleaning memory\n");
+	      my_args->ImgArray[working] = &temp_img;
+	      //printf("assigned\n");
+	      pthread_mutex_unlock(&my_args->ImgArrayLock[working]);
+	      //printf("unlocked\n");
+	      my_args->MostRecent = working;
+	      //printf("*my_args->MostRecent = %d\n", my_args->MostRecent);
 	      // imlib_context_set_image(temp_img);
 	      // sprintf(tempFilename, "/aux/sbroniko/images/imlib/%s-%.3d.jpg", 
 	      // 	      PORT, imageCount);
@@ -348,7 +371,7 @@ extern "C" int rover_server_grab(const char* PORT, Imlib_Image* img_array[k_ImgB
       close(new_fd);  // parent doesn't need this
     }
   
-  return 0;
+  return (void *)my_args;
 }
 
 

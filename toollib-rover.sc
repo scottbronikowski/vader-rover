@@ -16,7 +16,7 @@
  (c-function int ("rover_server_setup")))
 
 (define rover-server-start
- (c-function int ("rover_server_start")))
+ (c-function void ("rover_server_start")))
 
 (define check-image
  (c-function void ("check_image_load_and_save")))

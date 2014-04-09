@@ -8,9 +8,13 @@ check out cjpeg
 
 Qobischeme jpeg library
 
-
+Random notes:
+------------------
 (define duplicates (removeq #f (map-indexed (lambda (line i) (if (> (length (removeq #f (map-indexed (lambda (other j) (and (equal? other line) (not (equal? i j)))) symtable))) 0) line #f)) symtable)))
 
+nm -ACgl <library file> to see symbol table and look for name clashes
+
+objdump -p <executable> to see library load order
 
 Buffers
 ---------------------------------------
@@ -91,7 +95,7 @@ Old Notes
 -- Got OpenCV working for JPEG compression.  Can currently send compressed images across network (~15-30 kilobytes per image) and save them on seykhl at ~11.9-12.5 f/s/c as either .jpg or .png (file type doesn't seem to affect speed).
 
 7 Apr 14
---Got QobiScheme to work with jpegs in OpenCV.  Removed references to jpeg* functions in original QobiScheme source files and compiled new QobiScheme-AD.a (./QobiScheme-nojpeg-working/source/x86_64-Linux-3.2.0-4-amd64/QobiScheme-AD.a).  Compiled into dsci and was able to read and write jpeg
+--Got QobiScheme to work with jpegs in OpenCV.  Removed references to jpeg* functions in original QobiScheme source files and compiled new QobiScheme-AD.a (./QobiScheme-nojpeg-working/source/x86_64-Linux-3.2.0-4-amd64/QobiScheme-AD.a).  Compiled into dsci and was able to read and write jpeg.
 
 8 Apr 14
 --Separated toollib-rover-cpp.cpp declarations/includes/etc into toollib-rover-cpp.h as much as possible.
@@ -100,3 +104,6 @@ Old Notes
 --First draft of rover-server-start complete.  Can call a single instance of rover-server-grab to listen and receive images on one port.  Put basic thread-safety guards into rover-server-grab.  Need to implement threading in rover-server-start IOT enable both ports to listen simultaneously.
 --Also need to develop functions that are the consumers to rover-server-grab's producer.  Envision two functions, one that takes the image and displays it, and one that takes the image and saves it to a video.
 
+9 Apr 14
+--Modified rover_server_grab to be callable as a pthread.  Built struct CamGrab_t to hold variables going to rover_server_grab.  From rover_server_start, called rover_server_grab twice (once for each camera) and was able to receive data into separate arrays for each camera.  Now need to work on functions/threads that will use this data (display and save).
+---------

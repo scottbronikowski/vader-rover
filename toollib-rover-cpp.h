@@ -59,6 +59,7 @@
 
 //my defines
 #define k_ImgBufSize 5
+#define k_numCams 2
 
 // structures
 //HAS to be defined in toollib-rover-cpp.cpp because of cv::Mat
@@ -75,6 +76,13 @@
 //   //CvMat uncompressedImage;
 // };
 
+struct CamGrab_t {
+  Imlib_Image* ImgArray[k_ImgBufSize];
+  pthread_mutex_t ImgArrayLock[k_ImgBufSize];
+  int MostRecent;
+  char* PortNumber;
+};
+
 //global constants
 extern const char* k_FrontCamPort;
 extern const char* k_PanoCamPort;
@@ -89,6 +97,10 @@ extern pthread_mutex_t FrontCamArrayLock[k_ImgBufSize];
 extern pthread_mutex_t PanoCamArrayLock[k_ImgBufSize];
 extern int FrontCamMostRecent;
 extern int PanoCamMostRecent;
+
+extern struct CamGrab_t* FrontCam;
+extern struct CamGrab_t* PanoCam;
+extern pthread_t grab_threads[k_numCams];
 
 
 // functions called from Scheme
@@ -111,17 +123,18 @@ int rover_server_setup(void);
 #ifdef __cplusplus
 extern "C"
 #endif
-int rover_server_start(void);
+void rover_server_start(void);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-int rover_server_grab(const char* PORT, Imlib_Image* img_array[k_ImgBufSize],
-		      pthread_mutex_t img_array_lock[k_ImgBufSize],
-		      int* most_recent);
-#ifdef __cplusplus
-}
-#endif
+// #ifdef __cplusplus
+// extern "C" {
+// #endif
+// void* rover_server_grab(void* args);
+// // int rover_server_grab(const char* PORT, Imlib_Image* img_array[k_ImgBufSize],
+// // 		      pthread_mutex_t img_array_lock[k_ImgBufSize],
+// // 		      int* most_recent);
+// #ifdef __cplusplus
+// }
+// #endif
 
 #ifdef __cplusplus
 extern "C"
@@ -135,6 +148,7 @@ int tutorial(void);
 
 
 // functions NOT called from Scheme
+void* rover_server_grab(void* args);
 void sigchld_handler(int s);
 void* get_in_addr(struct sockaddr *sa);
 int StartServer(const char* PORT);
