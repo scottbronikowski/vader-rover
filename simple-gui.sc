@@ -78,6 +78,10 @@
   (define-button 5 3 "camera_down" #f
    (lambda () 
           (system "ssh -p 22222 root@localhost \"echo 16500 > /dev/pwm9\"")))
+  (define-button 5 6 "test image get" #f
+   (lambda () 
+          (;;some command here that does redrawing
+	   )))
 
 )
 
@@ -106,6 +110,7 @@
   (define-buttons)
   (define-keys)
   (rover-server-setup)
+  (rover-server-start)
   (dtrace "Finished calling the god-damned pre-initialize function" "")
   
   )

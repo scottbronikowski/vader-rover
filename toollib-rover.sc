@@ -5,6 +5,7 @@
 (include "toollib-rover.sch")
 
 (c-include "toollib-rover-cpp.h")
+(c-ffi:add-custom-type imlib-image pointer make-imlib-image imlib-image-handle)
 
 ;; (define hello-world
 ;;  (c-function int ("hello_world" int)))

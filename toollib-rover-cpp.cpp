@@ -48,16 +48,17 @@ const int BACKLOG = 5;
 const char* k_OutputDir = "/aux/sbroniko/images/";
 
 //global variables
-Imlib_Image* FrontCamArray[k_ImgBufSize];
-Imlib_Image* PanoCamArray[k_ImgBufSize];
-pthread_mutex_t FrontCamArrayLock[k_ImgBufSize];
-pthread_mutex_t PanoCamArrayLock[k_ImgBufSize];
-int FrontCamMostRecent = -1;
-int PanoCamMostRecent = -1;
+// Imlib_Image* FrontCamArray[k_ImgBufSize];
+// Imlib_Image* PanoCamArray[k_ImgBufSize];
+// pthread_mutex_t FrontCamArrayLock[k_ImgBufSize];
+// pthread_mutex_t PanoCamArrayLock[k_ImgBufSize];
+// int FrontCamMostRecent = -1;
+// int PanoCamMostRecent = -1;
 struct CamGrab_t* FrontCam;
 struct CamGrab_t* PanoCam;
+struct AllCams_t* AllCams;
 pthread_t grab_threads[k_numCams];
-
+volatile Window display_pane;
 
 //structures
 struct PointGrey_t2 {
@@ -248,16 +249,19 @@ extern "C" int rover_server_setup(void)
   strcpy(PanoCam->PortNumber, k_PanoCamPort);
   for (int i = 0; i < k_ImgBufSize; i++)
     {
-      pthread_mutex_init(&FrontCamArrayLock[i], NULL);
-      pthread_mutex_init(&PanoCamArrayLock[i], NULL);
-      FrontCamArray[i] = NULL;
-      PanoCamArray[i] = NULL;
+      // pthread_mutex_init(&FrontCamArrayLock[i], NULL);
+      // pthread_mutex_init(&PanoCamArrayLock[i], NULL);
+      // FrontCamArray[i] = NULL;
+      // PanoCamArray[i] = NULL;
       //new style
       pthread_mutex_init(&FrontCam->ImgArrayLock[i], NULL);
       pthread_mutex_init(&PanoCam->ImgArrayLock[i], NULL);
       FrontCam->ImgArray[i] = NULL;
       PanoCam->ImgArray[i] = NULL;
     }
+  AllCams = (struct AllCams_t*) malloc(sizeof(struct AllCams_t));
+  AllCams->CG[0] = FrontCam;
+  AllCams->CG[1] = PanoCam;
   printf("rover_server_setup succeeded\n");
   return 0;
 }
@@ -282,14 +286,27 @@ extern "C" void rover_server_start(void)
 // 				 pthread_mutex_t img_array_lock[k_ImgBufSize],
 // 				 int* most_recent)
 //extern "C" 
+
+// functions not called from Scheme
 void* rover_server_grab(void* args)
 {
   struct CamGrab_t* my_args = (struct CamGrab_t*)args;
   int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
   struct sigaction sa;
-  // char* PORT;
-  // strcpy(PORT, my_args->PortNumber);
-  // sockfd = StartServer(PORT);
+  XEvent event;
+  Display *display = XOpenDisplay("dsci");
+  int screen = DefaultScreen(display);
+  /* magic to get GUI to run periodically */
+  event.type = KeyPress;
+  event.xkey.keycode = 9;		/* ESC */
+  event.xkey.state = 0;			/* no Mod1Mask */
+  /* magic so can display Imlib frames */
+  // imlib_context_disconnect_display();
+  // imlib_context_set_display(display);
+  // imlib_context_set_visual(XDefaultVisual(display, screen));
+  // imlib_context_set_colormap(XDefaultColormap(display, screen));
+  // imlib_context_set_drawable(display_pane);
+  
   sockfd = StartServer(my_args->PortNumber);
   
   sa.sa_handler = sigchld_handler; // reap all dead processes
@@ -300,13 +317,6 @@ void* rover_server_grab(void* args)
       perror("sigaction");
       exit(1);
     }
-
-
-  // if (CheckSaving(k_OutputDir) != 0)
-  //   {
-  //     printf("Cannot save to %s, please check permissions\n",k_OutputDir);
-  //     exit(1);
-  //   }  
 
   printf("server: waiting for connections...\n");
   
@@ -325,11 +335,7 @@ void* rover_server_grab(void* args)
 	  //here's where we do the magic
 	  PointGrey_t2* PG = new PointGrey_t2;
 	  PG->new_fd = new_fd;
-	  // int imageCount = 0;
 	  Imlib_Image temp_img;
-	  // char tempFilename[512];
-	  // if (most_recent == -1)
-	  //   most_recent = 0;  //initialize most_recent
 	  int working;
 	  while (1)
 	    {
@@ -337,7 +343,6 @@ void* rover_server_grab(void* args)
 	      printf("%s-working = %d\n", my_args->PortNumber, working);
 	      if (OpenCV_ReceiveFrame(PG) != 0)
 		break;
-	      // OpenCV_SaveFrame(PG, imageCount, PORT);
 	      temp_img = Convert_OpenCV_to_Imlib(PG);
 	      //printf("convert\n");
 	      pthread_mutex_lock(&my_args->ImgArrayLock[working]);
@@ -351,16 +356,12 @@ void* rover_server_grab(void* args)
 	      //printf("done cleaning memory\n");
 	      my_args->ImgArray[working] = &temp_img;
 	      //printf("assigned\n");
-	      pthread_mutex_unlock(&my_args->ImgArrayLock[working]);
-	      //printf("unlocked\n");
 	      my_args->MostRecent = working;
 	      //printf("*my_args->MostRecent = %d\n", my_args->MostRecent);
-	      // imlib_context_set_image(temp_img);
-	      // sprintf(tempFilename, "/aux/sbroniko/images/imlib/%s-%.3d.jpg", 
-	      // 	      PORT, imageCount);
-	      // imlib_save_image(tempFilename);
-	      // imlib_free_image_and_decache();
-	      // imageCount++;
+	      pthread_mutex_unlock(&my_args->ImgArrayLock[working]);
+	      //printf("unlocked\n");
+	      //imlib_context_set_image(my_args->ImgArray[working]);
+	      //XSendEvent(display, display_pane, FALSE, 0, &event);	      
 	    }
 	  close(new_fd);
 	  delete PG;
@@ -371,12 +372,9 @@ void* rover_server_grab(void* args)
       close(new_fd);  // parent doesn't need this
     }
   
-  return (void *)my_args;
+  return NULL; // (void *)my_args;?????
 }
 
-
-
-// functions not called from Scheme
 void sigchld_handler(int s)
 {
   while(waitpid(-1, NULL, WNOHANG) > 0);
@@ -579,3 +577,13 @@ Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG)
 					      PG->uncompressedImage.rows,
 					      (unsigned int*) tempMat.data);}
 				
+Imlib_Image Get_Image_from_ImgArray(CamGrab_t* CG)
+{
+  Imlib_Image image;
+  pthread_mutex_lock(&CG->ImgArrayLock[CG->MostRecent]);
+  imlib_context_set_image(CG->ImgArray[CG->MostRecent]);
+  image = imlib_clone_image();
+  imlib_free_image();
+  pthread_mutex_unlock(&CG->ImgArrayLock[CG->MostRecent]);
+  return image;
+}

@@ -83,6 +83,10 @@ struct CamGrab_t {
   char* PortNumber;
 };
 
+struct AllCams_t {
+  struct CamGrab_t* CG[k_numCams];
+};
+
 //global constants
 extern const char* k_FrontCamPort;
 extern const char* k_PanoCamPort;
@@ -91,16 +95,18 @@ extern const char* k_OutputDir;
 //extern const int k_ImgBufSize = 5;
 
 //global variables
-extern Imlib_Image* FrontCamArray[k_ImgBufSize];
-extern Imlib_Image* PanoCamArray[k_ImgBufSize];
-extern pthread_mutex_t FrontCamArrayLock[k_ImgBufSize];
-extern pthread_mutex_t PanoCamArrayLock[k_ImgBufSize];
-extern int FrontCamMostRecent;
-extern int PanoCamMostRecent;
+// extern Imlib_Image* FrontCamArray[k_ImgBufSize];
+// extern Imlib_Image* PanoCamArray[k_ImgBufSize];
+// extern pthread_mutex_t FrontCamArrayLock[k_ImgBufSize];
+// extern pthread_mutex_t PanoCamArrayLock[k_ImgBufSize];
+// extern int FrontCamMostRecent;
+// extern int PanoCamMostRecent;
 
 extern struct CamGrab_t* FrontCam;
 extern struct CamGrab_t* PanoCam;
+extern struct AllCams_t* AllCams;
 extern pthread_t grab_threads[k_numCams];
+
 
 
 // functions called from Scheme
@@ -159,5 +165,5 @@ int CheckSaving(const char *dir);
 // int OpenCV_ReceiveFrame(PointGrey_t2* PG);
 // void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
 // Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
-
+Imlib_Image Get_Image_from_ImgArray(CamGrab_t* CG);
 #endif
