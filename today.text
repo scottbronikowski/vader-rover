@@ -107,3 +107,9 @@ Old Notes
 9 Apr 14
 --Modified rover_server_grab to be callable as a pthread.  Built struct CamGrab_t to hold variables going to rover_server_grab.  From rover_server_start, called rover_server_grab twice (once for each camera) and was able to receive data into separate arrays for each camera.  Now need to work on functions/threads that will use this data (display and save).
 ---------
+--Started work on getting images to display in Scheme GUI.  Need to look at vlad code to see how to use xflush and pthread_barriers.
+
+10 Apr 14
+--Got still images into dsci viewer.  Need to work on binding 'test image get' function to a recurring keystroke a la http://www.doctort.org/adam/nerd-notes/x11-fake-keypress-event.html
+--Worked out graceful exit and restart for threads so that viewer can be called again in scheme without quitting and restarting dsci.
+--Fixed bug in Get_Image_from_ImgArray() that would cause a crash if called before there were images in ImgArray.  Now shows just a gray rectangle.  Could create a rectangle with text saying 'waiting on camera' or something like that.

@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <pthread.h>
 #include <Imlib2.h>
 #include <string.h>
@@ -24,6 +25,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <sys/stat.h>
+
 
 // for OpenCV
 #ifdef __cplusplus
@@ -79,6 +81,7 @@
 struct CamGrab_t {
   Imlib_Image* ImgArray[k_ImgBufSize];
   pthread_mutex_t ImgArrayLock[k_ImgBufSize];
+  int Set[k_ImgBufSize];
   int MostRecent;
   char* PortNumber;
 };
@@ -106,7 +109,9 @@ extern struct CamGrab_t* FrontCam;
 extern struct CamGrab_t* PanoCam;
 extern struct AllCams_t* AllCams;
 extern pthread_t grab_threads[k_numCams];
-
+extern int grab_threads_should_die;
+// extern int testint;
+// extern pthread_mutex_t testint_mutex;
 
 
 // functions called from Scheme
@@ -130,6 +135,22 @@ int rover_server_setup(void);
 extern "C"
 #endif
 void rover_server_start(void);
+
+#ifdef __cplusplus
+extern "C"
+#endif
+Imlib_Image rover_get_front_cam(void);
+
+#ifdef __cplusplus
+extern "C"
+#endif
+Imlib_Image rover_get_pano_cam(void);
+
+#ifdef __cplusplus
+extern "C"
+#endif
+void rover_server_cleanup(void);
+
 
 // #ifdef __cplusplus
 // extern "C" {
@@ -165,5 +186,5 @@ int CheckSaving(const char *dir);
 // int OpenCV_ReceiveFrame(PointGrey_t2* PG);
 // void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
 // Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
-Imlib_Image Get_Image_from_ImgArray(CamGrab_t* CG);
+Imlib_Image Get_Image_from_ImgArray(struct CamGrab_t* CG);
 #endif

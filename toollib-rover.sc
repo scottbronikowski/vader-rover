@@ -19,6 +19,15 @@
 (define rover-server-start
  (c-function void ("rover_server_start")))
 
+(define rover-get-front-cam
+ (c-function imlib-image ("rover_get_front_cam")))
+
+(define rover-get-pano-cam
+ (c-function imlib-image ("rover_get_pano_cam")))
+
+(define rover-server-cleanup
+ (c-function void ("rover_server_cleanup")))
+
 (define check-image
  (c-function void ("check_image_load_and_save")))
 

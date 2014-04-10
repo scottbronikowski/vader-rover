@@ -58,6 +58,9 @@ struct CamGrab_t* FrontCam;
 struct CamGrab_t* PanoCam;
 struct AllCams_t* AllCams;
 pthread_t grab_threads[k_numCams];
+int grab_threads_should_die = FALSE;
+// int testint = 0;
+// pthread_mutex_t testint_mutex;
 volatile Window display_pane;
 
 //structures
@@ -256,20 +259,24 @@ extern "C" int rover_server_setup(void)
       //new style
       pthread_mutex_init(&FrontCam->ImgArrayLock[i], NULL);
       pthread_mutex_init(&PanoCam->ImgArrayLock[i], NULL);
-      FrontCam->ImgArray[i] = NULL;
-      PanoCam->ImgArray[i] = NULL;
+      //FrontCam->ImgArray[i] = NULL;
+      //PanoCam->ImgArray[i] = NULL;
+      FrontCam->ImgArray[i] = (Imlib_Image *) malloc(sizeof(Imlib_Image));
+      PanoCam->ImgArray[i] = (Imlib_Image *) malloc(sizeof(Imlib_Image));
+      FrontCam->Set[i] = FALSE;
+      PanoCam->Set[i] = FALSE;
     }
   AllCams = (struct AllCams_t*) malloc(sizeof(struct AllCams_t));
   AllCams->CG[0] = FrontCam;
   AllCams->CG[1] = PanoCam;
+  //pthread_mutex_init(&testint_mutex, NULL);
+  grab_threads_should_die = FALSE;
   printf("rover_server_setup succeeded\n");
   return 0;
 }
 
 extern "C" void rover_server_start(void)
 {
-  
-  // rover_server_grab(k_FrontCamPort, FrontCamArray, FrontCamArrayLock, &FrontCamMostRecent);
   pthread_attr_t attributes;
   pthread_attr_init(&attributes);
   pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_JOINABLE);
@@ -282,17 +289,40 @@ extern "C" void rover_server_start(void)
   printf("at end of rover_server_start\n");
 } 
 
+extern "C" Imlib_Image rover_get_front_cam(void)
+{
+  printf("getting image from front cam...\n");
+  return Get_Image_from_ImgArray(FrontCam);
+}
+
+extern "C" Imlib_Image rover_get_pano_cam(void)
+{
+  printf("getting image from pano cam...\n");
+  return Get_Image_from_ImgArray(PanoCam);
+}
+
+
+extern "C" void rover_server_cleanup(void)
+{
+  grab_threads_should_die = TRUE;
+  pthread_join(grab_threads[0], NULL);
+  pthread_join(grab_threads[1], NULL);
+  printf("rover_server_cleanup completed\n");
+}
+
 // extern "C" int rover_server_grab(const char* PORT, Imlib_Image* img_array[k_ImgBufSize],
 // 				 pthread_mutex_t img_array_lock[k_ImgBufSize],
 // 				 int* most_recent)
 //extern "C" 
+
+
 
 // functions not called from Scheme
 void* rover_server_grab(void* args)
 {
   struct CamGrab_t* my_args = (struct CamGrab_t*)args;
   int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
-  struct sigaction sa;
+  // struct sigaction sa;
   XEvent event;
   Display *display = XOpenDisplay("dsci");
   int screen = DefaultScreen(display);
@@ -309,29 +339,32 @@ void* rover_server_grab(void* args)
   
   sockfd = StartServer(my_args->PortNumber);
   
-  sa.sa_handler = sigchld_handler; // reap all dead processes
-  sigemptyset(&sa.sa_mask);
-  sa.sa_flags = SA_RESTART;
-  if (sigaction(SIGCHLD, &sa, NULL) == -1) 
-    {
-      perror("sigaction");
-      exit(1);
-    }
+  // sa.sa_handler = sigchld_handler; // reap all dead processes
+  // sigemptyset(&sa.sa_mask);
+  // sa.sa_flags = SA_RESTART;
+  // if (sigaction(SIGCHLD, &sa, NULL) == -1) 
+  //   {
+  //     perror("sigaction");
+  //     exit(1);
+  //   }
 
   printf("server: waiting for connections...\n");
   
-  while(1) 
+  while(!grab_threads_should_die) 
     {  // main accept() loop
       new_fd = AcceptConnection(sockfd);
-      if (new_fd == -1)
+      // if (new_fd == -1)
+      // 	{
+      // 	  printf("Error accepting connection\n");
+      // 	  break;
+      // 	}
+      // CAN'T fork b/c sharing memory between threads
+      // if (!fork()) 
+      // 	{ // this is the child process
+      // 	  close(sockfd); // child doesn't need the listener
+      //      while(1)
+      while(!grab_threads_should_die && (new_fd != -1))
 	{
-	  printf("Error accepting connection\n");
-	  break;
-	}
-      if (!fork()) 
-	{ // this is the child process
-	  close(sockfd); // child doesn't need the listener
-
 	  //here's where we do the magic
 	  PointGrey_t2* PG = new PointGrey_t2;
 	  PG->new_fd = new_fd;
@@ -341,37 +374,59 @@ void* rover_server_grab(void* args)
 	    {
 	      working = ((my_args->MostRecent) + 1) % k_ImgBufSize;
 	      printf("%s-working = %d\n", my_args->PortNumber, working);
+	      // pthread_mutex_lock(&testint_mutex);
+	      // printf("testint = %d\n", testint);
+	      // testint++;
+	      // pthread_mutex_unlock(&testint_mutex);
 	      if (OpenCV_ReceiveFrame(PG) != 0)
 		break;
 	      temp_img = Convert_OpenCV_to_Imlib(PG);
-	      //printf("convert\n");
+	      printf("convert\n");
 	      pthread_mutex_lock(&my_args->ImgArrayLock[working]);
-	      //printf("locked\n");
-	      if (my_args->ImgArray[working] != NULL)
-		{ //clean up memory allocation
-		  //printf("cleaning up memory\n");
-		  imlib_context_set_image(my_args->ImgArray[working]);
-		  imlib_free_image_and_decache();
+	      printf("locked\n");
+	      //if (my_args->ImgArray[working] != NULL)
+	      if (my_args->Set[working] == TRUE)
+	      	{ //clean up memory allocation
+	      	  printf("cleaning up memory\n");
+	      	  imlib_context_set_image(*my_args->ImgArray[working]);
+	      	  imlib_free_image_and_decache();
+	      	}
+	      else
+		{
+		  my_args->Set[working] = TRUE;
 		}
-	      //printf("done cleaning memory\n");
-	      my_args->ImgArray[working] = &temp_img;
-	      //printf("assigned\n");
+	      printf("done cleaning memory\n");
+	      
+	      //my_args->ImgArray[working] = &temp_img;
+	      *my_args->ImgArray[working] = temp_img;
+	      //imlib_context_set_image(temp_img);
+	      //*my_args->ImgArray[working] = imlib_clone_image();
+	      printf("assigned\n");
 	      my_args->MostRecent = working;
-	      //printf("*my_args->MostRecent = %d\n", my_args->MostRecent);
-	      pthread_mutex_unlock(&my_args->ImgArrayLock[working]);
-	      //printf("unlocked\n");
+	      // printf("my_args->MostRecent = %d\n", my_args->MostRecent);
+	      // printf("FrontCam->MostRecent = %d\n", FrontCam->MostRecent);
+	      // printf("FrontCam = %p\n", FrontCam);
+	      // printf("PanoCam->MostRecent = %d\n", PanoCam->MostRecent);	  
+	      // printf("PanoCam = %p\n", PanoCam);
+    	      pthread_mutex_unlock(&my_args->ImgArrayLock[working]);
+	      printf("unlocked\n");
 	      //imlib_context_set_image(my_args->ImgArray[working]);
 	      //XSendEvent(display, display_pane, FALSE, 0, &event);	      
 	    }
-	  close(new_fd);
+	  //close(new_fd);
 	  delete PG;
-	  printf("exiting from fork\n");
-	  exit(0);
+	  //printf("exiting from fork\n");
+	  //exit(0);
+	  printf("exiting from loop after AcceptConnection\n");
+	  break;
 	}
       //printf("after fork\n");
       close(new_fd);  // parent doesn't need this
+      //printf("new_fd closed\n");
     }
-  
+  //do cleanup here
+  close(sockfd);
+  printf("sockfd closed\n");
   return NULL; // (void *)my_args;?????
 }
 
@@ -455,14 +510,19 @@ int AcceptConnection(int sockfd)
 {
   struct sockaddr_storage their_addr; // connector's address information
   socklen_t sin_size;
-  int new_fd;
+  int new_fd, flags;
   char s[INET6_ADDRSTRLEN];
 
+  //first set sockfd to nonblocking
+  if ((flags = fcntl(sockfd, F_GETFL, 0)) == -1)
+    flags = 0;
+  fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+  
   sin_size = sizeof(their_addr);
   new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
   if (new_fd == -1) 
     {
-      perror("accept");
+      //perror("accept");
       return new_fd;
     }
   inet_ntop(their_addr.ss_family,
@@ -577,13 +637,32 @@ Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG)
 					      PG->uncompressedImage.rows,
 					      (unsigned int*) tempMat.data);}
 				
-Imlib_Image Get_Image_from_ImgArray(CamGrab_t* CG)
+Imlib_Image Get_Image_from_ImgArray(struct CamGrab_t* CG)
 {
   Imlib_Image image;
-  pthread_mutex_lock(&CG->ImgArrayLock[CG->MostRecent]);
-  imlib_context_set_image(CG->ImgArray[CG->MostRecent]);
-  image = imlib_clone_image();
-  imlib_free_image();
-  pthread_mutex_unlock(&CG->ImgArrayLock[CG->MostRecent]);
+  printf("in Get_Image_from_ImgArray, MostRecent = %d\n", CG->MostRecent);
+  if (CG->MostRecent >= 0)
+    {
+      pthread_mutex_lock(&CG->ImgArrayLock[CG->MostRecent]);
+      printf("lock acquired, MostRecent = %d\n", CG->MostRecent);
+      imlib_context_set_image(*CG->ImgArray[CG->MostRecent]);
+      printf("context set\n");
+      // imlib_save_image("/aux/sbroniko/images/imlib-test.jpg");
+      // printf("saved\n");
+      image = imlib_clone_image();
+      printf("cloned\n");
+      // imlib_free_image();
+      // printf("freed\n");
+      pthread_mutex_unlock(&CG->ImgArrayLock[CG->MostRecent]);
+      printf("lock released, MostRecent = %d\n", CG->MostRecent);
+    }
+  else
+    {
+      image = imlib_create_image(640, 480);
+      imlib_context_set_image(image);
+      imlib_context_set_color(128, 128, 128, 128);
+      imlib_image_fill_rectangle(0, 0, 640, 480);
+    }
+      
   return image;
 }

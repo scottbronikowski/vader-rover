@@ -80,9 +80,18 @@
           (system "ssh -p 22222 root@localhost \"echo 16500 > /dev/pwm9\"")))
   (define-button 5 6 "test image get" #f
    (lambda () 
-          (;;some command here that does redrawing
-	   )))
-
+          ;;some command here that does redrawing
+	   (let ((image1 ;;get image via c-function here
+		  (rover-get-front-cam)) 
+		 (image2 ;;get image via c-function here
+		  (rover-get-pano-cam)))
+	    (draw-imlib-pixmap image1 20 0)
+	    (draw-imlib-pixmap image2 700 0)
+	    (imlib:free image1)
+	    (imlib:free image2)
+	    )
+	   )
+   )
 )
 
 (define (define-keys)
@@ -121,6 +130,7 @@
  ;;; Finalize procedure:
  (lambda ()
   (dtrace ""  "Calling Finalize")
+  (rover-server-cleanup)
   (imlib-context-disconnect-display))
  ;;; Redraw procedure:
  (lambda ()
