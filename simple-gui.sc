@@ -98,11 +98,12 @@
  ;; misc settings:
  
  (define-key (control #\c) "Connect bluetooth"
-  (lambda () (dtrace ""  "Connecting to the bluetooth...")
-         ))
-  (define-key (control #\m) "Enter command"
-   (lambda () (dtrace "the string you typed:" *input*))))
+  (lambda () (dtrace ""  "Connecting to the bluetooth...")))
+ (define-key escape "Get Images" get-next-image-command)
+ (define-key (control #\m) "Enter command"
+  (lambda () (dtrace "the string you typed:" *input*))))
 
+(set! *program* "rover-viewer")
 
 (define-application viewer
  ;; Example:

@@ -1,5 +1,7 @@
 
 
+--try looking at last MostRecent in image getting function in order to synch/wait for new image...
+
 
 
 look at hack track for gui (keeps gui responsive while getting images), or george gui
@@ -18,45 +20,64 @@ objdump -p <executable> to see library load order
 
 Buffers
 ---------------------------------------
-.   today.text            6132  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
-  * *shell*<3>         4972285  Shell:run	  ~/vader-rover/
-    camera-server.cpp    14943  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/camera-server.cpp
-    simple-gui.sc         5123  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/simple-gui.sc
-  * *shell*            8475005  Shell:run	  ~/bin/
-    INSTALL              15744  Fundamental	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/snappy-1.1.2/INSTALL
-    .bashrc               4924  Shell-script[bas  ~/.bashrc
-  * *shell*<2>         3758908  Shell:run	  ~/lib/
-  * *scratch*              193  Lisp Interaction
-    Makefile               830  GNUmakefile	  ~/vader-rover/Makefile
-    build-point-grey-2.5.: 729  Shell-script[bas  ~/darpa-collaboration/bin/build-point-grey-2.5.sh
-    georgelib-c.h        28129  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-c.h
+    today.text            9617  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
+    toollib-rover-cpp.c: 18616  C++/l		  ~/darpa-collaboration/ideas/toollib-rover-cpp.cpp
+  * *scheme*           9167396  Inferior Scheme:
+    toollib-image-proc: 125308  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/toollib-image-processing.sc
+    toollib-rover-cpp.h   4407  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover-cpp.h
+ %  *Man fcntl*          34094  Man
+    simple-gui.sc         5609  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/simple-gui.sc
+    toollib-rover.sc       864  Scheme		  ~/vader-rover/toollib-rover.sc
+    toollib-image-proce: 97076  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/toollib-image-processing.sc
+    arm-servoing-gui.s: 225677  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/arm-servoing-gui.sc
+    vladlib-sc.sc         3172  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vladlib-sc.sc
+    vlad.sc              12997  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vlad.sc
+    vladlib-cpp.cpp       3000  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vladlib-cpp.cpp
+    vladlib-c.h          11671  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vladlib-c.h
+    vladlib-c.c          90308  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vladlib-c.c
+    idealib-c.c          39638  C/l		  ~/darpa-collaboration/ideas/idealib-c.c
     georgelib-c.c       159141  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-c.c
-    jpeglib.h            43965  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/jpeglib.h
-    jpegtran.c           11206  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/jpegtran.c
-    djpeg.c              18704  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/djpeg.c
-    cjpeg.c              19797  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/cjpeg.c
-    nojpeg.c              5124  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/nojpeg.c
-    cdjpeg.c              4624  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/cdjpeg.c
-    jpegint.h            15486  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/jpegint.h
-    jpeg.h                1922  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/QobiScheme/source/jpeg.h
+    george.sc            22480  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/george.sc
+    georgelib-sc.sc      95501  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-sc.sc
     point-grey.c         13455  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/point-grey/point-grey.c
+    point-grey.h          3067  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/point-grey/point-grey.h
+    toollib-camera.sc    20563  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/toollib-camera.sc
+    toollib-c.c          21830  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/toollib-c.c
+    toollib-farneback-c.: 7956  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/toollib-farneback-c.c
+ %  Imlib2.h             25394  C++/l		  /usr/include/Imlib2.h
+    point-grey-cpp.cpp     780  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/point-grey/point-grey-cpp.cpp
+    camera-server.cpp    10455  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/camera-server.cpp
+    makefile|ideas       14766  GNUmakefile	  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/makefile
+    ptgrey-guilib-c.h     4030  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/ptgrey-gui/source/ptgrey-guilib-c.h
+    env-vars.sh            608  Shell-script[bas  ~/darpa-collaboration/bin/env-vars.sh
+    darpa-wrap             371  Shell-script[bas  ~/darpa-collaboration/bin/darpa-wrap
+    Makefile|vader-rover   966  GNUmakefile	  ~/vader-rover/Makefile
+    .bashrc               4944  Shell-script[bas  ~/.bashrc
+    ptgrey-guilib-c.c    17181  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/ptgrey-gui/source/ptgrey-guilib-c.c
+    select-restart.c       876  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/select-restart.c
+    rover-server.c        2657  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/rover-server.c
+    open-files-7-march.t: 2091  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/open-files-7-march.txt
+    makefile|source      11614  GNUmakefile	  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/makefile
+    camera-server-daemon   813  Shell-script[bas  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/camera-server-daemon
+    idealib-cpp.cpp       2862  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/idealib-cpp.cpp
+ %  toollib-image-proc: 124889  Scheme		  /amd/upplysingaoflun/root/aux/home/dpbarret/darpa-collaboration/ideas/toollib-image-processing.sc
+ %  toollib-hog-hmm-c.c  16888  C/l		  /amd/upplysingaoflun/root/aux/home/dpbarret/darpa-collaboration/ideas/toollib-hog-hmm-c.c
+ %  toollib-hog-hmm.sc  196853  Scheme		  /amd/upplysingaoflun/root/aux/home/dpbarret/darpa-collaboration/ideas/toollib-hog-hmm.sc
+    georgelib-c.h        28129  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-c.h
+    georgelib-cpp.cpp    14657  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-cpp.cpp
+    toollib-hack-track-: 25620  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/toollib-hack-track-c.c
+    toollib-hack-track-c: 9555  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/toollib-hack-track-c.h
+    toollib-hack-track.: 14154  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/toollib-hack-track.sc
+    toollib-hack-track-d: 4820  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/toollib-hack-track-drawable.sc
+    SaveImageToAviEx.cpp  8140  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/pgr-src/SaveImageToAviEx/SaveImageToAviEx.cpp
+    Makefile|CustomImageE: 700  GNUmakefile	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/CustomImageEx/Makefile
+    CustomImageEx.cpp    31206  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/CustomImageEx/CustomImageEx.cpp
+    build-point-grey-2.5.: 729  Shell-script[bas  ~/darpa-collaboration/bin/build-point-grey-2.5.sh
     ptgrey-gui.sc         7541  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/ptgrey-gui/source/ptgrey-gui.sc
     open_files_4feb.txt   1886  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/open_files_4feb.txt
     server.c              1583  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server.c
     server2.c             2225  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server2.c
-    camera-server-daemon   813  Shell-script[bas  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/camera-server-daemon
     server                 380  Shell-script[bas  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server
-    toollib-camera.sc    20563  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/tool/toollib-camera.sc
-    ptgrey-guilib-c.h     4030  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/ptgrey-gui/source/ptgrey-guilib-c.h
-    ptgrey-guilib-c.c    17181  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/imitate/ptgrey-gui/source/ptgrey-guilib-c.c
-    georgelib-cpp.cpp    14657  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-cpp.cpp
-    george.sc            22480  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/george.sc
-    select-restart.c       876  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/select-restart.c
-    rover-server.c        2657  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/rover-server.c
-    point-grey.h          3067  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/point-grey/point-grey.h
-    point-grey-cpp.cpp     780  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/point-grey/point-grey-cpp.cpp
-    open-files-7-march.t: 2091  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/open-files-7-march.txt
-    georgelib-sc.sc      95501  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/source/georgelib-sc.sc
 
 
 
@@ -113,3 +134,8 @@ Old Notes
 --Got still images into dsci viewer.  Need to work on binding 'test image get' function to a recurring keystroke a la http://www.doctort.org/adam/nerd-notes/x11-fake-keypress-event.html
 --Worked out graceful exit and restart for threads so that viewer can be called again in scheme without quitting and restarting dsci.
 --Fixed bug in Get_Image_from_ImgArray() that would cause a crash if called before there were images in ImgArray.  Now shows just a gray rectangle.  Could create a rectangle with text saying 'waiting on camera' or something like that.
+
+11 Apr 14
+--Have live video in viewer (changed name from 'dsci' to 'rover-viewer').  Image refresh is bound to ESC key, and I send an XEvent after each image received to refresh the window.  Originally had a problem with XEvents only going to the window that the mouse was pointing to, but solved that by designating window for XSendEvent by name.
+--Enroute to live video, had several problems with crashes/hangs when the ESC key was held down (fast refresh).  Solved this issue by adding a lock around the integer that keeps track of which image is the most recent in the image receive buffer.
+--Next step is to work on camera code on rover to 1) make it run in an infinite loop, 2) be callable from the command line in order to put a button into rover-viewer to start the cameras, and 3) handle a KILL/TERM/?? signal in order to exit gracefully from the infinite loop when signalled from 'stop cameras' button in rover-viewer.

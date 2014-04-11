@@ -7,6 +7,12 @@
 (c-include "toollib-rover-cpp.h")
 (c-ffi:add-custom-type imlib-image pointer make-imlib-image imlib-image-handle)
 
+;; (define hello-world
+;;  (c-function int ("hello_world" int)))
+
+(define rover-server-test
+ (c-function int ("rover_server_test" string)))
+
 (define rover-server-setup
  (c-function int ("rover_server_setup")))
 
@@ -19,13 +25,15 @@
 (define rover-get-pano-cam
  (c-function imlib-image ("rover_get_pano_cam")))
 
-(define rover-display
- (c-function void ("rover_display")))
-
 (define rover-server-cleanup
  (c-function void ("rover_server_cleanup")))
 
-;; used to get images from ImgArrays
+(define check-image
+ (c-function void ("check_image_load_and_save")))
+
+(define tutorial
+ (c-function int ("tutorial")))
+
 (define (get-next-image-command)
  (let ((image1 (rover-get-front-cam)) 
        (image2 	(rover-get-pano-cam)))

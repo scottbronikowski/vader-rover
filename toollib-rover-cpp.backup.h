@@ -64,24 +64,26 @@
 #define k_numCams 2
 
 // structures
-#ifdef __cplusplus
-//uses OpenCV C++ API
-struct PointGrey_t2 {
-  int new_fd;
-  int img_size;
-  cv::Mat uncompressedImage;
-};
-#endif
+//HAS to be defined in toollib-rover-cpp.cpp because of cv::Mat
+// struct PointGrey_t2 {
+//   //Image convertedImage; //, rawImage;
+//   //PixelFormat pixFormat;
+//   //BayerTileFormat bayerFormat;
+//   //unsigned char* pData;
+//   //unsigned int rows, cols, stride, dataSize;
+//   //Imlib_Image finalImage;
+//   int new_fd;
+//   int img_size;
+//   cv::Mat uncompressedImage;
+//   //CvMat uncompressedImage;
+// };
 
 struct CamGrab_t {
   Imlib_Image* ImgArray[k_ImgBufSize];
   pthread_mutex_t ImgArrayLock[k_ImgBufSize];
   int Set[k_ImgBufSize];
   int MostRecent;
-  pthread_mutex_t MostRecentLock;
   char* PortNumber;
-  int LastDisplayed;
-  Imlib_Image LastDisplayedImage;
 };
 
 struct AllCams_t {
@@ -93,16 +95,37 @@ extern const char* k_FrontCamPort;
 extern const char* k_PanoCamPort;
 extern const int BACKLOG;
 extern const char* k_OutputDir;
-
+//extern const int k_ImgBufSize = 5;
 
 //global variables
+// extern Imlib_Image* FrontCamArray[k_ImgBufSize];
+// extern Imlib_Image* PanoCamArray[k_ImgBufSize];
+// extern pthread_mutex_t FrontCamArrayLock[k_ImgBufSize];
+// extern pthread_mutex_t PanoCamArrayLock[k_ImgBufSize];
+// extern int FrontCamMostRecent;
+// extern int PanoCamMostRecent;
+
 extern struct CamGrab_t* FrontCam;
 extern struct CamGrab_t* PanoCam;
 extern struct AllCams_t* AllCams;
 extern pthread_t grab_threads[k_numCams];
 extern int grab_threads_should_die;
+// extern int testint;
+// extern pthread_mutex_t testint_mutex;
+
 
 // functions called from Scheme
+
+// #ifdef __cplusplus
+// extern "C"
+// #endif
+// int hello_world(int);
+
+#ifdef __cplusplus
+extern "C"
+#endif
+int rover_server_test(char* PORT);
+
 #ifdef __cplusplus
 extern "C"
 #endif
@@ -126,31 +149,42 @@ Imlib_Image rover_get_pano_cam(void);
 #ifdef __cplusplus
 extern "C"
 #endif
-void rover_display(void);
+void rover_server_cleanup(void);
+
+
+// #ifdef __cplusplus
+// extern "C" {
+// #endif
+// void* rover_server_grab(void* args);
+// // int rover_server_grab(const char* PORT, Imlib_Image* img_array[k_ImgBufSize],
+// // 		      pthread_mutex_t img_array_lock[k_ImgBufSize],
+// // 		      int* most_recent);
+// #ifdef __cplusplus
+// }
+// #endif
 
 #ifdef __cplusplus
 extern "C"
 #endif
-void rover_server_cleanup(void);
+void check_image_load_and_save(void);
+
+#ifdef __cplusplus
+extern "C"
+#endif
+int tutorial(void);
 
 
 // functions NOT called from Scheme
 void* rover_server_grab(void* args);
+void sigchld_handler(int s);
 void* get_in_addr(struct sockaddr *sa);
 int StartServer(const char* PORT);
 int AcceptConnection(int sockfd);
 int recvall(int s, unsigned char* buf, int* len);
 int CheckSaving(const char *dir);
+// These can't be declared here b/c PointGrey_t2 not defined yet
+// int OpenCV_ReceiveFrame(PointGrey_t2* PG);
+// void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
+// Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
 Imlib_Image Get_Image_from_ImgArray(struct CamGrab_t* CG);
-Window FindWindow(char* szWindowToFind);
-// Window SearchWindow(char* szWindowToFind, int level, Display *display, 
-// 		    Window rootWindow, int iMatchMode, int showErrors);
-
-#ifdef __cplusplus
-//use PointGrey_t2, which uses OpenCV C++ API
-int OpenCV_ReceiveFrame(PointGrey_t2* PG);
-void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
-Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
-#endif
-
 #endif
