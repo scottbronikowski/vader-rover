@@ -65,17 +65,10 @@
    (system "ssh -p 22222 root@localhost \"echo 16500 > /dev/pwm9\"")))
  (define-button 5 6 "test image get" #f
   (lambda ()
-   (get-next-image-command) ;;defined in toollib-rover.sc
-   ;; (let ((image1 ;;get image via c-function here
-   ;; 	  (rover-get-front-cam)) 
-   ;; 	 (image2 ;;get image via c-function here
-   ;; 	  (rover-get-pano-cam)))
-   ;;  (draw-imlib-pixmap image1 20 0)
-   ;;  (draw-imlib-pixmap image2 700 0)
-   ;;  (imlib:free image1)
-   ;;  (imlib:free image2))
-   )
-  )
+   (get-next-image-command))) ;;defined in toollib-rover.sc
+ (define-button 5 7 "Start Cameras" #f
+  (lambda ()
+   (system "ssh -p 22222 root@localhost \"/root/bin/run_cameras\" &"))) 
  )
 
 (define (define-keys)

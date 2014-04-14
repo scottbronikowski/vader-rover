@@ -84,6 +84,11 @@ Old Notes
 --Enroute to live video, had several problems with crashes/hangs when the ESC key was held down (fast refresh).  Solved this issue by adding a lock around the integer that keeps track of which image is the most recent in the image receive buffer.
 --Next step is to work on camera code on rover to 1) make it run in an infinite loop, 2) be callable from the command line in order to put a button into rover-viewer to start the cameras, and 3) handle a KILL/TERM/?? signal in order to exit gracefully from the infinite loop when signalled from 'stop cameras' button in rover-viewer.
 
+14 Apr 14
+--Cleaned up simple-gui.sc a bit.
+------
+--Added 'Start Cameras' button to simple-gui.sc.  Seems to work as long as only clicked once.  Thinking about putting the 'Start Cameras' function into the initialize/start of rover-viewer so that it only runs once.  Will need to put the signal handler that will shut it down (to be written) into the finalize of rover-viewer.
+
 
 
 
