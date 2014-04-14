@@ -1,98 +1,82 @@
+(define (motors direction)
+ (system (format #f "ssh -p 22222 root@localhost \"/root/bin/motor_control ~a\"" direction)))
+
 (define (define-buttons)
  (standard-buttons 2 (lambda () #f))
  (define-button 2 1 "forward_4" #f
   (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control forward_4\"")))
+   ;; (system "ssh -p 22222 root@localhost \"~/bin/motor_control forward_4\"")
+   (motors "forward_4")
+   ))
  (define-button 2 2 "forward_3" #f
-  (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control forward_3\"")))
+  (lambda () (motors "forward_3")))
  (define-button 2 3 "forward_2" #f
-  (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control forward_2\"")))
+  (lambda () (motors "forward_2")))
  (define-button 2 4 "forward_1" #f
-  (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control forward_1\"")))
+  (lambda () (motors "forward_1")))
  (define-button 2 5 "***STOP***" #f
-  (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control stop\"")))
+  (lambda () (motors "stop")))
  (define-button 2 6 "reverse_1" #f
-  (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control reverse_1\"")))
+  (lambda () (motors "reverse_1")))
  (define-button 2 7 "reverse_2" #f
-  (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control reverse_2\"")))
+  (lambda () (motors "reverse_2")))
  (define-button 2 8 "reverse_3" #f
-  (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control reverse_3\"")))
+  (lambda () (motors "reverse_3")))
  (define-button 2 9 "reverse_4" #f
-  (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control reverse_4\"")))
+  (lambda () (motors "reverse_4")))
  (define-button 3 4 "forward_right_1" #f
-  (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control forward_right_1\"")))
+  (lambda () (motors "forward_right_1")))
  (define-button 3 3 "forward_right_2" #f
-  (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control forward_right_2\"")))
+  (lambda () (motors "forward_right_2")))
  (define-button 1 4 "forward_left_1" #f
-  (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control forward_left_1\"")))
+  (lambda () (motors "forward_left_1")))
  (define-button 1 3 "forward_left_2" #f
-  (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control forward_left_2\"")))
+  (lambda () (motors "forward_left_2")))
  (define-button 1 5 "pivot_left_1" #f
-  (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control pivot_left_1\"")))
-  (define-button 0 5 "pivot_left_2" #f
-   (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control pivot_left_2\"")))
-  (define-button 1 6 "reverse_left_1" #f
-   (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control reverse_left_1\"")))
-  (define-button 1 7 "reverse_left_2" #f
-   (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control reverse_left_2\"")))
+  (lambda () (motors "pivot_left_1")))
+ (define-button 0 5 "pivot_left_2" #f
+  (lambda () (motors "pivot_left_2")))
+ (define-button 1 6 "reverse_left_1" #f
+  (lambda () (motors"reverse_left_1")))
+ (define-button 1 7 "reverse_left_2" #f
+  (lambda () (motors "reverse_left_2")))
  (define-button 3 5 "pivot_right_1" #f
+  (lambda () (motors "pivot_right_1")))
+ (define-button 4 5 "pivot_right_2" #f
+  (lambda () (motors "pivot_right_2")))
+ (define-button 3 6 "reverse_right_1" #f
+  (lambda () (motors "reverse_right_1")))
+ (define-button 3 7 "reverse_right_2" #f
+  (lambda () (motors "reverse_right_2")))
+ (define-button 5 2 "camera_center" #f
   (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control pivot_right_1\"")))
-  (define-button 4 5 "pivot_right_2" #f
-   (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control pivot_right_2\"")))
-  (define-button 3 6 "reverse_right_1" #f
-   (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control reverse_right_1\"")))
-  (define-button 3 7 "reverse_right_2" #f
-   (lambda () 
-          (system "ssh -p 22222 root@localhost \"~/test_code/motor_control reverse_right_2\"")))
-  (define-button 5 2 "camera_center" #f
-   (lambda () 
-          (system "ssh -p 22222 root@localhost \"echo 15000 > /dev/pwm9; echo 15000 > /dev/pwm10\"")))
-  (define-button 4 2 "camera_left" #f
-   (lambda () 
-          (system "ssh -p 22222 root@localhost \"echo 20000 > /dev/pwm10\"")))
-  (define-button 6 2 "camera_right" #f
-   (lambda () 
-          (system "ssh -p 22222 root@localhost \"echo 10000 > /dev/pwm10\"")))
-  (define-button 5 1 "camera_up" #f
-   (lambda () 
-          (system "ssh -p 22222 root@localhost \"echo 11000 > /dev/pwm9\"")))
-  (define-button 5 3 "camera_down" #f
-   (lambda () 
-          (system "ssh -p 22222 root@localhost \"echo 16500 > /dev/pwm9\"")))
-  (define-button 5 6 "test image get" #f
-   (lambda () 
-          ;;some command here that does redrawing
-	   (let ((image1 ;;get image via c-function here
-		  (rover-get-front-cam)) 
-		 (image2 ;;get image via c-function here
-		  (rover-get-pano-cam)))
-	    (draw-imlib-pixmap image1 20 0)
-	    (draw-imlib-pixmap image2 700 0)
-	    (imlib:free image1)
-	    (imlib:free image2)
-	    )
-	   )
+   (system "ssh -p 22222 root@localhost \"echo 15000 > /dev/pwm9; echo 15000 > /dev/pwm10\"")))
+ (define-button 4 2 "camera_left" #f
+  (lambda () 
+   (system "ssh -p 22222 root@localhost \"echo 20000 > /dev/pwm10\"")))
+ (define-button 6 2 "camera_right" #f
+  (lambda () 
+   (system "ssh -p 22222 root@localhost \"echo 10000 > /dev/pwm10\"")))
+ (define-button 5 1 "camera_up" #f
+  (lambda () 
+   (system "ssh -p 22222 root@localhost \"echo 11000 > /dev/pwm9\"")))
+ (define-button 5 3 "camera_down" #f
+  (lambda () 
+   (system "ssh -p 22222 root@localhost \"echo 16500 > /dev/pwm9\"")))
+ (define-button 5 6 "test image get" #f
+  (lambda ()
+   (get-next-image-command) ;;defined in toollib-rover.sc
+   ;; (let ((image1 ;;get image via c-function here
+   ;; 	  (rover-get-front-cam)) 
+   ;; 	 (image2 ;;get image via c-function here
+   ;; 	  (rover-get-pano-cam)))
+   ;;  (draw-imlib-pixmap image1 20 0)
+   ;;  (draw-imlib-pixmap image2 700 0)
+   ;;  (imlib:free image1)
+   ;;  (imlib:free image2))
    )
-)
+  )
+ )
 
 (define (define-keys)
  ;; misc settings:

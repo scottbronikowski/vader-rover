@@ -1,15 +1,5 @@
 
 
---try looking at last MostRecent in image getting function in order to synch/wait for new image...
-
-
-
-look at hack track for gui (keeps gui responsive while getting images), or george gui
-
-check out cjpeg
-
-Qobischeme jpeg library
-
 Random notes:
 ------------------
 (define duplicates (removeq #f (map-indexed (lambda (line i) (if (> (length (removeq #f (map-indexed (lambda (other j) (and (equal? other line) (not (equal? i j)))) symtable))) 0) line #f)) symtable)))
@@ -20,6 +10,86 @@ objdump -p <executable> to see library load order
 
 Buffers
 ---------------------------------------
+.   simple-gui.sc         5686  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/simple-gui.sc
+    today.text           13381  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
+    toollib-rover-cpp.c: 15581  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover-cpp.cpp
+    toollib-rover.sc       927  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover.sc
+    toollib-rover-cpp.h   3453  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover-cpp.h
+    vlad.sc              12997  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vlad.sc
+    vladlib-c.c          90308  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vladlib-c.c
+    vladlib-cpp.cpp       3000  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vladlib-cpp.cpp
+    vladlib-sc.sc         3172  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vladlib-sc.sc
+    toollib-image-proc: 125308  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/toollib-image-processing.sc
+    vladlib-c.h          11671  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vladlib-c.h
+
+
+
+Old Notes
+----------
+14 Mar 14
+-- converted camera-server.c to cpp in order to use flycap libraries
+-- copied flycap headers and so files from vader-ubuntu, but wouldn't work bc version of flycap was too new (GLIBC conflict)-->put these files in ~/vader-rover/OLD/
+-- tried copying newer version of glibc (libc-2.15.so and ld-2.15.so) from vader-ubuntu, but this got really hairy really quick.  Then started on a full install of glibc-2.14.tar.gz into ~/vader-rover IOT use newer GLIBC, but abandoned this bc next bullet got working
+-- installed flycapture2-2.3.3.18 from ~/darpa-collaboration/bin/build-point-grey.sh in order to avoid conflict with GLIBC version (we have 2.13, flycapture2-2.5+ needs 2.14)
+-- created symlinks from ~/vader-rover to lib and include for flycapture
+   include -> /home/sbroniko/darpa-collaboration/include/x86_64-Linux-3.2.0-4-amd64/flycapture/
+    lib -> /home/sbroniko/darpa-collaboration/lib/x86_64-Linux-3.2.0-4-amd64/
+--added 'export LD_LIBRARY_PATH=${HOME}/darpa-collaboration/lib/`architecture-path`/arv:${HOME}/lib/`architecture-path`/:$LD_LIBRARY_PATH:${MATLAB}/bin/glnx86/:${MATLAB}/bin/glnxa64:/usr/local/lib/:~/darpa-collaboration/lib/`architecture-path`/:/usr/local/cuda/lib64/:/usr/share/cuda-toolkit/lib64/' to .bashrc in order to find flycapture libraries at runtime
+-- started on building struct and receiver function for raw PGR image...look at using Image() constructor in Image.h where I can pass all paramaters directly.
+
+17 Mar 14
+--First test of sending raw images across network successful, images saved via PGR methods into color PPM.  Getting ~1.2-1.3 frames/sec/cam.
+--Need to look at using Imlib calls in order to get an Imlib image as a return value.
+
+18 Mar 14
+-- Modified camera-server.c to only get image metadata on first image...still need to put in break condition when sender stops sending.
+
+19 Mar 14
+-- Finished mod of camera-server.cpp to break out of forked receive process when no image data received--no significant speedup.
+----
+-- Miniz.c turned out to be slower than sending uncompressed data...looking for different library
+-- Now trying 'snappy' from Google
+
+20 Mar 14
+-- ***Got framerate to ~8 f/s/c (close to rate at which cameras produce) by 1) changing save location to /aux vice /home, and 2) changing pano cam to 640x480 greyscale
+-------
+-- working on incorporating snappy compression, bug in ReceiveMetadataCompressed
+
+2 Apr 14
+-- Got OpenCV working for JPEG compression.  Can currently send compressed images across network (~15-30 kilobytes per image) and save them on seykhl at ~11.9-12.5 f/s/c as either .jpg or .png (file type doesn't seem to affect speed).
+
+7 Apr 14
+--Got QobiScheme to work with jpegs in OpenCV.  Removed references to jpeg* functions in original QobiScheme source files and compiled new QobiScheme-AD.a (./QobiScheme-nojpeg-working/source/x86_64-Linux-3.2.0-4-amd64/QobiScheme-AD.a).  Compiled into dsci and was able to read and write jpeg.
+
+8 Apr 14
+--Separated toollib-rover-cpp.cpp declarations/includes/etc into toollib-rover-cpp.h as much as possible.
+--Built rover-server-test, rover-server-setup, rover-server-start, rover-server-grab functions into toolib-rover*.
+--Have rover-server-setup working (initializes global varaibles used by rover-server-grab)
+--First draft of rover-server-start complete.  Can call a single instance of rover-server-grab to listen and receive images on one port.  Put basic thread-safety guards into rover-server-grab.  Need to implement threading in rover-server-start IOT enable both ports to listen simultaneously.
+--Also need to develop functions that are the consumers to rover-server-grab's producer.  Envision two functions, one that takes the image and displays it, and one that takes the image and saves it to a video.
+
+9 Apr 14
+--Modified rover_server_grab to be callable as a pthread.  Built struct CamGrab_t to hold variables going to rover_server_grab.  From rover_server_start, called rover_server_grab twice (once for each camera) and was able to receive data into separate arrays for each camera.  Now need to work on functions/threads that will use this data (display and save).
+---------
+--Started work on getting images to display in Scheme GUI.  Need to look at vlad code to see how to use xflush and pthread_barriers.
+
+10 Apr 14
+--Got still images into dsci viewer.  Need to work on binding 'test image get' function to a recurring keystroke a la http://www.doctort.org/adam/nerd-notes/x11-fake-keypress-event.html
+--Worked out graceful exit and restart for threads so that viewer can be called again in scheme without quitting and restarting dsci.
+--Fixed bug in Get_Image_from_ImgArray() that would cause a crash if called before there were images in ImgArray.  Now shows just a gray rectangle.  Could create a rectangle with text saying 'waiting on camera' or something like that.
+--Fixed problem in rover-server-grab where I was forking a new process after the server accepted the connection.  Forking didn't allow for shared memory, so I got rid of the fork and did a loop with an exit flag check to replicate the functionality within a single thread.
+
+11 Apr 14
+--Have live video in viewer (changed name from 'dsci' to 'rover-viewer').  Image refresh is bound to ESC key, and I send an XEvent after each image received to refresh the window.  Originally had a problem with XEvents only going to the window that the mouse was pointing to, but solved that by designating window for XSendEvent by name.
+--Enroute to live video, had several problems with crashes/hangs when the ESC key was held down (fast refresh).  Solved this issue by adding a lock around the integer that keeps track of which image is the most recent in the image receive buffer.
+--Next step is to work on camera code on rover to 1) make it run in an infinite loop, 2) be callable from the command line in order to put a button into rover-viewer to start the cameras, and 3) handle a KILL/TERM/?? signal in order to exit gracefully from the infinite loop when signalled from 'stop cameras' button in rover-viewer.
+
+
+
+
+
+Old buffers
+----------------
     today.text            9617  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
     toollib-rover-cpp.c: 18616  C++/l		  ~/darpa-collaboration/ideas/toollib-rover-cpp.cpp
   * *scheme*           9167396  Inferior Scheme:
@@ -78,64 +148,3 @@ Buffers
     server.c              1583  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server.c
     server2.c             2225  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server2.c
     server                 380  Shell-script[bas  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server
-
-
-
-Old Notes
-----------
-14 Mar 14
--- converted camera-server.c to cpp in order to use flycap libraries
--- copied flycap headers and so files from vader-ubuntu, but wouldn't work bc version of flycap was too new (GLIBC conflict)-->put these files in ~/vader-rover/OLD/
--- tried copying newer version of glibc (libc-2.15.so and ld-2.15.so) from vader-ubuntu, but this got really hairy really quick.  Then started on a full install of glibc-2.14.tar.gz into ~/vader-rover IOT use newer GLIBC, but abandoned this bc next bullet got working
--- installed flycapture2-2.3.3.18 from ~/darpa-collaboration/bin/build-point-grey.sh in order to avoid conflict with GLIBC version (we have 2.13, flycapture2-2.5+ needs 2.14)
--- created symlinks from ~/vader-rover to lib and include for flycapture
-   include -> /home/sbroniko/darpa-collaboration/include/x86_64-Linux-3.2.0-4-amd64/flycapture/
-    lib -> /home/sbroniko/darpa-collaboration/lib/x86_64-Linux-3.2.0-4-amd64/
---added 'export LD_LIBRARY_PATH=${HOME}/darpa-collaboration/lib/`architecture-path`/arv:${HOME}/lib/`architecture-path`/:$LD_LIBRARY_PATH:${MATLAB}/bin/glnx86/:${MATLAB}/bin/glnxa64:/usr/local/lib/:~/darpa-collaboration/lib/`architecture-path`/:/usr/local/cuda/lib64/:/usr/share/cuda-toolkit/lib64/' to .bashrc in order to find flycapture libraries at runtime
--- started on building struct and receiver function for raw PGR image...look at using Image() constructor in Image.h where I can pass all paramaters directly.
-
-17 Mar 14
---First test of sending raw images across network successful, images saved via PGR methods into color PPM.  Getting ~1.2-1.3 frames/sec/cam.
---Need to look at using Imlib calls in order to get an Imlib image as a return value.
-
-18 Mar 14
--- Modified camera-server.c to only get image metadata on first image...still need to put in break condition when sender stops sending.
-
-19 Mar 14
--- Finished mod of camera-server.cpp to break out of forked receive process when no image data received--no significant speedup.
-----
--- Miniz.c turned out to be slower than sending uncompressed data...looking for different library
--- Now trying 'snappy' from Google
-
-20 Mar 14
--- ***Got framerate to ~8 f/s/c (close to rate at which cameras produce) by 1) changing save location to /aux vice /home, and 2) changing pano cam to 640x480 greyscale
--------
--- working on incorporating snappy compression, bug in ReceiveMetadataCompressed
-
-2 Apr 14
--- Got OpenCV working for JPEG compression.  Can currently send compressed images across network (~15-30 kilobytes per image) and save them on seykhl at ~11.9-12.5 f/s/c as either .jpg or .png (file type doesn't seem to affect speed).
-
-7 Apr 14
---Got QobiScheme to work with jpegs in OpenCV.  Removed references to jpeg* functions in original QobiScheme source files and compiled new QobiScheme-AD.a (./QobiScheme-nojpeg-working/source/x86_64-Linux-3.2.0-4-amd64/QobiScheme-AD.a).  Compiled into dsci and was able to read and write jpeg.
-
-8 Apr 14
---Separated toollib-rover-cpp.cpp declarations/includes/etc into toollib-rover-cpp.h as much as possible.
---Built rover-server-test, rover-server-setup, rover-server-start, rover-server-grab functions into toolib-rover*.
---Have rover-server-setup working (initializes global varaibles used by rover-server-grab)
---First draft of rover-server-start complete.  Can call a single instance of rover-server-grab to listen and receive images on one port.  Put basic thread-safety guards into rover-server-grab.  Need to implement threading in rover-server-start IOT enable both ports to listen simultaneously.
---Also need to develop functions that are the consumers to rover-server-grab's producer.  Envision two functions, one that takes the image and displays it, and one that takes the image and saves it to a video.
-
-9 Apr 14
---Modified rover_server_grab to be callable as a pthread.  Built struct CamGrab_t to hold variables going to rover_server_grab.  From rover_server_start, called rover_server_grab twice (once for each camera) and was able to receive data into separate arrays for each camera.  Now need to work on functions/threads that will use this data (display and save).
----------
---Started work on getting images to display in Scheme GUI.  Need to look at vlad code to see how to use xflush and pthread_barriers.
-
-10 Apr 14
---Got still images into dsci viewer.  Need to work on binding 'test image get' function to a recurring keystroke a la http://www.doctort.org/adam/nerd-notes/x11-fake-keypress-event.html
---Worked out graceful exit and restart for threads so that viewer can be called again in scheme without quitting and restarting dsci.
---Fixed bug in Get_Image_from_ImgArray() that would cause a crash if called before there were images in ImgArray.  Now shows just a gray rectangle.  Could create a rectangle with text saying 'waiting on camera' or something like that.
-
-11 Apr 14
---Have live video in viewer (changed name from 'dsci' to 'rover-viewer').  Image refresh is bound to ESC key, and I send an XEvent after each image received to refresh the window.  Originally had a problem with XEvents only going to the window that the mouse was pointing to, but solved that by designating window for XSendEvent by name.
---Enroute to live video, had several problems with crashes/hangs when the ESC key was held down (fast refresh).  Solved this issue by adding a lock around the integer that keeps track of which image is the most recent in the image receive buffer.
---Next step is to work on camera code on rover to 1) make it run in an infinite loop, 2) be callable from the command line in order to put a button into rover-viewer to start the cameras, and 3) handle a KILL/TERM/?? signal in order to exit gracefully from the infinite loop when signalled from 'stop cameras' button in rover-viewer.
