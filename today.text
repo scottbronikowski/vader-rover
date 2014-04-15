@@ -92,6 +92,11 @@ Old Notes
 15 Apr 14
 --Cleaned up extraneous printfs in toollib-rover-cpp.cpp.
 --Added 'Stop Cameras' button that works with signal handler in run_cameras.cpp on rover using 'pkill run_cameras' sent over ssh.
+-----------
+--Able to drive rover without line of sight!
+--Currently experiencing intermittent problem with USB failing and becoming disabled.  Error message is: 'hub 1-0:1.0: port 2 disabled by hub (EMI?), re-enabling...'  After error, only way I've found to re-enable USB is to reboot rover.  Researching possible solutions.  Will try attaching ferrite cores to USB cables.
+--Also noticing a slight list to the left when the rover drives--seeing if adding a shim under the left center wheel will correct this. (first test appeared to make it worse, but will test again)
+--When driving around the 3rd floor of EE, the rover sometimes loses connectivity for a few-to-tens-of seconds, presumably when changing APs on PAL.  Need to think of a way to monitor and correct for this (possibly stop when connectivity is lost until regained).  Maybe use wlan0 (built-in wlan) for control and wlan1 (USB wlan) for image streaming...but how would I split up those services to different adapters?
 
 
 
