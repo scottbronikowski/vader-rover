@@ -21,7 +21,7 @@ const char* k_OutputDir = "/aux/sbroniko/images/";
 //global variables
 struct CamGrab_t* FrontCam;
 struct CamGrab_t* PanoCam;
-struct AllCams_t* AllCams;
+//struct AllCams_t* AllCams;
 pthread_t grab_threads[k_numCams];
 int grab_threads_should_die = FALSE;
 
@@ -54,11 +54,12 @@ extern "C" int rover_server_setup(void)
       FrontCam->Set[i] = FALSE;
       PanoCam->Set[i] = FALSE;
     }
-  AllCams = (struct AllCams_t*) malloc(sizeof(struct AllCams_t));
-  AllCams->CG[0] = FrontCam;
-  AllCams->CG[1] = PanoCam;
+  // AllCams = (struct AllCams_t*) malloc(sizeof(struct AllCams_t));
+  // AllCams->CG[0] = FrontCam;
+  // AllCams->CG[1] = PanoCam;
   grab_threads_should_die = FALSE;
-  display_pane = FindWindow("rover-viewer");
+  char windowname[] = "rover-viewer";
+  display_pane = FindWindow(windowname);//"rover-viewer");
   printf("rover_server_setup succeeded\n");
   return 0;
 }
@@ -81,13 +82,13 @@ extern "C" void rover_server_start(void)
 
 extern "C" Imlib_Image rover_get_front_cam(void)
 {
-  printf("getting image from front cam...\n");
+  //printf("getting image from front cam...\n");
   return Get_Image_from_ImgArray(FrontCam);
 }
 
 extern "C" Imlib_Image rover_get_pano_cam(void)
 {
-  printf("getting image from pano cam...\n");
+  //printf("getting image from pano cam...\n");
   return Get_Image_from_ImgArray(PanoCam);
 }
 
@@ -100,17 +101,18 @@ extern "C" void rover_server_cleanup(void)
   printf("rover_server_cleanup completed\n");
 }
 
-extern "C" void rover_display(void)
-{
-  Display *display = XOpenDisplay("");
-  int screen = DefaultScreen(display);
-  XEvent event;
-  /* magic to get GUI to run periodically */
-  event.type = KeyPress;
-  event.xkey.keycode = 9;		/* ESC */
-  event.xkey.state = 0;			/* no Mod1Mask */
 
-}
+// extern "C" void rover_display(void)
+// {
+//   Display *display = XOpenDisplay("");
+//   //int screen = DefaultScreen(display);
+//   XEvent event;
+//   /* magic to get GUI to run periodically */
+//   event.type = KeyPress;
+//   event.xkey.keycode = 9;		/* ESC */
+//   event.xkey.state = 0;			/* no Mod1Mask */
+
+// }
 
 // functions not called from Scheme
 void* rover_server_grab(void* args)
@@ -120,7 +122,7 @@ void* rover_server_grab(void* args)
   // struct sigaction sa;
   XEvent event;
   Display *display = XOpenDisplay(0);
-  int screen = DefaultScreen(display);
+  //int screen = DefaultScreen(display);
   /* magic to get GUI to run periodically */
   event.type = KeyPress;
   event.xkey.keycode = 9;		/* SEC */
@@ -161,12 +163,12 @@ void* rover_server_grab(void* args)
 	      pthread_mutex_lock(&my_args->MostRecentLock);
 	      working = ((my_args->MostRecent) + 1) % k_ImgBufSize;
 	      pthread_mutex_unlock(&my_args->MostRecentLock);
-	      printf("getting lock\n");
+	      //printf("getting lock\n");
 	      pthread_mutex_lock(&my_args->ImgArrayLock[working]);
-	      printf("locked\n");
+	      //printf("locked\n");
 	      if (my_args->Set[working] == TRUE)
 	      	{ //clean up memory allocation
-	      	  printf("cleaning up memory\n");
+	      	  //printf("cleaning up memory\n");
 	      	  imlib_context_set_image(*my_args->ImgArray[working]);
 	      	  imlib_free_image_and_decache();
 	      	}
@@ -174,18 +176,18 @@ void* rover_server_grab(void* args)
 		{
 		  my_args->Set[working] = TRUE;
 		}
-	      printf("done cleaning memory\n");
+	      //printf("done cleaning memory\n");
 	      *my_args->ImgArray[working] = temp_img;
-	      printf("assigned\n");
+	      //printf("assigned\n");
 	      pthread_mutex_unlock(&my_args->ImgArrayLock[working]);
 	      pthread_mutex_lock(&my_args->MostRecentLock);
 	      my_args->MostRecent = working;
 	      pthread_mutex_unlock(&my_args->MostRecentLock);
-	      printf("unlocked\n");
+	      //printf("unlocked\n");
 	      //imlib_context_set_image(my_args->ImgArray[working]);
 	      XSendEvent(display, display_pane, FALSE, 0, &event);	      
 	      XFlush(display);
-	      printf("sent xevent\n");
+	      //printf("sent xevent\n");
 	    }
 	  delete PG;
 	  printf("exiting from loop after AcceptConnection\n");
@@ -362,7 +364,7 @@ int OpenCV_ReceiveFrame(PointGrey_t2* PG)
       printf("Error in recvall\n");
       return -1;
     }
-  printf("Received %d bytes of image data\n", PG->img_size);
+  //printf("Received %d bytes of image data\n", PG->img_size);
   
   //copy buf into vector
   cv::vector<uchar> compressed(buf, buf+PG->img_size);
@@ -401,7 +403,7 @@ Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG)
 Imlib_Image Get_Image_from_ImgArray(struct CamGrab_t* CG)
 {
   int localMostRecent;
-  printf("in Get_Image_from_ImgArray, MostRecent = %d\n", CG->MostRecent);
+  //printf("in Get_Image_from_ImgArray, MostRecent = %d\n", CG->MostRecent);
   if (CG->MostRecent < 0)
     { //create dummy image to display
       CG->LastDisplayedImage = imlib_create_image(640, 480);
@@ -447,7 +449,7 @@ Window SearchWindow(char* szWindowToFind, int level, Display *display, Window ro
     Window *children;
     unsigned int noOfChildren;
     int status;
-    int i;
+    unsigned int i;
     Window wSearchedWindow = 0;
 
     char* win_name;

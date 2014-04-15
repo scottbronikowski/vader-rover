@@ -98,7 +98,7 @@ extern const char* k_OutputDir;
 //global variables
 extern struct CamGrab_t* FrontCam;
 extern struct CamGrab_t* PanoCam;
-extern struct AllCams_t* AllCams;
+//extern struct AllCams_t* AllCams;
 extern pthread_t grab_threads[k_numCams];
 extern int grab_threads_should_die;
 
@@ -123,10 +123,10 @@ extern "C"
 #endif
 Imlib_Image rover_get_pano_cam(void);
 
-#ifdef __cplusplus
-extern "C"
-#endif
-void rover_display(void);
+// #ifdef __cplusplus
+// extern "C"
+// #endif
+// void rover_display(void);
 
 #ifdef __cplusplus
 extern "C"

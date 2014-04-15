@@ -68,7 +68,10 @@
    (get-next-image-command))) ;;defined in toollib-rover.sc
  (define-button 5 7 "Start Cameras" #f
   (lambda ()
-   (system "ssh -p 22222 root@localhost \"/root/bin/run_cameras\" &"))) 
+   (system "ssh -p 22222 root@localhost \"/root/bin/run_cameras\" &")))
+  (define-button 5 8 "Stop Cameras" #f
+  (lambda ()
+   (system "ssh -p 22222 root@localhost \"pkill run_cameras\""))) 
  )
 
 (define (define-keys)
@@ -76,7 +79,7 @@
  
  (define-key (control #\c) "Connect bluetooth"
   (lambda () (dtrace ""  "Connecting to the bluetooth...")))
- (define-key escape "Get Images" get-next-image-command)
+ (define-key escape "Get Images" get-next-image-command) ;;defined in toollib-rover.sc
  (define-key (control #\m) "Enter command"
   (lambda () (dtrace "the string you typed:" *input*))))
 

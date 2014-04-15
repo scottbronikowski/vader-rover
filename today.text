@@ -89,7 +89,9 @@ Old Notes
 ------
 --Added 'Start Cameras' button to simple-gui.sc.  Seems to work as long as only clicked once.  Thinking about putting the 'Start Cameras' function into the initialize/start of rover-viewer so that it only runs once.  Will need to put the signal handler that will shut it down (to be written) into the finalize of rover-viewer.
 
-
+15 Apr 14
+--Cleaned up extraneous printfs in toollib-rover-cpp.cpp.
+--Added 'Stop Cameras' button that works with signal handler in run_cameras.cpp on rover using 'pkill run_cameras' sent over ssh.
 
 
 

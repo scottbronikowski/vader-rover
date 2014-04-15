@@ -19,8 +19,8 @@
 (define rover-get-pano-cam
  (c-function imlib-image ("rover_get_pano_cam")))
 
-(define rover-display
- (c-function void ("rover_display")))
+;; (define rover-display
+;;  (c-function void ("rover_display")))
 
 (define rover-server-cleanup
  (c-function void ("rover_server_cleanup")))
