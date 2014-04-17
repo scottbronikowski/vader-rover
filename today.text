@@ -107,6 +107,7 @@ Old Notes
 
 17 Apr 14
 --Completed and compressed backup of SD card in /aux/sbroniko/backup/sd-backup-2014-04-16.tar.gz
+--USB EMI issue seems to have gone away after switching out gumstix/daughterboard and USB cable between gumstix and hub.  Now looking if it's possible to improve how the rover handles moving between wifi APs.
 
 
 Old buffers
