@@ -105,6 +105,8 @@ Old Notes
 --Attempted to test built-in wifi (802.11g only) for remote driving.  Framerate was better than 4G but not as good as USB wifi (got ~10-11 f/s/c from built-in wifi).  Latency didn't seem to be a problem, but the problem of the USB port failing happened much more quickly when USB hub was plugged into main USB host port.  This happened twice in a row, but the third time I was able to get it driving and make a successful loop of EE313.  Also tried with hub plugged into USB OTG port and found the same problem as prevously--get an error message stating (musb_host_rx 1625: Rx interrupt with no errors or packet!) and the capture program freezes until killed.  Pretty sure the USB OTG port is useless.
 --Compressed previous backup of SD card in /aux/sbroniko/backup (from 2014-02-03) and initiated new backup prior to changing over to backup gumstix.
 
+17 Apr 14
+--Completed and compressed backup of SD card in /aux/sbroniko/backup/sd-backup-2014-04-16.tar.gz
 
 
 Old buffers
