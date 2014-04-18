@@ -1,4 +1,6 @@
-remove g_multi from startup to disable USB OTG port
+
+TODO:
+- Hook ammeter up to battery to observe current draw--need wire harness that fits.
 
 
 
@@ -108,6 +110,30 @@ Old Notes
 17 Apr 14
 --Completed and compressed backup of SD card in /aux/sbroniko/backup/sd-backup-2014-04-16.tar.gz
 --USB EMI issue seems to have gone away after switching out gumstix/daughterboard and USB cable between gumstix and hub.  Now looking if it's possible to improve how the rover handles moving between wifi APs.
+
+18 Apr 14
+--Started overnight test of cameras at 1720 on 17 April and cameras were still running when I came in at 0935 on 18 April.  I believe that we can consider the USB EMI issue solved.
+--Received Logitech game controller.  Starting to work on getting it interfaced to seykhl.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 Old buffers
