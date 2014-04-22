@@ -32,4 +32,4 @@
   (draw-imlib-pixmap image1 20 0)
   (draw-imlib-pixmap image2 700 0)
   (imlib:free image1)
-  (imlib:free image2)))
+  (imlib:free image2))) 
