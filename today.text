@@ -129,7 +129,7 @@ Old Notes
 --Will attempt to take mobile current readings and correct leftward pull while driving tomorrow--need assistance to do that, and by the time I had the power supply fixed this evening, nobody was around.
 
 22 Apr 14
---Found seemingly useful driver/library for using gamepad at https://github.com/elanthis/gamepad.  It builds a shared library and also has a header to call functions that get the controller state.  Working on integrating this into dsci.
+--Found seemingly useful driver/library for using gamepad at https://github.com/elanthis/gamepad.  It builds a shared library and also has a header to call functions that get the controller state.  Have skeleton of toollib-gamepad(.sc, -c.h, -c.c) integrated into dsci.
 
 
 

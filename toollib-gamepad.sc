@@ -10,3 +10,6 @@
 
 (c-include "toollib-gamepad-c.h")
 (c-ffi:add-custom-type imlib-image pointer make-imlib-image imlib-image-handle)
+
+(define gamepad-hello-world
+ (c-function void ("gamepad_hello_world")))
