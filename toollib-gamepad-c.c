@@ -48,9 +48,12 @@ void* gamepad_update(void* args)
       GamepadUpdate(); //get gamepad status
       //do something with it
       //**FIXME** hard-coded here to use controller 0--might be ok???
-      if (GamepadButtonDown(0, BUTTON_START)) 
+      
+      //if (GamepadButtonDown(0, BUTTON_START)) 
+      if (GamepadButtonTriggered(0, BUTTON_START))
 	rover_start_cameras();
-      if (GamepadButtonDown(0, BUTTON_BACK))
+      //if (GamepadButtonDown(0, BUTTON_BACK))
+      if (GamepadButtonTriggered(0, BUTTON_BACK))
 	rover_stop_cameras();
     }
   return NULL;
