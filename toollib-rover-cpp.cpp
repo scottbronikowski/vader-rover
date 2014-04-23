@@ -17,17 +17,14 @@ const char* k_FrontCamPort = "3601";
 const char* k_PanoCamPort = "3602";
 const int BACKLOG = 5;
 const char* k_OutputDir = "/aux/sbroniko/images/";
+const char* ssh_prefix = "ssh -p 22222 root@localhost";
 
 //global variables
 struct CamGrab_t* FrontCam;
 struct CamGrab_t* PanoCam;
-//struct AllCams_t* AllCams;
 pthread_t grab_threads[k_numCams];
 int grab_threads_should_die = FALSE;
-
 Window display_pane; //??
-
-//prototypes
 
 // functions called from Scheme (must have extern "C" to prevent mangling)
 extern "C" int rover_server_setup(void)
@@ -101,6 +98,21 @@ extern "C" void rover_server_cleanup(void)
   printf("rover_server_cleanup completed\n");
 }
 
+extern "C" void rover_start_cameras(void)
+{
+  char cmd[500];
+  sprintf(cmd, "%s '/root/bin/run_cameras' &", ssh_prefix);
+  printf("sending: %s\n", cmd);
+  system(cmd);
+}
+
+extern "C" void rover_stop_cameras(void)
+{
+  char cmd[500];
+  sprintf(cmd, "%s 'pkill run_cameras' &", ssh_prefix);
+  printf("sending: %s\n", cmd);
+  system(cmd);
+}
 
 // extern "C" void rover_display(void)
 // {

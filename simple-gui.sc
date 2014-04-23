@@ -68,10 +68,14 @@
    (get-next-image-command))) ;;defined in toollib-rover.sc
  (define-button 5 7 "Start Cameras" #f
   (lambda ()
-   (system "ssh -p 22222 root@localhost \"/root/bin/run_cameras\" &")))
+   ;; (system "ssh -p 22222 root@localhost \"/root/bin/run_cameras\" &")
+   (rover-start-cameras)
+   ))
   (define-button 5 8 "Stop Cameras" #f
   (lambda ()
-   (system "ssh -p 22222 root@localhost \"pkill run_cameras\""))) 
+   ;; (system "ssh -p 22222 root@localhost \"pkill run_cameras\"")
+   (rover-stop-cameras)
+   )) 
  )
 
 (define (define-keys)
@@ -101,6 +105,7 @@
   (define-keys)
   (rover-server-setup)
   (rover-server-start)
+  (gamepad-init)
   (dtrace "Finished calling the god-damned pre-initialize function" "")
   
   )
@@ -112,6 +117,7 @@
  (lambda ()
   (dtrace ""  "Calling Finalize")
   (rover-server-cleanup)
+  (gamepad-shutdown)
   (imlib-context-disconnect-display))
  ;;; Redraw procedure:
  (lambda ()

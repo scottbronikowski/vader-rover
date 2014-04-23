@@ -93,6 +93,7 @@ extern const char* k_FrontCamPort;
 extern const char* k_PanoCamPort;
 extern const int BACKLOG;
 extern const char* k_OutputDir;
+extern const char* ssh_prefix;
 
 
 //global variables
@@ -132,6 +133,17 @@ Imlib_Image rover_get_pano_cam(void);
 extern "C"
 #endif
 void rover_server_cleanup(void);
+
+#ifdef __cplusplus
+extern "C"
+#endif
+void rover_start_cameras(void);
+
+#ifdef __cplusplus
+extern "C"
+#endif
+void rover_stop_cameras(void);
+
 
 
 // functions NOT called from Scheme

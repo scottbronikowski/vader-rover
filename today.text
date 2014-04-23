@@ -131,6 +131,8 @@ Old Notes
 22 Apr 14
 --Found seemingly useful driver/library for using gamepad at https://github.com/elanthis/gamepad.  It builds a shared library and also has a header to call functions that get the controller state.  Have skeleton of toollib-gamepad(.sc, -c.h, -c.c) integrated into dsci.
 
+23 Apr 14
+--Got initial functions of toollib-gamepad to work--start and stop cameras.  Discovered problem with sending commands via ssh--button presses send command more than once.  Decided to restructure rover-side code to have one master program (emperor) that listens for commands and then starts threads or calls functions as needed.
 
 
 

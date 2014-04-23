@@ -13,3 +13,12 @@
 
 (define gamepad-hello-world
  (c-function void ("gamepad_hello_world")))
+
+(define gamepad-init
+ (c-function void ("gamepad_init")))
+
+(define gamepad-shutdown
+ (c-function void ("gamepad_shutdown")))
+
+(define gamepad-update
+ (c-function void ("gamepad_update")))
