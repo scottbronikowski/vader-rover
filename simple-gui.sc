@@ -75,7 +75,11 @@
   (lambda ()
    ;; (system "ssh -p 22222 root@localhost \"pkill run_cameras\"")
    (rover-stop-cameras)
-   )) 
+   ))
+  (define-button 6 9 "(Re)Start Emperor" #f
+   (lambda ()
+    (system "ssh -p 22222 root@localhost \"pkill emperor\" &")
+    (system "ssh -p 22222 root@localhost \"/root/bin/emperor &\" &")))
  )
 
 (define (define-keys)

@@ -16,6 +16,18 @@
 //structures
 
 //global constants
+extern const char* k_CommandPort;
+extern const char* cmd_start_cameras;
+extern const char* cmd_stop_cameras;
+extern const char* cmd_pan;
+extern const char* cmd_tilt;
+//values used for pan & tilt servo calculations
+extern const int pan_left;
+extern const int pan_center;
+extern const int pan_right;
+extern const int tilt_up;
+extern const int tilt_center;
+extern const int tilt_down;
 
 //global vars
 extern int gamepad_thread_should_die;
@@ -28,6 +40,8 @@ void gamepad_shutdown(void);
 
 //functions NOT called from Scheme
 void* gamepad_update(void* args);
-
+int gamepad_start_server(const char* PORT);
+int gamepad_accept_connection(int sockfd);
+void* gamepad_get_in_addr(struct sockaddr *sa);
 
 #endif

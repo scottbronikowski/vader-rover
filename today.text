@@ -134,6 +134,8 @@ Old Notes
 23 Apr 14
 --Got initial functions of toollib-gamepad to work--start and stop cameras.  Discovered problem with sending commands via ssh--button presses send command more than once.  Decided to restructure rover-side code to have one master program (emperor) that listens for commands and then starts threads or calls functions as needed.
 
+24 Apr 14
+--Have control message-passing socket working between vader-rover and seykhl.  Vader-rover (emperor.cpp) 'calls home' to seyhkl on port 1999 to establish the socket, then vader listens.  On seyhkl, the port is created in toollib-gamepad.c (gamepad_update())--seyhkl spins waiting for vader-rover to connect, then once connected uses the port to send commands.  Have start and stop cameras working--next up is pan and tilt using right thumb stick.
 
 
 

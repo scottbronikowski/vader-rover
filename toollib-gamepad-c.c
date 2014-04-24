@@ -6,6 +6,18 @@
 #include "toollib-gamepad-c.h"
 
 //global constants
+const char* k_CommandPort = "1999";
+const char* cmd_start_cameras = "start_cameras";
+const char* cmd_stop_cameras = "stop_cameras";
+const char* cmd_pan = "pan ";
+const char* cmd_tilt = "tilt ";
+//values used for pan & tilt servo calculations
+const int pan_left = 20000; //max left
+const int pan_center = 15000;
+const int pan_right = 10000; //max right
+const int tilt_up = 12000; //max up
+const int tilt_center = 15000;
+const int tilt_down = 17000; //max down
 
 //global vars
 int gamepad_thread_should_die;
@@ -43,18 +55,146 @@ void gamepad_shutdown(void)
 //functions NOT called from Scheme
 void* gamepad_update(void* args)
 {
+  //start server and wait for connection
+  int sockfd, new_fd; //listen on sockfd, new connection on new_fd
+  float right_stick_length, right_stick_angle, left_stick_length, left_stick_angle;
+  sockfd = gamepad_start_server(k_CommandPort);
+  printf("server: waiting for command connection on port %s...\n", k_CommandPort);
+  
   while (!gamepad_thread_should_die)
-    {
-      GamepadUpdate(); //get gamepad status
-      //do something with it
-      //**FIXME** hard-coded here to use controller 0--might be ok???
-      
-      //if (GamepadButtonDown(0, BUTTON_START)) 
-      if (GamepadButtonTriggered(0, BUTTON_START))
-	rover_start_cameras();
-      //if (GamepadButtonDown(0, BUTTON_BACK))
-      if (GamepadButtonTriggered(0, BUTTON_BACK))
-	rover_stop_cameras();
+    { //main accept loop
+      usleep(10000);
+      new_fd = gamepad_accept_connection(sockfd);
+      /*
+	AcceptConnection set to non-blocking, so will spin here until it either gets 
+	a valid new_fd (and then goes into while loop below) or grab_threads_should_die
+	becomes TRUE, which will cause the while loop (and function) to exit.
+       */
+      if (new_fd != -1)
+        printf("Command connection established with new_fd = %d, sockfd = %d\n", 
+		 new_fd, sockfd);
+	
+      while (!gamepad_thread_should_die && (new_fd != -1))
+	{ //get input from gamepad
+	  GamepadUpdate(); //get gamepad status
+	  //do something with it
+	  //**FIXME** hard-coded here to use controller 0--might be ok???
+	  
+	  //camera start and stop
+	  if (GamepadButtonTriggered(0, BUTTON_START)) 
+	    send(new_fd, cmd_start_cameras, strlen(cmd_start_cameras), 0);
+	  if (GamepadButtonTriggered(0, BUTTON_BACK)) 
+	    send(new_fd, cmd_stop_cameras, strlen(cmd_stop_cameras), 0);
+
+	  //get stick positions and angles
+	  right_stick_length = GamepadStickLength(0, STICK_RIGHT);
+	  right_stick_angle = GamepadStickAngle(0, STICK_RIGHT);
+	  left_stick_length = GamepadStickLength(0, STICK_LEFT);
+	  left_stick_angle = GamepadStickAngle(0, STICK_LEFT);
+	  
+	  //look at right stick for pan and tilt
+	  
+	  //look at left stick for movement (possibly left trigger as well for extra speeds)
+	      
+	}
+      close(new_fd); //done with this
+      //printf("command new_fd closed\n");
     }
+  //socket cleanup
+  close(sockfd);
+  printf("command sockfd closed\n");
   return NULL;
+}
+
+void* gamepad_get_in_addr(struct sockaddr *sa)
+{// get sockaddr, IPv4 or IPv6:
+  if (sa->sa_family == AF_INET) 
+    { 
+      return &(((struct sockaddr_in*)sa)->sin_addr);
+    }
+  return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
+int gamepad_start_server(const char* PORT)
+{
+  int sockfd;
+  struct addrinfo hints, *servinfo, *p;
+  int yes=1;
+  int rv;
+  
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = AI_PASSIVE; // use my IP
+  
+  if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0)
+    {
+      fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+      return -1;
+    }
+  
+  // loop through all the results and bind to the first we can
+  for(p = servinfo; p != NULL; p = p->ai_next) 
+    {
+      if ((sockfd = socket(p->ai_family, p->ai_socktype,
+			   p->ai_protocol)) == -1) 
+	{
+	  perror("server: socket");
+	  continue;
+	}
+    
+      if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes,
+		     sizeof(int)) == -1) 
+	{
+	  perror("setsockopt");
+	  exit(1);
+	}
+    
+      if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) 
+	{
+	  close(sockfd);
+	  perror("server: bind");
+	  continue;
+	}
+      
+      break;
+    }
+  
+  if (p == NULL)  
+    {
+      fprintf(stderr, "server: failed to bind\n");
+      return -1;
+    }
+
+  freeaddrinfo(servinfo); // all done with this structure
+
+  if (listen(sockfd, BACKLOG) == -1) 
+    {
+      perror("listen");
+      exit(1);
+    } 
+  return sockfd;  
+}
+
+int gamepad_accept_connection(int sockfd)
+{
+  struct sockaddr_storage their_addr; // connector's address information
+  socklen_t sin_size;
+  int new_fd, flags;
+  char s[INET6_ADDRSTRLEN];
+
+  //first set sockfd to nonblocking
+  if ((flags = fcntl(sockfd, F_GETFL, 0)) == -1)
+    flags = 0;
+  fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+  
+  sin_size = sizeof(their_addr);
+  new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
+  if (new_fd == -1) 
+    return new_fd;
+  inet_ntop(their_addr.ss_family,
+	    gamepad_get_in_addr((struct sockaddr *)&their_addr),
+	    s, sizeof(s));
+  printf("server: got connection from %s\n", s);
+  return new_fd;
 }

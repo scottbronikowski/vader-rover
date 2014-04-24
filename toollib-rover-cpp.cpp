@@ -148,7 +148,7 @@ void* rover_server_grab(void* args)
   
   sockfd = StartServer(my_args->PortNumber);
 
-  printf("server: waiting for connections...\n");
+  printf("server: waiting for image connections...\n");
   
   while(!grab_threads_should_die) 
     {  // main accept() loop
