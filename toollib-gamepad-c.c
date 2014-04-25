@@ -7,21 +7,24 @@
 
 //global constants
 const char* k_CommandPort = "1999";
+const int k_maxBufSize = 50;
 const char* cmd_start_cameras = "start_cameras";
 const char* cmd_stop_cameras = "stop_cameras";
-const char* cmd_pan = "pan ";
-const char* cmd_tilt = "tilt ";
+//const char* cmd_pan = "pan";
+//const char* cmd_tilt = "tilt";
+const char* cmd_servo = "servo";
 //values used for pan & tilt servo calculations
 const int pan_left = 20000; //max left
-const int pan_center = 15000;
+const int pan_center = 15500; //adjusted from 15000;
 const int pan_right = 10000; //max right
-const int tilt_up = 12000; //max up
-const int tilt_center = 15000;
-const int tilt_down = 17000; //max down
+const int tilt_up = 12500; //max up
+const int tilt_center = 14500;//adjusted from 15000;
+const int tilt_down = 16500; //max down
 
 //global vars
 int gamepad_thread_should_die;
 pthread_t gamepad_thread;
+
 
 //functions called from Scheme
 void gamepad_hello_world(void)
@@ -57,7 +60,14 @@ void* gamepad_update(void* args)
 {
   //start server and wait for connection
   int sockfd, new_fd; //listen on sockfd, new connection on new_fd
-  float right_stick_length, right_stick_angle, left_stick_length, left_stick_angle;
+  float right_stick_length, left_stick_length;
+  float right_stick_angle, left_stick_angle;
+  float right_norm_x, right_norm_y, right_x, right_y;
+  float left_norm_x, left_norm_y, left_x, left_y;
+  GAMEPAD_STICKDIR right_stick_dir, left_stick_dir;
+  char temp_cmd_buf1[k_maxBufSize];
+  //char temp_cmd_buf2[k_maxBufSize];
+  int temp_val1, servo_tilt, servo_pan;
   sockfd = gamepad_start_server(k_CommandPort);
   printf("server: waiting for command connection on port %s...\n", k_CommandPort);
   
@@ -78,24 +88,56 @@ void* gamepad_update(void* args)
 	{ //get input from gamepad
 	  GamepadUpdate(); //get gamepad status
 	  //do something with it
+	  
+	  memset(temp_cmd_buf1, 0, sizeof(temp_cmd_buf1));
+	  //memset(temp_cmd_buf2, 0, sizeof(temp_cmd_buf2));
+	  
 	  //**FIXME** hard-coded here to use controller 0--might be ok???
 	  
 	  //camera start and stop
 	  if (GamepadButtonTriggered(0, BUTTON_START)) 
-	    send(new_fd, cmd_start_cameras, strlen(cmd_start_cameras), 0);
+	    //send(new_fd, cmd_start_cameras, strlen(cmd_start_cameras), 0);
+	    gamepad_send_command(cmd_start_cameras, new_fd);
 	  if (GamepadButtonTriggered(0, BUTTON_BACK)) 
-	    send(new_fd, cmd_stop_cameras, strlen(cmd_stop_cameras), 0);
+	    //send(new_fd, cmd_stop_cameras, strlen(cmd_stop_cameras), 0);
+	    gamepad_send_command(cmd_stop_cameras, new_fd);
 
-	  //get stick positions and angles
+	  //get stick positions, angles, directions
 	  right_stick_length = GamepadStickLength(0, STICK_RIGHT);
 	  right_stick_angle = GamepadStickAngle(0, STICK_RIGHT);
+	  right_stick_dir = GamepadStickDir(0, STICK_RIGHT);
+	  GamepadStickNormXY(0, STICK_RIGHT, &right_norm_x, &right_norm_y);
 	  left_stick_length = GamepadStickLength(0, STICK_LEFT);
 	  left_stick_angle = GamepadStickAngle(0, STICK_LEFT);
+	  left_stick_dir = GamepadStickDir(0, STICK_LEFT);
+	  GamepadStickNormXY(0, STICK_LEFT, &left_norm_x, &left_norm_y);
 	  
 	  //look at right stick for pan and tilt
-	  
+	  right_x = right_stick_length * right_norm_x; //get x and y positions
+	  right_y = right_stick_length * right_norm_y; //in range -1 to +1
+	  //do tilt
+	  if (right_y > 0.f) //tilt up
+	    temp_val1 = tilt_center - tilt_up; //range of up movement
+	  else //tilt down
+	    temp_val1 = tilt_down - tilt_center; //range of movement
+	  temp_val1 = (int)(temp_val1 * right_y); //times de-normalized y movement
+	  servo_tilt = tilt_center - temp_val1; //works b/c tilt_up < center < down
+	  //do pan
+	  if (right_x > 0.f) //pan right
+	    temp_val1 = pan_center - pan_right; //range of movement
+	  else //pan left
+	    temp_val1 = pan_left - pan_center; //range of movement 
+	  temp_val1 = (int)(temp_val1 * right_x); //time de-normalized x movement
+	  servo_pan = pan_center - temp_val1; //works b/c pan_right < center < left
+	  //build the command and send it
+	  memset(temp_cmd_buf1, 0, sizeof(temp_cmd_buf1));
+	  sprintf(temp_cmd_buf1, "%s_%d_%d", cmd_servo, servo_tilt, servo_pan);
+	  gamepad_send_command(temp_cmd_buf1, new_fd);
+	  //done with right stick
+
 	  //look at left stick for movement (possibly left trigger as well for extra speeds)
-	      
+	 
+	  usleep(10000); //put a wait in to slow down command flow
 	}
       close(new_fd); //done with this
       //printf("command new_fd closed\n");
@@ -197,4 +239,13 @@ int gamepad_accept_connection(int sockfd)
 	    s, sizeof(s));
   printf("server: got connection from %s\n", s);
   return new_fd;
+}
+
+int gamepad_send_command(const char* command, int fd)
+{
+  char cmd_buf[k_maxBufSize];
+  memset(cmd_buf, 0, sizeof(cmd_buf));
+  strncpy(cmd_buf, command, sizeof(cmd_buf));
+  printf("gamepad_send_command: %s\n", cmd_buf);
+  return send(fd, cmd_buf, sizeof(cmd_buf), 0);
 }
