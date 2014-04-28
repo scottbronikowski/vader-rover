@@ -18,11 +18,7 @@
 //global constants
 extern const char* k_CommandPort;
 extern const int k_maxBufSize;
-extern const char* cmd_start_cameras;
-extern const char* cmd_stop_cameras;
-//extern const char* cmd_pan;
-//extern const char* cmd_tilt;
-extern const char* cmd_servo;
+
 //values used for pan & tilt servo calculations
 extern const int pan_left;
 extern const int pan_center;
@@ -30,8 +26,33 @@ extern const int pan_right;
 extern const int tilt_up;
 extern const int tilt_center;
 extern const int tilt_down;
+extern const float k_PI;
 
 //global vars
+extern char* cmd_start_cameras;
+extern char* cmd_stop_cameras;
+extern char* cmd_forward_4;
+extern char* cmd_forward_3;
+extern char* cmd_forward_2;
+extern char* cmd_forward_1;
+extern char* cmd_stop;
+extern char* cmd_reverse_1;
+extern char* cmd_reverse_2;
+extern char* cmd_reverse_3;
+extern char* cmd_reverse_4;
+extern char* cmd_forward_right_1;
+extern char* cmd_forward_right_2;
+extern char* cmd_forward_left_1;
+extern char* cmd_forward_left_2;
+extern char* cmd_pivot_left_1;
+extern char* cmd_pivot_left_2;
+extern char* cmd_pivot_right_1;
+extern char* cmd_pivot_right_2;
+extern char* cmd_reverse_left_1;
+extern char* cmd_reverse_left_2;
+extern char* cmd_reverse_right_1;
+extern char* cmd_reverse_right_2;
+extern char* cmd_servo;
 extern int gamepad_thread_should_die;
 extern pthread_t gamepad_thread;
 

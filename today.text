@@ -1,9 +1,3 @@
-
-TODO:
-- Hook ammeter up to battery to observe current draw--need wire harness that fits.
-
-
-
 Random notes:
 ------------------
 (define duplicates (removeq #f (map-indexed (lambda (line i) (if (> (length (removeq #f (map-indexed (lambda (other j) (and (equal? other line) (not (equal? i j)))) symtable))) 0) line #f)) symtable)))
@@ -140,11 +134,27 @@ Old Notes
 25 Apr 14
 --Got pan and tilt servos for front camera working from right thumbstick of gamepad.  Next up will be the motor commands on the left thumbstick.
 
+28 Apr 14
+--Have motor commands mapped to positions on left thumbstick in toollib-gamepad-c.c.
+--Implemented command checker on seykhl side to prevent sending of duplicate commands to rover.  May need to remove similar checking code on rover side.
 
 
+
+
+TODO:
 ***LOOK AT CALLING TOOLLIB-GAMEPAD FUNCTIONS FROM SCHEME FOR BUTTONS (START/STOP CAMERAS, MOTORS, ETC...*****
 
+--On seykhl, build command like servo_15000_15000:stop every Amputated() cycle, then check and send only if different from last command
+--On rover, parse into separate servo and motor commands, and send only if different
+--When/where to log????
+--Will changing front cam to black & white give sharper picture and/or lower CPU usage?
 
+Weekly Goals:
+M: Finish mapping driving commands to left thumb stick on game controller.  Implement software fix for leftward pull while driving.
+T:  Integrate bump switch monitor code into emperor (probably separate thread).  Start work on driver code for shaft encoders and IMU.
+W:  Research and prepare order for: extra batteries/chargers, speakers and microphones for bidirectional speech, longer plenum tubing needed for flipped bump switches.  Continue work on shaft encoder and IMU code.
+R: Continue work on shaft encoder and IMU code.
+F: Continue work on shaft encoder and IMU code.  Start looking at data logging/recording and time stamping methods.
 
 
 
