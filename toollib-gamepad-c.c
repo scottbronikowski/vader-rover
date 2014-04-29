@@ -3,6 +3,7 @@
    Date: 22 April 2014
 */
 
+
 #include "toollib-gamepad-c.h"
 
 //global constants
@@ -247,7 +248,7 @@ void* gamepad_update(void* args)
 	    }
 	  //build the command and send it (if new)
 	  memset(new_cmd_buf, 0, sizeof(new_cmd_buf)); //clear new command buffer
-	  sprintf(new_cmd_buf, "%s_%d_%d:%s", cmd_servo, servo_tilt, 
+	  sprintf(new_cmd_buf, "%s:%d:%d:%s", cmd_servo, servo_tilt, 
 		  servo_pan, motor_cmd);
 	  if (strncmp(new_cmd_buf, prev_cmd_buf, k_maxBufSize) != 0)
 	    {//received new command, so save it and send it
@@ -256,7 +257,7 @@ void* gamepad_update(void* args)
 	    }
 	  else //repeated command
 	    continue;
-	  //probably don't need this anymore
+
 	  //usleep(10000); //put a wait in to slow down command flow
 	}
       close(new_fd); //done with this
@@ -366,6 +367,6 @@ int gamepad_send_command(const char* command, int fd)
   char cmd_buf[k_maxBufSize];
   memset(cmd_buf, 0, sizeof(cmd_buf));
   strncpy(cmd_buf, command, sizeof(cmd_buf));
-  printf("gamepad_send_command: %s\n", cmd_buf);
+  /* printf("gamepad_send_command: %s\n", cmd_buf); */
   return send(fd, cmd_buf, sizeof(cmd_buf), 0);
 }

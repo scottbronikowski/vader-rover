@@ -138,6 +138,9 @@ Old Notes
 --Have motor commands mapped to positions on left thumbstick in toollib-gamepad-c.c.
 --Implemented command checker on seykhl side to prevent sending of duplicate commands to rover.  May need to remove similar checking code on rover side.
 
+29 Apr 14
+--Tracked down slow pan/tilt execution to rover-side motor sending code; fixed.
+--Completed and tested implementation of command parsing and sending to motors within emperor.cpp.  Removed extraneous printfs in both toollib-gamepad-c.c on seykhl and emperor.cpp on rover.
 
 
 
