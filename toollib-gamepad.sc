@@ -21,4 +21,4 @@
  (c-function void ("gamepad_shutdown")))
 
 (define gamepad-update
- (c-function void ("gamepad_update")))
+ (c-function void ("gamepad_update" pointer)))

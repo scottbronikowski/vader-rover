@@ -154,7 +154,7 @@ void* gamepad_update(void* args)
 	  servo_pan = pan_center - range; //works b/c pan_right < center < left
 	  //done with right stick
 
-	  //look at left stick for movement (possibly left trigger as well for extra speeds)
+	  //look at left stick for movement (and left trigger for extra speeds)
 	  if ((left_stick_dir == STICKDIR_CENTER) ||
 	      GamepadButtonDown(GAMEPAD_0, BUTTON_B) ||
 	      GamepadButtonDown(GAMEPAD_0, BUTTON_LEFT_SHOULDER)) 

@@ -1,7 +1,7 @@
 /*
 Tool library for running vader-rover in Scheme GUI.
 Includes:
---Implementation of server to receive camera data from rover:c ommunication 
+--Implementation of server to receive camera data from rover; communication 
   code adapted from 
   http://www.beej.us/guide/bgnet/output/html/multipage/clientserver.html
 
@@ -98,21 +98,21 @@ extern "C" void rover_server_cleanup(void)
   printf("rover_server_cleanup completed\n");
 }
 
-extern "C" void rover_start_cameras(void)
-{
-  char cmd[500];
-  sprintf(cmd, "%s '/root/bin/run_cameras' &", ssh_prefix);
-  printf("sending: %s\n", cmd);
-  system(cmd);
-}
+// extern "C" void rover_start_cameras(void)
+// {
+//   char cmd[500];
+//   sprintf(cmd, "%s '/root/bin/run_cameras' &", ssh_prefix);
+//   printf("sending: %s\n", cmd);
+//   system(cmd);
+// }
 
-extern "C" void rover_stop_cameras(void)
-{
-  char cmd[500];
-  sprintf(cmd, "%s 'pkill run_cameras' &", ssh_prefix);
-  printf("sending: %s\n", cmd);
-  system(cmd);
-}
+// extern "C" void rover_stop_cameras(void)
+// {
+//   char cmd[500];
+//   sprintf(cmd, "%s 'pkill run_cameras' &", ssh_prefix);
+//   printf("sending: %s\n", cmd);
+//   system(cmd);
+// }
 
 // extern "C" void rover_display(void)
 // {

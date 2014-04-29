@@ -25,11 +25,11 @@
 (define rover-server-cleanup
  (c-function void ("rover_server_cleanup")))
 
-(define rover-start-cameras
- (c-function void ("rover_start_cameras")))
+;; (define rover-start-cameras
+;;  (c-function void ("rover_start_cameras")))
 
-(define rover-stop-cameras
- (c-function void ("rover_stop_cameras")))
+;; (define rover-stop-cameras
+;;  (c-function void ("rover_stop_cameras")))
 
 ;; used to get images from ImgArrays
 (define (get-next-image-command)

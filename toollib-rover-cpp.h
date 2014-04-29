@@ -134,15 +134,15 @@ extern "C"
 #endif
 void rover_server_cleanup(void);
 
-#ifdef __cplusplus
-extern "C"
-#endif
-void rover_start_cameras(void);
+// #ifdef __cplusplus
+// extern "C"
+// #endif
+// void rover_start_cameras(void);
 
-#ifdef __cplusplus
-extern "C"
-#endif
-void rover_stop_cameras(void);
+// #ifdef __cplusplus
+// extern "C"
+// #endif
+// void rover_stop_cameras(void);
 
 
 
