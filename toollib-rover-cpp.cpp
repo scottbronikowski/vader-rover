@@ -17,25 +17,31 @@ const char* k_FrontCamPort = "3601";
 const char* k_PanoCamPort = "3602";
 const int BACKLOG = 5;
 const char* k_OutputDir = "/aux/sbroniko/images/";
-const char* ssh_prefix = "ssh -p 22222 root@localhost";
+//const char* ssh_prefix = "ssh -p 22222 root@localhost";
+const char* k_LogPort = "2001";
+const char* k_LogDir = "/home/sbroniko/vader-rover/logs/";
+const int k_LogBufSize = 100;
 
 //global variables
 struct CamGrab_t* FrontCam;
 struct CamGrab_t* PanoCam;
 pthread_t grab_threads[k_numCams];
-int grab_threads_should_die = FALSE;
-Window display_pane; //??
+int grab_threads_should_die;
+Window display_pane;
+pthread_t log_thread;
+int log_thread_should_die, log_sockfd, log_new_fd;
+FILE* log_file;
 
 // functions called from Scheme (must have extern "C" to prevent mangling)
 extern "C" int rover_server_setup(void)
 {
+  //setup for displaying images (grab threads)
   FrontCam = (struct CamGrab_t*) malloc(sizeof(struct CamGrab_t));
   PanoCam = (struct CamGrab_t*) malloc(sizeof(struct CamGrab_t));
   pthread_mutex_init(&FrontCam->MostRecentLock, NULL);
   pthread_mutex_init(&PanoCam->MostRecentLock, NULL);
   FrontCam->MostRecent = -1;
   PanoCam->MostRecent = -1;
-  //create LastDisplayedImage as dummy
   FrontCam->LastDisplayed = -1;
   PanoCam->LastDisplayed = -1;
   FrontCam->PortNumber = (char*) malloc(sizeof(char) * 10);
@@ -51,13 +57,45 @@ extern "C" int rover_server_setup(void)
       FrontCam->Set[i] = FALSE;
       PanoCam->Set[i] = FALSE;
     }
-  // AllCams = (struct AllCams_t*) malloc(sizeof(struct AllCams_t));
-  // AllCams->CG[0] = FrontCam;
-  // AllCams->CG[1] = PanoCam;
   grab_threads_should_die = FALSE;
   char windowname[] = "rover-viewer";
   display_pane = FindWindow(windowname);//"rover-viewer");
-  printf("rover_server_setup succeeded\n");
+
+  //setup for logging data (log thread)
+  log_thread_should_die = FALSE;
+  if (CheckSaving(k_LogDir) != 0)
+    {
+      printf("rover_server_setup() failed due to inability to log data\n");
+      return -1;
+    }
+  //create log file with GMT time in filename
+  char logFileName[k_LogBufSize];
+  char tempName[k_LogBufSize];
+  time_t now;
+  logFileName[0] = '\0';
+  now = time(NULL);
+  if (now != -1)
+    strftime(tempName, k_LogBufSize, "log-%F-%T.txt", gmtime(&now));
+  else
+    {
+      printf("error creating logFileName\n");
+      return -1;
+    }
+  sprintf(logFileName, "%s%s", k_LogDir, tempName);
+  log_file = fopen(logFileName, "w+");
+  if (log_file == NULL)
+    {
+      printf("Failed to create file %s%s.  Please check permissions.\n",
+	     k_LogDir, logFileName);
+      return -1;
+    }
+  //open socket for log data from vader-rover
+  log_sockfd = StartServer(k_LogPort);
+  printf("server: waiting for data logging connection on port %s...\n",
+	 k_LogPort);  
+  
+  //success if we get here
+  printf("rover_server_setup() succeeded\n");
   return 0;
 }
 
@@ -66,15 +104,16 @@ extern "C" void rover_server_start(void)
   pthread_attr_t attributes;
   pthread_attr_init(&attributes);
   pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_JOINABLE);
+  //threads to display images from rover
   pthread_create(&grab_threads[0], &attributes, rover_server_grab, (void *)FrontCam);
   pthread_create(&grab_threads[1], &attributes, rover_server_grab, (void *)PanoCam);
-  //call display thread here
-  
-  //call save thread here
-  pthread_attr_destroy(&attributes);
-  // will we ever get here?
-  //return 0;
-  printf("at end of rover_server_start\n");
+  //thread to save images to video (with timestamping)
+
+  //thread to log data from rover
+  pthread_create(&log_thread, &attributes, rover_server_log, NULL);
+  pthread_attr_destroy(&attributes); //don't need this anymore
+
+  printf("rover_server_start() complete\n");
 } 
 
 extern "C" Imlib_Image rover_get_front_cam(void)
@@ -91,10 +130,20 @@ extern "C" Imlib_Image rover_get_pano_cam(void)
 
 extern "C" void rover_server_cleanup(void)
 {
+  //kill video display threads
   grab_threads_should_die = TRUE;
   pthread_join(grab_threads[0], NULL);
   pthread_join(grab_threads[1], NULL);
-  //kill display and save threads here
+  //kill video save thread
+
+  //kill data logging thread
+  log_thread_should_die = TRUE;
+  pthread_join(log_thread, NULL);
+  //pthread_kill(log_thread, SIGINT);  //bad, causes heap out of memory
+  close(log_sockfd);
+  fclose(log_file);
+  printf("log_sockfd and log_file closed\n");
+  //complete
   printf("rover_server_cleanup completed\n");
 }
 
@@ -137,7 +186,7 @@ void* rover_server_grab(void* args)
   //int screen = DefaultScreen(display);
   /* magic to get GUI to run periodically */
   event.type = KeyPress;
-  event.xkey.keycode = 9;		/* SEC */
+  event.xkey.keycode = 9;		/* ESC */
   event.xkey.state = 0;			/* no Mod1Mask */
   /* magic so can display Imlib frames */
   // imlib_context_disconnect_display();
@@ -148,7 +197,8 @@ void* rover_server_grab(void* args)
   
   sockfd = StartServer(my_args->PortNumber);
 
-  printf("server: waiting for image connections...\n");
+  printf("server: waiting for image connection on port %s...\n",
+	 my_args->PortNumber);
   
   while(!grab_threads_should_die) 
     {  // main accept() loop
@@ -156,8 +206,9 @@ void* rover_server_grab(void* args)
       new_fd = AcceptConnection(sockfd);
       /*
 	AcceptConnection set to non-blocking, so will spin here until it either gets 
-	a valid new_fd (and then goes into while loop below) or grab_threads_should_die
-	becomes TRUE, which will cause the while loop (and function) to exit.
+	a valid new_fd (and then goes into while loop below) or 
+	grab_threads_should_die becomes TRUE, which will cause the while loop 
+	(and function) to exit.
        */
       while(!grab_threads_should_die && (new_fd != -1))
 	{
@@ -211,6 +262,56 @@ void* rover_server_grab(void* args)
   close(sockfd);
   printf("sockfd closed\n");
   return NULL; // (void *)my_args;?????
+}
+
+void* rover_server_log(void* args)
+{
+  int retval;
+  char logbuf[k_LogBufSize];
+  fd_set recv_set;
+  struct timeval timeout;
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 1000 * 10; //10ms timeout
+  while (!log_thread_should_die)
+    {//main accept() loop
+      usleep(10000);
+      log_new_fd = AcceptConnection(log_sockfd);
+      /*
+	AcceptConnection set to non-blocking, so will spin here until it either gets 
+	a valid log_new_fd (and then goes into while loop below) or 
+	log_thread_should_die becomes TRUE, which will cause the while loop 
+	(and function) to exit.
+       */
+      if (log_new_fd != -1)
+        printf("Log connection established with log_new_fd = %d, log_sockfd = %d\n", 
+		 log_new_fd, log_sockfd);
+
+      while (!log_thread_should_die && (log_new_fd != -1))
+	{
+	  memset(logbuf, 0, sizeof(logbuf));  //clear buffer
+	  //wrapping recv in a select here to ensure loop checks 
+	  //log_thread_should_die every timeout
+	  FD_ZERO(&recv_set);
+	  FD_SET(log_new_fd, &recv_set);
+	  retval = select(log_new_fd+1, &recv_set, NULL, NULL, &timeout);
+	  if (retval < 0)
+	    printf("select error\n");
+	  else if (retval == 0)
+	    continue;
+	  else //retval >= 1-->we have data to receive
+	    {
+	      retval = recv(log_new_fd, &logbuf, sizeof(logbuf), 0);
+	      if (retval <= 0)
+		{ //what error handling to do here??
+		  printf("retval = %d\n", retval);
+		  break;
+		}
+	      fprintf(log_file, "%s\n", logbuf);
+	    }
+	}
+      close(log_new_fd);
+    }
+  return NULL;
 }
 
 void* get_in_addr(struct sockaddr *sa)
@@ -327,7 +428,7 @@ int recvall(int s, unsigned char* buf, int* len)
   return n<=0?-1:0; // return -1 on failure, 0 on success
 }
 
-int CheckSaving(const char *dir)
+int CheckSaving(const char* dir)
 {
   struct stat sb;
   if (!(stat(dir, &sb) == 0 && S_ISDIR(sb.st_mode)))

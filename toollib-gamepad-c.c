@@ -64,6 +64,7 @@ void gamepad_init(void)
   pthread_attr_setdetachstate(&attributes, PTHREAD_CREATE_JOINABLE);
   pthread_create(&gamepad_thread, &attributes, gamepad_update, NULL);
   pthread_attr_destroy(&attributes);
+  //printf("sizeof(long int) = %d\n", sizeof(long int));
   printf("Gamepad initialized\n");
 }
 

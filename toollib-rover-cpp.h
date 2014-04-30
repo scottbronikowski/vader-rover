@@ -93,8 +93,10 @@ extern const char* k_FrontCamPort;
 extern const char* k_PanoCamPort;
 extern const int BACKLOG;
 extern const char* k_OutputDir;
-extern const char* ssh_prefix;
-
+//extern const char* ssh_prefix;
+extern const char* k_LogPort;
+extern const char* k_LogDir;
+extern const int k_LogBufSize;
 
 //global variables
 extern struct CamGrab_t* FrontCam;
@@ -102,6 +104,9 @@ extern struct CamGrab_t* PanoCam;
 //extern struct AllCams_t* AllCams;
 extern pthread_t grab_threads[k_numCams];
 extern int grab_threads_should_die;
+extern pthread_t log_thread;
+extern int log_thread_should_die, log_sockfd, log_new_fd;
+extern FILE* log_file;
 
 // functions called from Scheme
 #ifdef __cplusplus
@@ -148,11 +153,12 @@ void rover_server_cleanup(void);
 
 // functions NOT called from Scheme
 void* rover_server_grab(void* args);
+void* rover_server_log(void* args);
 void* get_in_addr(struct sockaddr *sa);
 int StartServer(const char* PORT);
 int AcceptConnection(int sockfd);
 int recvall(int s, unsigned char* buf, int* len);
-int CheckSaving(const char *dir);
+int CheckSaving(const char* dir);
 Imlib_Image Get_Image_from_ImgArray(struct CamGrab_t* CG);
 Window FindWindow(char* szWindowToFind);
 // Window SearchWindow(char* szWindowToFind, int level, Display *display, 
