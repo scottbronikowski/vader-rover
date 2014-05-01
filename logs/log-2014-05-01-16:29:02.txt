@@ -1,0 +1,11 @@
+Log file created at 2014-05-01-16:29:02
+1398961750.293038: Logging started
+1398961750.293404: executed: pan_15500, tilt_14500
+1398961750.318062: executed: motor_stop
+1398961751.717726: executed: start_cameras
+1398961753.857125: executed: motor_forward_1
+1398961754.474271: executed: motor_stop
+1398961754.771141: executed: motor_forward_1
+1398961755.435192: executed: motor_stop
+1398961756.535057: executed: stop_cameras
+Log file closed at 2014-05-01-16:29:18

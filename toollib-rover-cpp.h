@@ -163,7 +163,7 @@ Imlib_Image Get_Image_from_ImgArray(struct CamGrab_t* CG);
 Window FindWindow(char* szWindowToFind);
 // Window SearchWindow(char* szWindowToFind, int level, Display *display, 
 // 		    Window rootWindow, int iMatchMode, int showErrors);
-
+double rover_current_time(void);
 #ifdef __cplusplus
 //use PointGrey_t2, which uses OpenCV C++ API
 int OpenCV_ReceiveFrame(PointGrey_t2* PG);

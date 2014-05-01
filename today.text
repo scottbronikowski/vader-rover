@@ -149,13 +149,14 @@ Old Notes
 30 Apr 14
 --Built initial data logging infrastructure into dsci (toollib-rover-cpp.cpp, rover_server_log()).  Receives buffer of text sent from rover and saves it in a log file (named with UTC date/time when rover_server_setup() was called).  Have seykhl-side code working implemented and clean startup/shutdown.  Still need to finish code to send data from rover.
 
+1 May 14
+--Logging functional for pan/tilt, motor, and camera commands. Text files saved to ~/vader-rover/logs/.  GMT timestamps come from seykhl, while timestamps in seconds.microseconds come from rover (except for the final 'Logging completed' timestamp--has to come from seykhl b/c shutdown routine uses the socket closing from seykhl side as the notification to rover to stop logging.
+--Bump switch monitor functions integrated into emperor.cpp (as separate thread) on rover.  Bump switch messages logged on seykhl.
+
 TODO:
 ***LOOK AT CALLING TOOLLIB-GAMEPAD FUNCTIONS FROM SCHEME FOR BUTTONS (START/STOP CAMERAS, MOTORS, ETC...*****
 
-**Bringing monitor functions into emperor--how to communicate back to seykhl?  
-	   Possibly start a new thread in toollib-rover to listen???
-	   Timestamp on rover, then send over socket to seykhl, then seykhl writes to file...???
-	   
+   
 
 
 --When/where to log????

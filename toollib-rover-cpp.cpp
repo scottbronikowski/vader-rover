@@ -89,6 +89,9 @@ extern "C" int rover_server_setup(void)
 	     k_LogDir, logFileName);
       return -1;
     }
+  memset(tempName, 0, sizeof(tempName));
+  strftime(tempName, k_LogBufSize, "Log file created at %F-%T GMT", gmtime(&now));
+  fprintf(log_file, "%s\n", tempName);
   //open socket for log data from vader-rover
   log_sockfd = StartServer(k_LogPort);
   printf("server: waiting for data logging connection on port %s...\n",
@@ -130,6 +133,8 @@ extern "C" Imlib_Image rover_get_pano_cam(void)
 
 extern "C" void rover_server_cleanup(void)
 {
+  time_t later;
+  char tempName[k_LogBufSize];
   //kill video display threads
   grab_threads_should_die = TRUE;
   pthread_join(grab_threads[0], NULL);
@@ -140,7 +145,11 @@ extern "C" void rover_server_cleanup(void)
   log_thread_should_die = TRUE;
   pthread_join(log_thread, NULL);
   //pthread_kill(log_thread, SIGINT);  //bad, causes heap out of memory
+  fprintf(log_file, "%.6f: Logging completed\n", rover_current_time());
   close(log_sockfd);
+  later = time(NULL);
+  strftime(tempName, k_LogBufSize, "Log file closed at %F-%T GMT", gmtime(&later));
+  fprintf(log_file, "%s\n", tempName);
   fclose(log_file);
   printf("log_sockfd and log_file closed\n");
   //complete
@@ -296,8 +305,8 @@ void* rover_server_log(void* args)
 	  retval = select(log_new_fd+1, &recv_set, NULL, NULL, &timeout);
 	  if (retval < 0)
 	    printf("select error\n");
-	  else if (retval == 0)
-	    continue;
+	  else if (retval == 0) //timeout
+	    continue; //go back to the top of the loop and recheck log_thread_should_die
 	  else //retval >= 1-->we have data to receive
 	    {
 	      retval = recv(log_new_fd, &logbuf, sizeof(logbuf), 0);
@@ -655,4 +664,11 @@ Window FindWindow(char* szWindowToFind)
 
     XCloseDisplay (display);
     return wSearchedWindow;
+}
+
+double rover_current_time(void) 
+{
+  struct timeval time;
+  if (gettimeofday(&time, NULL)!=0) printf("gettimeofday failed");
+  return ((double)time.tv_sec)+((double)time.tv_usec)/1e6;
 }
