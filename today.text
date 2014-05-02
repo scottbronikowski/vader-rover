@@ -153,8 +153,19 @@ Old Notes
 --Logging functional for pan/tilt, motor, and camera commands. Text files saved to ~/vader-rover/logs/.  GMT timestamps come from seykhl, while timestamps in seconds.microseconds come from rover (except for the final 'Logging completed' timestamp--has to come from seykhl b/c shutdown routine uses the socket closing from seykhl side as the notification to rover to stop logging.
 --Bump switch monitor functions integrated into emperor.cpp (as separate thread) on rover.  Bump switch messages logged on seykhl.
 
+2 May 14
+--Researched and compiled parts order for batteries/chargers, plenum tubing, and speakers/microphone.
+--Reversed mounting direction on all bump switches so that now their whiskers will cross at approximately the center line of the rover.  Need longer plenum tubing to make the whiskers reach to the outer edge of the tires.  Checked with machine shop and electronics shop in ECE, and neither had any tubing.
+--Started researching methods of converting individual frames into a video using ffmpeg and/or opencv (while preserving timestamp data).  The opencv VideoWriter class looks promising.
+--Minor code cleanup on toollib-rover and toollib-gamepad
+--Started building functions to send frame capture timestamps (identical to the ones used for commands/bumps) from rover to seykhl on every frame, and then log those timestamps into a separate text file for each camera.  Now each run has a directory named with date and GMT time of starting, then 3 text files (log.txt, front.txt, pano.txt).  File creation and saving on seykhl complete, need to implement the sending of image timestamps on vader-rover and receiving and writing to file on seykhl.
+
 TODO:
 ***LOOK AT CALLING TOOLLIB-GAMEPAD FUNCTIONS FROM SCHEME FOR BUTTONS (START/STOP CAMERAS, MOTORS, ETC...*****
+
+Send timestamps with images over same network port and log into files on seykhl
+
+OpenCV:VideoWriter class (reading and writing images and video documentation page)
 
    
 

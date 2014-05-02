@@ -10,7 +10,6 @@
 #include "toollib-rover-cpp.h" //mucho includes here
 #include <stdio.h>
 
-
 //defines
 
 //structures
@@ -18,7 +17,6 @@
 //global constants
 extern const char* k_CommandPort;
 extern const int k_maxBufSize;
-
 //values used for pan & tilt servo calculations
 extern const int pan_left;
 extern const int pan_center;
@@ -27,8 +25,7 @@ extern const int tilt_up;
 extern const int tilt_center;
 extern const int tilt_down;
 extern const float k_PI;
-
-//global vars
+//these should be constants, but had compiler errors using const 
 extern char* cmd_start_cameras;
 extern char* cmd_stop_cameras;
 extern char* cmd_forward_4;
@@ -53,6 +50,8 @@ extern char* cmd_reverse_left_2;
 extern char* cmd_reverse_right_1;
 extern char* cmd_reverse_right_2;
 extern char* cmd_servo;
+
+//global vars
 extern int gamepad_thread_should_die;
 extern pthread_t gamepad_thread;
 

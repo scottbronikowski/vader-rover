@@ -17,7 +17,6 @@ const char* k_FrontCamPort = "3601";
 const char* k_PanoCamPort = "3602";
 const int BACKLOG = 5;
 const char* k_OutputDir = "/aux/sbroniko/images/";
-//const char* ssh_prefix = "ssh -p 22222 root@localhost";
 const char* k_LogPort = "2001";
 const char* k_LogDir = "/home/sbroniko/vader-rover/logs/";
 const int k_LogBufSize = 100;
@@ -59,7 +58,7 @@ extern "C" int rover_server_setup(void)
     }
   grab_threads_should_die = FALSE;
   char windowname[] = "rover-viewer";
-  display_pane = FindWindow(windowname);//"rover-viewer");
+  display_pane = FindWindow(windowname);
 
   //setup for logging data (log thread)
   log_thread_should_die = FALSE;
@@ -68,30 +67,68 @@ extern "C" int rover_server_setup(void)
       printf("rover_server_setup() failed due to inability to log data\n");
       return -1;
     }
-  //create log file with GMT time in filename
-  char logFileName[k_LogBufSize];
+  //create log DIRECTORY with GMT as name
   char tempName[k_LogBufSize];
   time_t now;
-  logFileName[0] = '\0';
   now = time(NULL);
   if (now != -1)
-    strftime(tempName, k_LogBufSize, "log-%F-%T.txt", gmtime(&now));
+    strftime(tempName, k_LogBufSize, "%F-%T", gmtime(&now));
   else
     {
-      printf("error creating logFileName\n");
+      printf("error getting time\n");
       return -1;
     }
-  sprintf(logFileName, "%s%s", k_LogDir, tempName);
+  char logDirName[k_LogBufSize];
+  logDirName[0] = '\0';
+  sprintf(logDirName, "%s%s", k_LogDir, tempName);
+  struct stat sb;
+  if (!(stat(logDirName, &sb) == 0 && S_ISDIR(sb.st_mode)))
+  {
+    if (mkdir(logDirName, S_IRWXU | S_IRGRP | S_IROTH | S_IXGRP | S_IXOTH) != 0)
+    {
+      printf("Error creating directory %s\n",logDirName);
+      return -1;
+    }
+  }
+  //create log file
+  char logFileName[k_LogBufSize];
+  logFileName[0] = '\0';
+  sprintf(logFileName, "%s%s/log.txt", k_LogDir, tempName);
   log_file = fopen(logFileName, "w+");
   if (log_file == NULL)
     {
-      printf("Failed to create file %s%s.  Please check permissions.\n",
-	     k_LogDir, logFileName);
+      printf("Failed to create file %s.  Please check permissions.\n", logFileName);
+      return -1;
+    }
+  // memset(tempName, 0, sizeof(tempName));
+  // strftime(tempName, k_LogBufSize, "Log file created at %F-%T GMT", gmtime(&now));
+  // fprintf(log_file, "%s\n", tempName);
+  //create timestamp logs for front and pano cams
+  logFileName[0] = '\0';
+  sprintf(logFileName, "%s%s/front.txt", k_LogDir, tempName);
+  FrontCam->file_ptr = fopen(logFileName, "w+");
+  if (FrontCam->file_ptr == NULL)
+    {
+      printf("Failed to create file %s.  Please check permissions.\n", logFileName);
+      return -1;
+    }
+  // memset(tempName, 0, sizeof(tempName));
+  // strftime(tempName, k_LogBufSize, "Log file created at %F-%T GMT", gmtime(&now));
+  // fprintf(log_file, "%s\n", tempName);
+  logFileName[0] = '\0';
+  sprintf(logFileName, "%s%s/pano.txt", k_LogDir, tempName);
+  PanoCam->file_ptr = fopen(logFileName, "w+");
+  if (PanoCam->file_ptr == NULL)
+    {
+      printf("Failed to create file %s.  Please check permissions.\n", logFileName);
       return -1;
     }
   memset(tempName, 0, sizeof(tempName));
   strftime(tempName, k_LogBufSize, "Log file created at %F-%T GMT", gmtime(&now));
   fprintf(log_file, "%s\n", tempName);
+  fprintf(FrontCam->file_ptr, "%s\n", tempName);
+  fprintf(PanoCam->file_ptr, "%s\n", tempName);
+
   //open socket for log data from vader-rover
   log_sockfd = StartServer(k_LogPort);
   printf("server: waiting for data logging connection on port %s...\n",
@@ -115,97 +152,67 @@ extern "C" void rover_server_start(void)
   //thread to log data from rover
   pthread_create(&log_thread, &attributes, rover_server_log, NULL);
   pthread_attr_destroy(&attributes); //don't need this anymore
-
   printf("rover_server_start() complete\n");
 } 
 
 extern "C" Imlib_Image rover_get_front_cam(void)
-{
-  //printf("getting image from front cam...\n");
-  return Get_Image_from_ImgArray(FrontCam);
-}
+{return Get_Image_from_ImgArray(FrontCam);}
 
 extern "C" Imlib_Image rover_get_pano_cam(void)
-{
-  //printf("getting image from pano cam...\n");
-  return Get_Image_from_ImgArray(PanoCam);
-}
+{return Get_Image_from_ImgArray(PanoCam);}
 
 extern "C" void rover_server_cleanup(void)
 {
   time_t later;
-  char tempName[k_LogBufSize];
+  char tempStr[k_LogBufSize];
   //kill video display threads
   grab_threads_should_die = TRUE;
   pthread_join(grab_threads[0], NULL);
   pthread_join(grab_threads[1], NULL);
+  later = time(NULL);
+  strftime(tempStr, k_LogBufSize, "Log file closed at %F-%T GMT", gmtime(&later));
+  fprintf(FrontCam->file_ptr, "%s\n", tempStr);
+  fclose(FrontCam->file_ptr);
+  fprintf(PanoCam->file_ptr, "%s\n", tempStr);
+  fclose(PanoCam->file_ptr);
+  //now free the memory
+  free(FrontCam->PortNumber);
+  free(PanoCam->PortNumber);
+  for (int i = 0; i < k_ImgBufSize; i++)
+    {
+      free(FrontCam->ImgArray[i]);
+      free(PanoCam->ImgArray[i]);
+    }
+  free(FrontCam);
+  free(PanoCam);
   //kill video save thread
 
   //kill data logging thread
   log_thread_should_die = TRUE;
   pthread_join(log_thread, NULL);
-  //pthread_kill(log_thread, SIGINT);  //bad, causes heap out of memory
   fprintf(log_file, "%.6f: Logging completed\n", rover_current_time());
   close(log_sockfd);
-  later = time(NULL);
-  strftime(tempName, k_LogBufSize, "Log file closed at %F-%T GMT", gmtime(&later));
-  fprintf(log_file, "%s\n", tempName);
+  fprintf(log_file, "%s\n", tempStr);
   fclose(log_file);
   printf("log_sockfd and log_file closed\n");
   //complete
   printf("rover_server_cleanup completed\n");
 }
 
-// extern "C" void rover_start_cameras(void)
-// {
-//   char cmd[500];
-//   sprintf(cmd, "%s '/root/bin/run_cameras' &", ssh_prefix);
-//   printf("sending: %s\n", cmd);
-//   system(cmd);
-// }
-
-// extern "C" void rover_stop_cameras(void)
-// {
-//   char cmd[500];
-//   sprintf(cmd, "%s 'pkill run_cameras' &", ssh_prefix);
-//   printf("sending: %s\n", cmd);
-//   system(cmd);
-// }
-
-// extern "C" void rover_display(void)
-// {
-//   Display *display = XOpenDisplay("");
-//   //int screen = DefaultScreen(display);
-//   XEvent event;
-//   /* magic to get GUI to run periodically */
-//   event.type = KeyPress;
-//   event.xkey.keycode = 9;		/* ESC */
-//   event.xkey.state = 0;			/* no Mod1Mask */
-
-// }
 
 // functions not called from Scheme
 void* rover_server_grab(void* args)
 {
   struct CamGrab_t* my_args = (struct CamGrab_t*)args;
   int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
-  // struct sigaction sa;
   XEvent event;
   Display *display = XOpenDisplay(0);
-  //int screen = DefaultScreen(display);
   /* magic to get GUI to run periodically */
   event.type = KeyPress;
   event.xkey.keycode = 9;		/* ESC */
   event.xkey.state = 0;			/* no Mod1Mask */
-  /* magic so can display Imlib frames */
-  // imlib_context_disconnect_display();
-  // imlib_context_set_display(display);
-  // imlib_context_set_visual(XDefaultVisual(display, screen));
-  // imlib_context_set_colormap(XDefaultColormap(display, screen));
-  // imlib_context_set_drawable(display_pane);
   
   sockfd = StartServer(my_args->PortNumber);
-
   printf("server: waiting for image connection on port %s...\n",
 	 my_args->PortNumber);
   
@@ -228,19 +235,16 @@ void* rover_server_grab(void* args)
 	  int working;
 	  while (1)
 	    {
-	      //printf("%s-working = %d\n", my_args->PortNumber, working);
 	      if (OpenCV_ReceiveFrame(PG) != 0)
 		break;
+	      //***Can put call to video writer here--possibly OpenCV VideoWriter class
 	      temp_img = Convert_OpenCV_to_Imlib(PG);
 	      pthread_mutex_lock(&my_args->MostRecentLock);
 	      working = ((my_args->MostRecent) + 1) % k_ImgBufSize;
 	      pthread_mutex_unlock(&my_args->MostRecentLock);
-	      //printf("getting lock\n");
 	      pthread_mutex_lock(&my_args->ImgArrayLock[working]);
-	      //printf("locked\n");
 	      if (my_args->Set[working] == TRUE)
 	      	{ //clean up memory allocation
-	      	  //printf("cleaning up memory\n");
 	      	  imlib_context_set_image(*my_args->ImgArray[working]);
 	      	  imlib_free_image_and_decache();
 	      	}
@@ -248,18 +252,13 @@ void* rover_server_grab(void* args)
 		{
 		  my_args->Set[working] = TRUE;
 		}
-	      //printf("done cleaning memory\n");
 	      *my_args->ImgArray[working] = temp_img;
-	      //printf("assigned\n");
 	      pthread_mutex_unlock(&my_args->ImgArrayLock[working]);
 	      pthread_mutex_lock(&my_args->MostRecentLock);
 	      my_args->MostRecent = working;
 	      pthread_mutex_unlock(&my_args->MostRecentLock);
-	      //printf("unlocked\n");
-	      //imlib_context_set_image(my_args->ImgArray[working]);
 	      XSendEvent(display, display_pane, FALSE, 0, &event);	      
 	      XFlush(display);
-	      //printf("sent xevent\n");
 	    }
 	  delete PG;
 	  printf("exiting from loop after AcceptConnection\n");
@@ -270,7 +269,7 @@ void* rover_server_grab(void* args)
   //do cleanup here
   close(sockfd);
   printf("sockfd closed\n");
-  return NULL; // (void *)my_args;?????
+  return NULL; 
 }
 
 void* rover_server_log(void* args)
@@ -339,18 +338,15 @@ int StartServer(const char* PORT)
   struct addrinfo hints, *servinfo, *p;
   int yes=1;
   int rv;
-  
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags = AI_PASSIVE; // use my IP
-  
   if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0)
     {
       fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
       return -1;
     }
-  
   // loop through all the results and bind to the first we can
   for(p = servinfo; p != NULL; p = p->ai_next) 
     {
@@ -360,32 +356,26 @@ int StartServer(const char* PORT)
 	  perror("server: socket");
 	  continue;
 	}
-    
       if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes,
 		     sizeof(int)) == -1) 
 	{
 	  perror("setsockopt");
 	  exit(1);
 	}
-    
       if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) 
 	{
 	  close(sockfd);
 	  perror("server: bind");
 	  continue;
 	}
-      
       break;
     }
-  
   if (p == NULL)  
     {
       fprintf(stderr, "server: failed to bind\n");
       return -1;
     }
-
   freeaddrinfo(servinfo); // all done with this structure
-
   if (listen(sockfd, BACKLOG) == -1) 
     {
       perror("listen");
@@ -400,7 +390,6 @@ int AcceptConnection(int sockfd)
   socklen_t sin_size;
   int new_fd, flags;
   char s[INET6_ADDRSTRLEN];
-
   //first set sockfd to nonblocking
   if ((flags = fcntl(sockfd, F_GETFL, 0)) == -1)
     flags = 0;
@@ -409,7 +398,7 @@ int AcceptConnection(int sockfd)
   sin_size = sizeof(their_addr);
   new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
   if (new_fd == -1) 
-    return new_fd;
+    return new_fd; //no connection
   inet_ntop(their_addr.ss_family,
 	    get_in_addr((struct sockaddr *)&their_addr),
 	    s, sizeof(s));
@@ -422,18 +411,14 @@ int recvall(int s, unsigned char* buf, int* len)
   int total = 0;        // how many bytes we've received
   int bytesleft = *len; // how many we have left to receive
   int n = 0;
-  
   while(total < *len) 
     {
       n = recv(s, buf+total, bytesleft, 0);
-      //if (n == -1) { break; }
       if (n <= 0) { break; }
       total += n;
       bytesleft -= n;
     }
   *len = total; // return number actually sent here
-  //printf("in recvall: received %d\n", *len);
-  //return n==-1?-1:0; // return -1 on failure, 0 on success
   return n<=0?-1:0; // return -1 on failure, 0 on success
 }
 
@@ -477,8 +462,6 @@ int OpenCV_ReceiveFrame(PointGrey_t2* PG)
       return -1;
     }
   //if we get here, we got valid size data
-  //printf("Received image size = %d\n", PG->img_size);
-  
   //then receive image data
   unsigned char* buf = (unsigned char*) malloc(PG->img_size);
   if (recvall(PG->new_fd, buf, &PG->img_size) != 0)
@@ -486,13 +469,10 @@ int OpenCV_ReceiveFrame(PointGrey_t2* PG)
       printf("Error in recvall\n");
       return -1;
     }
-  //printf("Received %d bytes of image data\n", PG->img_size);
-  
   //copy buf into vector
   cv::vector<uchar> compressed(buf, buf+PG->img_size);
   //clean up memory allocations
   free(buf); 
-   
   //now use data to build image and save it
     
   // if (strcmp(PORT, k_FrontCamPort) == 0)
@@ -525,7 +505,6 @@ Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG)
 Imlib_Image Get_Image_from_ImgArray(struct CamGrab_t* CG)
 {
   int localMostRecent;
-  //printf("in Get_Image_from_ImgArray, MostRecent = %d\n", CG->MostRecent);
   if (CG->MostRecent < 0)
     { //create dummy image to display
       CG->LastDisplayedImage = imlib_create_image(640, 480);
@@ -549,12 +528,9 @@ Imlib_Image Get_Image_from_ImgArray(struct CamGrab_t* CG)
 
 
 //window-finding code from http://stackoverflow.com/questions/5367806/activating-a-window-on-x11-why-do-i-lose-the-title-bar
-
-
 // Info: xwininfo
 // I am compiling using 
 // gcc -o activate activate.c -L/usr/X11R6/lib -lX11
-
 
 // ERROR HANDLER, GENERIC
 static int ErrorHandler (Display *display, XErrorEvent *error)
@@ -565,7 +541,8 @@ static int ErrorHandler (Display *display, XErrorEvent *error)
 // END ERROR HANDLER
 
 // Recursively search through all windows on display
-Window SearchWindow(char* szWindowToFind, int level, Display *display, Window rootWindow, int iMatchMode, int showErrors)
+Window SearchWindow(char* szWindowToFind, int level, Display *display, 
+		    Window rootWindow, int iMatchMode, int showErrors)
 {
     Window parent;
     Window *children;
@@ -573,7 +550,6 @@ Window SearchWindow(char* szWindowToFind, int level, Display *display, Window ro
     int status;
     unsigned int i;
     Window wSearchedWindow = 0;
-
     char* win_name;
     if (XFetchName(display, rootWindow, &win_name))
     {
@@ -615,18 +591,14 @@ Window SearchWindow(char* szWindowToFind, int level, Display *display, Window ro
             }
 
     } // End if XFetchName
-
-
-
-    status = XQueryTree (display, rootWindow, &rootWindow, &parent, &children, &noOfChildren);
-
+    status = XQueryTree (display, rootWindow, &rootWindow, 
+			 &parent, &children, &noOfChildren);
     if (status == 0)
     {
         if (showErrors)
             printf ("ERROR - Could not query the window tree. Aborting.\r\n");
         return rootWindow;
     }
-
     if (noOfChildren > 0)
     {
         for (i=0; i < noOfChildren; i++)
@@ -638,9 +610,7 @@ Window SearchWindow(char* szWindowToFind, int level, Display *display, Window ro
             }
         }
     } 
-
     XFree ((char*) children);
-
     return wSearchedWindow;
 } // End Sub EnumerateWindows
 
@@ -649,19 +619,15 @@ Window FindWindow(char* szWindowToFind)
 {
     Display *display = XOpenDisplay (NULL);
     int screen = DefaultScreen (display);
-
     XSetErrorHandler(ErrorHandler);
-
     Window rootWindow = RootWindow (display, screen);   
-
-    Window wSearchedWindow = SearchWindow(szWindowToFind, 0, display, rootWindow, 0, 0);
-
+    Window wSearchedWindow = SearchWindow(szWindowToFind, 0, display, 
+					  rootWindow, 0, 0);
     char* win_name;
     if (XFetchName(display, wSearchedWindow, &win_name))
     {
         printf("Found: %s\n", win_name);
     }
-
     XCloseDisplay (display);
     return wSearchedWindow;
 }

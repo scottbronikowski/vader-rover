@@ -82,6 +82,7 @@ struct CamGrab_t {
   char* PortNumber;
   int LastDisplayed;
   Imlib_Image LastDisplayedImage;
+  FILE* file_ptr;
 };
 
 struct AllCams_t {
@@ -129,27 +130,10 @@ extern "C"
 #endif
 Imlib_Image rover_get_pano_cam(void);
 
-// #ifdef __cplusplus
-// extern "C"
-// #endif
-// void rover_display(void);
-
 #ifdef __cplusplus
 extern "C"
 #endif
 void rover_server_cleanup(void);
-
-// #ifdef __cplusplus
-// extern "C"
-// #endif
-// void rover_start_cameras(void);
-
-// #ifdef __cplusplus
-// extern "C"
-// #endif
-// void rover_stop_cameras(void);
-
-
 
 // functions NOT called from Scheme
 void* rover_server_grab(void* args);
@@ -161,14 +145,14 @@ int recvall(int s, unsigned char* buf, int* len);
 int CheckSaving(const char* dir);
 Imlib_Image Get_Image_from_ImgArray(struct CamGrab_t* CG);
 Window FindWindow(char* szWindowToFind);
-// Window SearchWindow(char* szWindowToFind, int level, Display *display, 
-// 		    Window rootWindow, int iMatchMode, int showErrors);
 double rover_current_time(void);
 #ifdef __cplusplus
 //use PointGrey_t2, which uses OpenCV C++ API
 int OpenCV_ReceiveFrame(PointGrey_t2* PG);
 void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
 Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
+Window SearchWindow(char* szWindowToFind, int level, Display *display, 
+		    Window rootWindow, int iMatchMode, int showErrors);
 #endif
 
 #endif
