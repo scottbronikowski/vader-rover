@@ -1,0 +1,4 @@
+Log file created at 2014-05-05-18:24:33 GMT
+1399314289.158117: Panoramic camera logging started
+1399314305.925035: Logging completed
+Log file closed at 2014-05-05-18:25:05 GMT

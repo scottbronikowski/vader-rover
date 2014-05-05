@@ -20,6 +20,7 @@ const char* k_OutputDir = "/aux/sbroniko/images/";
 const char* k_LogPort = "2001";
 const char* k_LogDir = "/home/sbroniko/vader-rover/logs/";
 const int k_LogBufSize = 100;
+const int k_timestamp_len = 18 * 3; //string length for timestamp only
 
 //global variables
 struct CamGrab_t* FrontCam;
@@ -105,7 +106,7 @@ extern "C" int rover_server_setup(void)
   // fprintf(log_file, "%s\n", tempName);
   //create timestamp logs for front and pano cams
   logFileName[0] = '\0';
-  sprintf(logFileName, "%s%s/front.txt", k_LogDir, tempName);
+  sprintf(logFileName, "%s%s/camera_front.txt", k_LogDir, tempName);
   FrontCam->file_ptr = fopen(logFileName, "w+");
   if (FrontCam->file_ptr == NULL)
     {
@@ -116,7 +117,7 @@ extern "C" int rover_server_setup(void)
   // strftime(tempName, k_LogBufSize, "Log file created at %F-%T GMT", gmtime(&now));
   // fprintf(log_file, "%s\n", tempName);
   logFileName[0] = '\0';
-  sprintf(logFileName, "%s%s/pano.txt", k_LogDir, tempName);
+  sprintf(logFileName, "%s%s/camera_pano.txt", k_LogDir, tempName);
   PanoCam->file_ptr = fopen(logFileName, "w+");
   if (PanoCam->file_ptr == NULL)
     {
@@ -164,15 +165,19 @@ extern "C" Imlib_Image rover_get_pano_cam(void)
 extern "C" void rover_server_cleanup(void)
 {
   time_t later;
+  double finish;
   char tempStr[k_LogBufSize];
   //kill video display threads
   grab_threads_should_die = TRUE;
   pthread_join(grab_threads[0], NULL);
   pthread_join(grab_threads[1], NULL);
+  finish = rover_current_time();
   later = time(NULL);
   strftime(tempStr, k_LogBufSize, "Log file closed at %F-%T GMT", gmtime(&later));
+  fprintf(FrontCam->file_ptr, "%.6f: Logging completed\n", finish);
   fprintf(FrontCam->file_ptr, "%s\n", tempStr);
   fclose(FrontCam->file_ptr);
+  fprintf(PanoCam->file_ptr, "%.6f: Logging completed\n", finish);
   fprintf(PanoCam->file_ptr, "%s\n", tempStr);
   fclose(PanoCam->file_ptr);
   //now free the memory
@@ -190,7 +195,7 @@ extern "C" void rover_server_cleanup(void)
   //kill data logging thread
   log_thread_should_die = TRUE;
   pthread_join(log_thread, NULL);
-  fprintf(log_file, "%.6f: Logging completed\n", rover_current_time());
+  fprintf(log_file, "%.6f: Logging completed\n", finish);
   close(log_sockfd);
   fprintf(log_file, "%s\n", tempStr);
   fclose(log_file);
@@ -205,6 +210,8 @@ void* rover_server_grab(void* args)
 {
   struct CamGrab_t* my_args = (struct CamGrab_t*)args;
   int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
+  int retval;
+  char recvbuf[k_timestamp_len];
   XEvent event;
   Display *display = XOpenDisplay(0);
   /* magic to get GUI to run periodically */
@@ -226,6 +233,20 @@ void* rover_server_grab(void* args)
 	grab_threads_should_die becomes TRUE, which will cause the while loop 
 	(and function) to exit.
        */
+      if (new_fd != -1)
+	{//receive and log start message into log file
+	  memset(recvbuf, 0 , sizeof(recvbuf));
+	  retval = recv(new_fd, &recvbuf, sizeof(recvbuf), 0);
+	  if (retval <= 0)
+	    { //what error handling???
+	      printf("rover_server_grab recv retval = %d\n", retval);
+	    }
+	  else
+	    {
+	      fprintf(my_args->file_ptr, "%s\n", recvbuf);
+	      memset(recvbuf, 0 , sizeof(recvbuf));
+	    }
+	}
       while(!grab_threads_should_die && (new_fd != -1))
 	{
 	  //here's where we do the magic
@@ -235,7 +256,7 @@ void* rover_server_grab(void* args)
 	  int working;
 	  while (1)
 	    {
-	      if (OpenCV_ReceiveFrame(PG) != 0)
+	      if (OpenCV_ReceiveFrame(PG, my_args->file_ptr) != 0)
 		break;
 	      //***Can put call to video writer here--possibly OpenCV VideoWriter class
 	      temp_img = Convert_OpenCV_to_Imlib(PG);
@@ -263,6 +284,17 @@ void* rover_server_grab(void* args)
 	  delete PG;
 	  printf("exiting from loop after AcceptConnection\n");
 	  break;
+	}
+      if (new_fd != -1)
+	{//receive and log start message into log file
+	  //memset(recvbuf, 0 , sizeof(recvbuf));
+	  retval = recv(new_fd, &recvbuf, sizeof(recvbuf), 0);
+	  if (retval <= 0)
+	    { //what error handling???
+	      printf("rover_server_grab recv (end) retval = %d\n", retval);
+	    }
+	  else
+	    fprintf(my_args->file_ptr, "%s\n", recvbuf);
 	}
       close(new_fd);  // accept loop doesn't need this
     }
@@ -447,8 +479,9 @@ int CheckSaving(const char* dir)
   return 0;
 }
 
-int OpenCV_ReceiveFrame(PointGrey_t2* PG)
+int OpenCV_ReceiveFrame(PointGrey_t2* PG, FILE* file_ptr)
 {
+  char recvbuf[k_timestamp_len];
   //first receive image size
   int retval = recv(PG->new_fd, &PG->img_size, sizeof(PG->img_size), 0);
   if (retval < 0)
@@ -456,12 +489,21 @@ int OpenCV_ReceiveFrame(PointGrey_t2* PG)
       printf("Error receiving image size\n");
       return -1;
     }
-  if (retval == 0)
+  if ((retval == 0) || (PG->img_size == 0)) //use sent 0 as escape char
     {
       printf("Sender stopped sending\n");
       return -1;
     }
   //if we get here, we got valid size data
+  //then receive timestamp and write to file
+  retval = recv(PG->new_fd, &recvbuf, sizeof(recvbuf), 0);
+  if (retval <= 0)
+    {
+      printf("OpenCV_ReceiveFrame: timestamp recv = %d\n", retval);
+      return -1;
+    }
+  else
+    fprintf(file_ptr, "%s\n", recvbuf);
   //then receive image data
   unsigned char* buf = (unsigned char*) malloc(PG->img_size);
   if (recvall(PG->new_fd, buf, &PG->img_size) != 0)

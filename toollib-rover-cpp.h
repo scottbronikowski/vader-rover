@@ -98,6 +98,7 @@ extern const char* k_OutputDir;
 extern const char* k_LogPort;
 extern const char* k_LogDir;
 extern const int k_LogBufSize;
+extern const int k_timestamp_len;
 
 //global variables
 extern struct CamGrab_t* FrontCam;
@@ -148,7 +149,7 @@ Window FindWindow(char* szWindowToFind);
 double rover_current_time(void);
 #ifdef __cplusplus
 //use PointGrey_t2, which uses OpenCV C++ API
-int OpenCV_ReceiveFrame(PointGrey_t2* PG);
+int OpenCV_ReceiveFrame(PointGrey_t2* PG, FILE* file_ptr);
 void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
 Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
 Window SearchWindow(char* szWindowToFind, int level, Display *display, 

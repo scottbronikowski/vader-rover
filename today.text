@@ -135,10 +135,12 @@ Old Notes
 --Got pan and tilt servos for front camera working from right thumbstick of gamepad.  Next up will be the motor commands on the left thumbstick.
 
 28 Apr 14
+Goal: Finish mapping driving commands to left thumb stick on game controller.  Implement software fix for leftward pull while driving.
 --Have motor commands mapped to positions on left thumbstick in toollib-gamepad-c.c.
 --Implemented command checker on seykhl side to prevent sending of duplicate commands to rover.  May need to remove similar checking code on rover side.
 
 29 Apr 14
+Goal: Integrate bump switch monitor code into emperor (probably separate thread).  Start work on driver code for shaft encoders and IMU.
 --Tracked down slow pan/tilt execution to rover-side motor sending code; fixed.
 --Completed and tested implementation of command parsing and sending to motors within emperor.cpp.  Removed extraneous printfs in both toollib-gamepad-c.c on seykhl and emperor.cpp on rover.
 -------
@@ -147,18 +149,47 @@ Old Notes
 --Minor code cleanup in gamepad and rover
 
 30 Apr 14
+Goal: Research and prepare order for: extra batteries/chargers, speakers and microphones for bidirectional speech, longer plenum tubing needed for flipped bump switches.  Continue work on shaft encoder and IMU code.
 --Built initial data logging infrastructure into dsci (toollib-rover-cpp.cpp, rover_server_log()).  Receives buffer of text sent from rover and saves it in a log file (named with UTC date/time when rover_server_setup() was called).  Have seykhl-side code working implemented and clean startup/shutdown.  Still need to finish code to send data from rover.
 
 1 May 14
+Goal: Continue work on shaft encoder and IMU code.
 --Logging functional for pan/tilt, motor, and camera commands. Text files saved to ~/vader-rover/logs/.  GMT timestamps come from seykhl, while timestamps in seconds.microseconds come from rover (except for the final 'Logging completed' timestamp--has to come from seykhl b/c shutdown routine uses the socket closing from seykhl side as the notification to rover to stop logging.
 --Bump switch monitor functions integrated into emperor.cpp (as separate thread) on rover.  Bump switch messages logged on seykhl.
 
 2 May 14
+Goal:Continue work on shaft encoder and IMU code.  Start looking at data logging/recording and time stamping methods.
 --Researched and compiled parts order for batteries/chargers, plenum tubing, and speakers/microphone.
 --Reversed mounting direction on all bump switches so that now their whiskers will cross at approximately the center line of the rover.  Need longer plenum tubing to make the whiskers reach to the outer edge of the tires.  Checked with machine shop and electronics shop in ECE, and neither had any tubing.
 --Started researching methods of converting individual frames into a video using ffmpeg and/or opencv (while preserving timestamp data).  The opencv VideoWriter class looks promising.
 --Minor code cleanup on toollib-rover and toollib-gamepad
 --Started building functions to send frame capture timestamps (identical to the ones used for commands/bumps) from rover to seykhl on every frame, and then log those timestamps into a separate text file for each camera.  Now each run has a directory named with date and GMT time of starting, then 3 text files (log.txt, front.txt, pano.txt).  File creation and saving on seykhl complete, need to implement the sending of image timestamps on vader-rover and receiving and writing to file on seykhl.
+
+5 May 14
+Goal:  Implement sending of image timestamps on rover and receiving and writing to file on seykhl.
+--Implemented receive/write of camera start and stop messages in toollib-rover-cpp.cpp (rover_server_grab(), just before and after main capture loop).
+--Implemented receive/write of individual timestamps for images--getting odd results on last image timestamp, need to debug.
+--Debugged errors in last message--have an exit condition in OpenCV_ReceiveFrame() that allowed that function to return when it received a 0 for image size.
+
+6 May 14
+Goal:  Work on saving received images into a video file on seykhl.
+
+
+7 May 14
+Goal: Continue work on video saving.  Look at sending video to second (commander) workstation--my initial thought is to have the video stream go rover->seykhl (driver)->other ws (commander) in order to keep rover bandwidth usage at current level, but not sure if this will cause perceptible delay.
+
+
+8 May 14
+Goal:  Continue work on video to second workstation.  Start work on drivers for shaft encoders and IMU.
+
+
+9 May 14
+Goal:  Continue work on shaft encoders and IMU.
+
+
+
+
+
 
 TODO:
 ***LOOK AT CALLING TOOLLIB-GAMEPAD FUNCTIONS FROM SCHEME FOR BUTTONS (START/STOP CAMERAS, MOTORS, ETC...*****
@@ -174,11 +205,11 @@ OpenCV:VideoWriter class (reading and writing images and video documentation pag
 --Will changing front cam to black & white give sharper picture and/or lower CPU usage?
 
 Weekly Goals:
-M: Finish mapping driving commands to left thumb stick on game controller.  Implement software fix for leftward pull while driving.
-T:  Integrate bump switch monitor code into emperor (probably separate thread).  Start work on driver code for shaft encoders and IMU.
-W:  Research and prepare order for: extra batteries/chargers, speakers and microphones for bidirectional speech, longer plenum tubing needed for flipped bump switches.  Continue work on shaft encoder and IMU code.
-R: Continue work on shaft encoder and IMU code.
-F: Continue work on shaft encoder and IMU code.  Start looking at data logging/recording and time stamping methods.
+M:  Implement sending of image timestamps on rover and receiving and writing to file on seykhl.
+T:  Work on saving received images into a video file on seykhl.
+W: Continue work on video saving.  Look at sending video to second (commander) workstation--my initial thought is to have the video stream go rover->seykhl (driver)->other ws (commander) in order to keep rover bandwidth usage at current level, but not sure if this will cause perceptible delay.
+R:  Continue work on video to second workstation.  Start work on drivers for shaft encoders and IMU.
+F:  Continue work on shaft encoders and IMU.
 
 
 
