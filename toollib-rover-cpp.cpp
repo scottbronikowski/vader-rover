@@ -21,7 +21,7 @@ const char* k_LogPort = "2001";
 //const char* k_LogDir = "/home/sbroniko/vader-rover/logs/";
 const char* k_LogDir = "/aux/sbroniko/vader-rover/logs/";
 const int k_LogBufSize = 100;
-const int k_timestamp_len = 18 * 3; //string length for timestamp only
+const int k_timestamp_len = 18; //string length for timestamp only
 
 //global variables
 struct CamGrab_t* FrontCam;
@@ -212,7 +212,7 @@ void* rover_server_grab(void* args)
   struct CamGrab_t* my_args = (struct CamGrab_t*)args;
   int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
   int retval;
-  char recvbuf[k_timestamp_len];
+  char recvbuf[k_timestamp_len * 3];
   XEvent event;
   Display *display = XOpenDisplay(0);
   /* magic to get GUI to run periodically */

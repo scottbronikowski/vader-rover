@@ -173,6 +173,10 @@ Goal:  Implement sending of image timestamps on rover and receiving and writing 
 
 6 May 14
 Goal:  Work on saving received images into a video file on seykhl.
+--Moved log saving directory and log files from /home/sbroniko/vader-rover/logs to /aux/sbroniko/vader-rover/logs.
+----
+--Fixed timestamp message length.  Commit prior to testing framerate.
+
 
 
 7 May 14
