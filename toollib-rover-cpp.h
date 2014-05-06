@@ -83,6 +83,8 @@ struct CamGrab_t {
   int LastDisplayed;
   Imlib_Image LastDisplayedImage;
   FILE* file_ptr;
+  char* video_file_name;
+  cv::VideoWriter* output_video;
 };
 
 struct AllCams_t {

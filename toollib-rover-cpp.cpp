@@ -102,9 +102,6 @@ extern "C" int rover_server_setup(void)
       printf("Failed to create file %s.  Please check permissions.\n", logFileName);
       return -1;
     }
-  // memset(tempName, 0, sizeof(tempName));
-  // strftime(tempName, k_LogBufSize, "Log file created at %F-%T GMT", gmtime(&now));
-  // fprintf(log_file, "%s\n", tempName);
   //create timestamp logs for front and pano cams
   logFileName[0] = '\0';
   sprintf(logFileName, "%s%s/camera_front.txt", k_LogDir, tempName);
@@ -114,9 +111,6 @@ extern "C" int rover_server_setup(void)
       printf("Failed to create file %s.  Please check permissions.\n", logFileName);
       return -1;
     }
-  // memset(tempName, 0, sizeof(tempName));
-  // strftime(tempName, k_LogBufSize, "Log file created at %F-%T GMT", gmtime(&now));
-  // fprintf(log_file, "%s\n", tempName);
   logFileName[0] = '\0';
   sprintf(logFileName, "%s%s/camera_pano.txt", k_LogDir, tempName);
   PanoCam->file_ptr = fopen(logFileName, "w+");
@@ -125,11 +119,27 @@ extern "C" int rover_server_setup(void)
       printf("Failed to create file %s.  Please check permissions.\n", logFileName);
       return -1;
     }
+  //create file names for video files
+  FrontCam->video_file_name = (char*) malloc(sizeof(char) * 100);
+  sprintf(FrontCam->video_file_name, "%s%s/video_front.avi", k_LogDir, tempName);
+  PanoCam->video_file_name = (char*) malloc(sizeof(char) * 100);
+  sprintf(PanoCam->video_file_name, "%s%s/video_pano.avi", k_LogDir, tempName);
+  //create cv::VideoWriter output_video objects
+  cv::Size vid_size = cv::Size(640,480); //**HARDCODED** for 640x480 video
+  int codec = CV_FOURCC('M','J','P','G');
+  FrontCam->output_video = new cv::VideoWriter(FrontCam->video_file_name, codec, 
+					       12.0, vid_size, true);
+  PanoCam->output_video = new cv::VideoWriter(PanoCam->video_file_name, codec, 
+					      12.0, vid_size, true);
+
+
+  //set first lines for log file and timestamp log files
   memset(tempName, 0, sizeof(tempName));
   strftime(tempName, k_LogBufSize, "Log file created at %F-%T GMT", gmtime(&now));
   fprintf(log_file, "%s\n", tempName);
   fprintf(FrontCam->file_ptr, "%s\n", tempName);
   fprintf(PanoCam->file_ptr, "%s\n", tempName);
+
 
   //open socket for log data from vader-rover
   log_sockfd = StartServer(k_LogPort);
@@ -149,7 +159,7 @@ extern "C" void rover_server_start(void)
   //threads to display images from rover
   pthread_create(&grab_threads[0], &attributes, rover_server_grab, (void *)FrontCam);
   pthread_create(&grab_threads[1], &attributes, rover_server_grab, (void *)PanoCam);
-  //thread to save images to video (with timestamping)
+  //image timestamps and video saving handled within grab threads
 
   //thread to log data from rover
   pthread_create(&log_thread, &attributes, rover_server_log, NULL);
@@ -184,6 +194,10 @@ extern "C" void rover_server_cleanup(void)
   //now free the memory
   free(FrontCam->PortNumber);
   free(PanoCam->PortNumber);
+  free(FrontCam->video_file_name);
+  free(PanoCam->video_file_name);
+  delete FrontCam->output_video;
+  delete PanoCam->output_video;
   for (int i = 0; i < k_ImgBufSize; i++)
     {
       free(FrontCam->ImgArray[i]);
@@ -221,6 +235,11 @@ void* rover_server_grab(void* args)
   event.xkey.state = 0;			/* no Mod1Mask */
   
   sockfd = StartServer(my_args->PortNumber);
+  // cv::VideoWriter output_video;
+  // cv::Size vid_size = cv::Size(640,480); //**HARDCODED** for 640x480 video
+  // int codec = CV_FOURCC('M','J','P','G');
+  // output_video.open(my_args->video_file_name, codec, 12.0, vid_size, true);
+  printf("Opened video file %s\n", my_args->video_file_name);
   printf("server: waiting for image connection on port %s...\n",
 	 my_args->PortNumber);
   
@@ -260,6 +279,7 @@ void* rover_server_grab(void* args)
 	      if (OpenCV_ReceiveFrame(PG, my_args->file_ptr) != 0)
 		break;
 	      //***Can put call to video writer here--possibly OpenCV VideoWriter class
+	      my_args->output_video->write(PG->uncompressedImage);
 	      temp_img = Convert_OpenCV_to_Imlib(PG);
 	      pthread_mutex_lock(&my_args->MostRecentLock);
 	      working = ((my_args->MostRecent) + 1) % k_ImgBufSize;

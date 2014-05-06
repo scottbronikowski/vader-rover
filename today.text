@@ -179,6 +179,8 @@ Goal:  Work on saving received images into a video file on seykhl.
 ----
 --Traced problem with slow framerate to emperor_monitor_bump_switches thread: with thread created and cameras NOT running, CPU usage on rover is ~95% for emperor; without thread and cameras NOT running, CPU usage on rover is <1% for emperor.
 --Fixed framerate issue--now getting 11-15 f/s/c (counted using timestamps in log file).
+----
+--Have video saving working with both cameras using OpenCV VideoWriter.  I have observed that the frame count of the videos as reported by ffmpeg is 1 frame more than the number of frame timestamps I have in my log files.  Need to investigate this to figure out where the error is.
 
 
 
