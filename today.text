@@ -176,6 +176,9 @@ Goal:  Work on saving received images into a video file on seykhl.
 --Moved log saving directory and log files from /home/sbroniko/vader-rover/logs to /aux/sbroniko/vader-rover/logs.
 ----
 --Fixed timestamp message length.  Commit prior to testing framerate.
+----
+--Traced problem with slow framerate to emperor_monitor_bump_switches thread: with thread created and cameras NOT running, CPU usage on rover is ~95% for emperor; without thread and cameras NOT running, CPU usage on rover is <1% for emperor.
+--Fixed framerate issue--now getting 11-15 f/s/c (counted using timestamps in log file).
 
 
 

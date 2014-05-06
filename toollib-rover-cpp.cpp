@@ -235,19 +235,19 @@ void* rover_server_grab(void* args)
 	(and function) to exit.
        */
       if (new_fd != -1)
-	{//receive and log start message into log file
-	  memset(recvbuf, 0 , sizeof(recvbuf));
-	  retval = recv(new_fd, &recvbuf, sizeof(recvbuf), 0);
-	  if (retval <= 0)
-	    { //what error handling???
-	      printf("rover_server_grab recv retval = %d\n", retval);
-	    }
-	  else
-	    {
-	      fprintf(my_args->file_ptr, "%s\n", recvbuf);
-	      memset(recvbuf, 0 , sizeof(recvbuf));
-	    }
-	}
+      	{//receive and log start message into log file
+      	  memset(recvbuf, 0 , sizeof(recvbuf));
+      	  retval = recv(new_fd, &recvbuf, sizeof(recvbuf), 0);
+      	  if (retval <= 0)
+      	    { //what error handling???
+      	      printf("rover_server_grab recv retval = %d\n", retval);
+      	    }
+      	  else
+      	    {
+      	      fprintf(my_args->file_ptr, "%s\n", recvbuf);
+      	      memset(recvbuf, 0 , sizeof(recvbuf));
+      	    }
+      	}
       while(!grab_threads_should_die && (new_fd != -1))
 	{
 	  //here's where we do the magic
@@ -287,16 +287,16 @@ void* rover_server_grab(void* args)
 	  break;
 	}
       if (new_fd != -1)
-	{//receive and log start message into log file
-	  //memset(recvbuf, 0 , sizeof(recvbuf));
-	  retval = recv(new_fd, &recvbuf, sizeof(recvbuf), 0);
-	  if (retval <= 0)
-	    { //what error handling???
-	      printf("rover_server_grab recv (end) retval = %d\n", retval);
-	    }
-	  else
-	    fprintf(my_args->file_ptr, "%s\n", recvbuf);
-	}
+      	{//receive and log stop message into log file
+      	  //memset(recvbuf, 0 , sizeof(recvbuf));
+      	  retval = recv(new_fd, &recvbuf, sizeof(recvbuf), 0);
+      	  if (retval <= 0)
+      	    { //what error handling???
+      	      printf("rover_server_grab recv (end) retval = %d\n", retval);
+      	    }
+      	  else
+      	    fprintf(my_args->file_ptr, "%s\n", recvbuf);
+      	}
       close(new_fd);  // accept loop doesn't need this
     }
   //do cleanup here
@@ -496,6 +496,7 @@ int OpenCV_ReceiveFrame(PointGrey_t2* PG, FILE* file_ptr)
       return -1;
     }
   //if we get here, we got valid size data
+  //printf("Received image size: %d\n", PG->img_size);
   //then receive timestamp and write to file
   retval = recv(PG->new_fd, &recvbuf, sizeof(recvbuf), 0);
   if (retval <= 0)
