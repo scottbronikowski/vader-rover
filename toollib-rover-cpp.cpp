@@ -21,7 +21,7 @@ const char* k_LogPort = "2001";
 //const char* k_LogDir = "/home/sbroniko/vader-rover/logs/";
 const char* k_LogDir = "/aux/sbroniko/vader-rover/logs/";
 const int k_LogBufSize = 100;
-const int k_timestamp_len = 18; //string length for timestamp only
+const int k_timestamp_len = 18; //string length for timestamp only (18)
 
 //global variables
 struct CamGrab_t* FrontCam;
@@ -32,11 +32,14 @@ Window display_pane;
 pthread_t log_thread;
 int log_thread_should_die, log_sockfd, log_new_fd;
 FILE* log_file;
+unsigned int framecount;
+bool first_count = true;
 
 // functions called from Scheme (must have extern "C" to prevent mangling)
 extern "C" int rover_server_setup(void)
 {
   //setup for displaying images (grab threads)
+  framecount = 1;
   FrontCam = (struct CamGrab_t*) malloc(sizeof(struct CamGrab_t));
   PanoCam = (struct CamGrab_t*) malloc(sizeof(struct CamGrab_t));
   pthread_mutex_init(&FrontCam->MostRecentLock, NULL);
@@ -503,6 +506,7 @@ int CheckSaving(const char* dir)
 int OpenCV_ReceiveFrame(PointGrey_t2* PG, FILE* file_ptr)
 {
   char recvbuf[k_timestamp_len];
+  int count;
   //first receive image size
   int retval = recv(PG->new_fd, &PG->img_size, sizeof(PG->img_size), 0);
   if (retval < 0)
@@ -525,7 +529,21 @@ int OpenCV_ReceiveFrame(PointGrey_t2* PG, FILE* file_ptr)
       return -1;
     }
   else
-    fprintf(file_ptr, "%s\n", recvbuf);
+    {//print the timestamp to file
+      count = framecount; //this block adds numbers to the timestamps
+      if (first_count)
+	{
+	  first_count = false;
+	}
+      else
+	{
+	  first_count = true;
+	  framecount++;
+	}
+      fprintf(file_ptr, "%s:%d\n", recvbuf, count); //end numbering block
+      //fprintf(file_ptr, "%s\n", recvbuf, count); //timestamps w/o numbers
+      
+    }
   //then receive image data
   unsigned char* buf = (unsigned char*) malloc(PG->img_size);
   if (recvall(PG->new_fd, buf, &PG->img_size) != 0)
