@@ -1,1 +1,1 @@
-../usleep.c
+void usleep(unsigned long n){return;}
