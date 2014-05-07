@@ -192,6 +192,7 @@ Goal: Continue work on video saving.  Look at sending video to second (commander
 --Confirmed that framecount from video and number of timestamps are the same by numbering the timestamps in the file.  Apparently the error I though I had yesterday was actually from me miscounting the number of timestamps in the file.  
 --Spent most of the day helping Dan with annotations.
 
+
 8 May 14
 Goal:  Continue work on video to second workstation.  Start work on drivers for shaft encoders and IMU.
 
