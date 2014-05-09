@@ -7,7 +7,7 @@ nm -ACgl <library file> to see symbol table and look for name clashes
 objdump -p <executable> to see library load order
 
 (load "/home/dpbarret/darpa-collaboration/pose-retraining/olympic-sports-setup.sc")
-(annotate-event 2 14)
+(annotate-event 8 0)
 
 Buffers
 ---------------------------------------
@@ -195,11 +195,12 @@ Goal: Continue work on video saving.  Look at sending video to second (commander
 
 8 May 14
 Goal:  Continue work on video to second workstation.  Start work on drivers for shaft encoders and IMU.
+--Spent all day working on video annotations.
 
 
 9 May 14
 Goal:  Continue work on shaft encoders and IMU.
-
+--Spent all day working on video annotations.
 
 
 
