@@ -22,18 +22,25 @@ const char* k_LogPort = "2001";
 const char* k_LogDir = "/aux/sbroniko/vader-rover/logs/";
 const int k_LogBufSize = 100;
 const int k_timestamp_len = 18; //string length for timestamp only (18)
+//for commander viewer
+const char* k_CdrFrontCamPort = "36010";
+const char* k_CdrPanoCamPort = "36020";
+const char* k_Server = "seykhl.ecn.purdue.edu"; //driver's workstation
 
 //global variables
 struct CamGrab_t* FrontCam;
 struct CamGrab_t* PanoCam;
+struct CamGrab_t* CdrFrontCam;
+struct CamGrab_t* CdrPanoCam;
 pthread_t grab_threads[k_numCams];
 int grab_threads_should_die;
-Window display_pane;
+Window display_pane, cdr_display_pane;
 pthread_t log_thread;
 int log_thread_should_die, log_sockfd, log_new_fd;
 FILE* log_file;
 unsigned int framecount;
 bool first_count = true;
+int cdr_viewer_active = FALSE;
 
 // functions called from Scheme (must have extern "C" to prevent mangling)
 extern "C" int rover_server_setup(void)
@@ -62,7 +69,7 @@ extern "C" int rover_server_setup(void)
       PanoCam->Set[i] = FALSE;
     }
   grab_threads_should_die = FALSE;
-  char windowname[] = "rover-viewer";
+  char windowname[] = "driver-viewer";
   display_pane = FindWindow(windowname);
 
   //setup for logging data (log thread)
@@ -153,6 +160,40 @@ extern "C" int rover_server_setup(void)
   printf("rover_server_setup() succeeded\n");
   return 0;
 }
+
+extern "C" int cdr_viewer_setup(void)
+{ //setup for displaying images ON COMMANDER WORKSTATION
+  CdrFrontCam = (struct CamGrab_t*) malloc(sizeof(struct CamGrab_t));
+  CdrPanoCam = (struct CamGrab_t*) malloc(sizeof(struct CamGrab_t));
+  pthread_mutex_init(&CdrFrontCam->MostRecentLock, NULL);
+  pthread_mutex_init(&CdrPanoCam->MostRecentLock, NULL);
+  CdrFrontCam->MostRecent = -1;
+  CdrPanoCam->MostRecent = -1;
+  CdrFrontCam->LastDisplayed = -1;
+  CdrPanoCam->LastDisplayed = -1;
+  CdrFrontCam->PortNumber = (char*) malloc(sizeof(char) * 10);
+  strcpy(CdrFrontCam->PortNumber, k_CdrFrontCamPort);
+  CdrPanoCam->PortNumber = (char*) malloc(sizeof(char) * 10);
+  strcpy(CdrPanoCam->PortNumber, k_CdrPanoCamPort);
+  for (int i = 0; i < k_ImgBufSize; i++)
+    {
+      pthread_mutex_init(&CdrFrontCam->ImgArrayLock[i], NULL);
+      pthread_mutex_init(&CdrPanoCam->ImgArrayLock[i], NULL);
+      CdrFrontCam->ImgArray[i] = (Imlib_Image *) malloc(sizeof(Imlib_Image));
+      CdrPanoCam->ImgArray[i] = (Imlib_Image *) malloc(sizeof(Imlib_Image));
+      CdrFrontCam->Set[i] = FALSE;
+      CdrPanoCam->Set[i] = FALSE;
+    }
+  //grab_threads_should_die = FALSE;
+  cdr_viewer_active = TRUE;
+  char windowname[] = "commander-viewer";
+  cdr_display_pane = FindWindow(windowname);
+
+  //success if we get here
+  printf("cdr_viewer_setup() succeeded\n");
+  return 0;
+}
+
 
 extern "C" void rover_server_start(void)
 {
@@ -260,7 +301,7 @@ void* rover_server_grab(void* args)
       	{//receive and log start message into log file
       	  memset(recvbuf, 0 , sizeof(recvbuf));
       	  retval = recv(new_fd, &recvbuf, sizeof(recvbuf), 0);
-      	  if (retval <= 0)
+      	  if (retval < 0)
       	    { //what error handling???
       	      printf("rover_server_grab recv retval = %d\n", retval);
       	    }
@@ -281,8 +322,11 @@ void* rover_server_grab(void* args)
 	    {
 	      if (OpenCV_ReceiveFrame(PG, my_args->file_ptr) != 0)
 		break;
-	      //***Can put call to video writer here--possibly OpenCV VideoWriter class
+	      //write frame to output video file
 	      my_args->output_video->write(PG->uncompressedImage);
+	      //send to commander viewer here??
+
+	      //convert opencv to imlib for display in viewer
 	      temp_img = Convert_OpenCV_to_Imlib(PG);
 	      pthread_mutex_lock(&my_args->MostRecentLock);
 	      working = ((my_args->MostRecent) + 1) % k_ImgBufSize;
@@ -334,8 +378,8 @@ void* rover_server_log(void* args)
   char logbuf[k_LogBufSize];
   fd_set recv_set;
   struct timeval timeout;
-  timeout.tv_sec = 0;
-  timeout.tv_usec = 1000 * 10; //10ms timeout
+  // timeout.tv_sec = 0;
+  // timeout.tv_usec = 1000 * 10; //10ms timeout
   while (!log_thread_should_die)
     {//main accept() loop
       usleep(10000);
@@ -357,6 +401,8 @@ void* rover_server_log(void* args)
 	  //log_thread_should_die every timeout
 	  FD_ZERO(&recv_set);
 	  FD_SET(log_new_fd, &recv_set);
+	  timeout.tv_sec = 0;
+	  timeout.tv_usec = 1000 * 10; //10ms timeout
 	  retval = select(log_new_fd+1, &recv_set, NULL, NULL, &timeout);
 	  if (retval < 0)
 	    printf("select error\n");
@@ -365,7 +411,7 @@ void* rover_server_log(void* args)
 	  else //retval >= 1-->we have data to receive
 	    {
 	      retval = recv(log_new_fd, &logbuf, sizeof(logbuf), 0);
-	      if (retval <= 0)
+	      if (retval < 0)
 		{ //what error handling to do here??
 		  printf("retval = %d\n", retval);
 		  break;
@@ -377,6 +423,114 @@ void* rover_server_log(void* args)
     }
   return NULL;
 }
+
+void* cdr_viewer_grab(void* args)
+{
+  struct CamGrab_t* my_args = (struct CamGrab_t*)args;
+  int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
+  int retval;
+  char recvbuf[k_timestamp_len * 3];
+  XEvent event;
+  Display *display = XOpenDisplay(0);
+  /* magic to get GUI to run periodically */
+  event.type = KeyPress;
+  event.xkey.keycode = 9;		/* ESC */
+  event.xkey.state = 0;			/* no Mod1Mask */
+  
+  sockfd = StartServer(my_args->PortNumber);
+  // cv::VideoWriter output_video;
+  // cv::Size vid_size = cv::Size(640,480); //**HARDCODED** for 640x480 video
+  // int codec = CV_FOURCC('M','J','P','G');
+  // output_video.open(my_args->video_file_name, codec, 12.0, vid_size, true);
+  printf("Opened video file %s\n", my_args->video_file_name);
+  printf("server: waiting for image connection on port %s...\n",
+	 my_args->PortNumber);
+  
+  while(!grab_threads_should_die) 
+    {  // main accept() loop
+      usleep(10000);
+      new_fd = AcceptConnection(sockfd);
+      /*
+	AcceptConnection set to non-blocking, so will spin here until it either gets 
+	a valid new_fd (and then goes into while loop below) or 
+	grab_threads_should_die becomes TRUE, which will cause the while loop 
+	(and function) to exit.
+       */
+      if (new_fd != -1)
+      	{//receive and log start message into log file
+      	  memset(recvbuf, 0 , sizeof(recvbuf));
+      	  retval = recv(new_fd, &recvbuf, sizeof(recvbuf), 0);
+      	  if (retval < 0)
+      	    { //what error handling???
+      	      printf("rover_server_grab recv retval = %d\n", retval);
+      	    }
+      	  else
+      	    {
+      	      fprintf(my_args->file_ptr, "%s\n", recvbuf);
+      	      memset(recvbuf, 0 , sizeof(recvbuf));
+      	    }
+      	}
+      while(!grab_threads_should_die && (new_fd != -1))
+	{
+	  //here's where we do the magic
+	  PointGrey_t2* PG = new PointGrey_t2;
+	  PG->new_fd = new_fd;
+	  Imlib_Image temp_img;
+	  int working;
+	  while (1)
+	    {
+	      if (OpenCV_ReceiveFrame(PG, my_args->file_ptr) != 0)
+		break;
+	      //write frame to output video file
+	      my_args->output_video->write(PG->uncompressedImage);
+	      //send to commander viewer here??
+
+	      //convert opencv to imlib for display in viewer
+	      temp_img = Convert_OpenCV_to_Imlib(PG);
+	      pthread_mutex_lock(&my_args->MostRecentLock);
+	      working = ((my_args->MostRecent) + 1) % k_ImgBufSize;
+	      pthread_mutex_unlock(&my_args->MostRecentLock);
+	      pthread_mutex_lock(&my_args->ImgArrayLock[working]);
+	      if (my_args->Set[working] == TRUE)
+	      	{ //clean up memory allocation
+	      	  imlib_context_set_image(*my_args->ImgArray[working]);
+	      	  imlib_free_image_and_decache();
+	      	}
+	      else
+		{
+		  my_args->Set[working] = TRUE;
+		}
+	      *my_args->ImgArray[working] = temp_img;
+	      pthread_mutex_unlock(&my_args->ImgArrayLock[working]);
+	      pthread_mutex_lock(&my_args->MostRecentLock);
+	      my_args->MostRecent = working;
+	      pthread_mutex_unlock(&my_args->MostRecentLock);
+	      XSendEvent(display, display_pane, FALSE, 0, &event);	      
+	      XFlush(display);
+	    }
+	  delete PG;
+	  printf("exiting from loop after AcceptConnection\n");
+	  break;
+	}
+      if (new_fd != -1)
+      	{//receive and log stop message into log file
+      	  //memset(recvbuf, 0 , sizeof(recvbuf));
+      	  retval = recv(new_fd, &recvbuf, sizeof(recvbuf), 0);
+      	  if (retval <= 0)
+      	    { //what error handling???
+      	      printf("rover_server_grab recv (end) retval = %d\n", retval);
+      	    }
+      	  else
+      	    fprintf(my_args->file_ptr, "%s\n", recvbuf);
+      	}
+      close(new_fd);  // accept loop doesn't need this
+    }
+  //do cleanup here
+  close(sockfd);
+  printf("sockfd closed\n");
+  return NULL; 
+}
+
 
 void* get_in_addr(struct sockaddr *sa)
 {// get sockaddr, IPv4 or IPv6:

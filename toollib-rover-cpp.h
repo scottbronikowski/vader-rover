@@ -84,11 +84,9 @@ struct CamGrab_t {
   Imlib_Image LastDisplayedImage;
   FILE* file_ptr;
   char* video_file_name;
+  #ifdef __cplusplus
   cv::VideoWriter* output_video;
-};
-
-struct AllCams_t {
-  struct CamGrab_t* CG[k_numCams];
+  #endif
 };
 
 //global constants
@@ -96,27 +94,37 @@ extern const char* k_FrontCamPort;
 extern const char* k_PanoCamPort;
 extern const int BACKLOG;
 extern const char* k_OutputDir;
-//extern const char* ssh_prefix;
 extern const char* k_LogPort;
 extern const char* k_LogDir;
 extern const int k_LogBufSize;
 extern const int k_timestamp_len;
+//for commander viewer
+extern const char* k_CdrFrontCamPort;
+extern const char* k_CdrPanoCamPort;
+extern const char* k_Server; //driver's workstation
 
 //global variables
 extern struct CamGrab_t* FrontCam;
 extern struct CamGrab_t* PanoCam;
-//extern struct AllCams_t* AllCams;
+extern struct CamGrab_t* CdrFrontCam;
+extern struct CamGrab_t* CdrPanoCam;
 extern pthread_t grab_threads[k_numCams];
 extern int grab_threads_should_die;
 extern pthread_t log_thread;
 extern int log_thread_should_die, log_sockfd, log_new_fd;
 extern FILE* log_file;
+extern int cdr_viewer_active;
 
 // functions called from Scheme
 #ifdef __cplusplus
 extern "C"
 #endif
 int rover_server_setup(void);
+
+#ifdef __cplusplus
+extern "C"
+#endif
+int cdr_viewer_setup(void);
 
 #ifdef __cplusplus
 extern "C"
@@ -141,6 +149,7 @@ void rover_server_cleanup(void);
 // functions NOT called from Scheme
 void* rover_server_grab(void* args);
 void* rover_server_log(void* args);
+void* cdr_viewer_grab(void* args);
 void* get_in_addr(struct sockaddr *sa);
 int StartServer(const char* PORT);
 int AcceptConnection(int sockfd);

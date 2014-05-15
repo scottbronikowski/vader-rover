@@ -45,6 +45,7 @@ char* cmd_servo = "servo";
 //global vars
 int gamepad_thread_should_die;
 pthread_t gamepad_thread;
+int sockfd, new_fd; //listen on sockfd, new connection on new_fd
 
 //functions called from Scheme
 void gamepad_hello_world(void)
@@ -73,12 +74,23 @@ void gamepad_shutdown(void)
   printf("Gamepad shutdown complete\n");
 }
 
+void gamepad_start_cameras(void)
+{
+  if (new_fd > 0)
+    gamepad_send_command(cmd_start_cameras, new_fd);
+}
+
+void gamepad_stop_cameras(void)
+{
+  if (new_fd > 0)
+    gamepad_send_command(cmd_stop_cameras, new_fd);
+}
 
 //functions NOT called from Scheme
 void* gamepad_update(void* args)
 {
   //start server and wait for connection
-  int sockfd, new_fd; //listen on sockfd, new connection on new_fd
+  /* int sockfd, new_fd; //listen on sockfd, new connection on new_fd */
   float right_stick_length, left_stick_length;
   float left_stick_angle;
   float right_norm_x, right_norm_y, right_x, right_y;

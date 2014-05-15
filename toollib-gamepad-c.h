@@ -54,11 +54,14 @@ extern char* cmd_servo;
 //global vars
 extern int gamepad_thread_should_die;
 extern pthread_t gamepad_thread;
+extern int sockfd, new_fd;
 
 //functions called from Scheme
 void gamepad_hello_world(void);
 void gamepad_init(void);
 void gamepad_shutdown(void);
+void gamepad_start_cameras(void);
+void gamepad_stop_cameras(void);
 
 //functions NOT called from Scheme
 void* gamepad_update(void* args);

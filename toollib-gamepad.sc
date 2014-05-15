@@ -17,8 +17,14 @@
 (define gamepad-init
  (c-function void ("gamepad_init")))
 
+;; (define gamepad-update  ;;not sure why I had this in here
+;;  (c-function void ("gamepad_update" pointer)))
+
 (define gamepad-shutdown
  (c-function void ("gamepad_shutdown")))
 
-(define gamepad-update
- (c-function void ("gamepad_update" pointer)))
+(define gamepad-start-cameras
+ (c-function void ("gamepad_start_cameras")))
+
+(define gamepad-stop-cameras
+ (c-function void ("gamepad_stop_cameras")))

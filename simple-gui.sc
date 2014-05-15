@@ -91,7 +91,7 @@
  (define-key (control #\m) "Enter command"
   (lambda () (dtrace "the string you typed:" *input*))))
 
-(set! *program* "rover-viewer")
+(set! *program* "driver-viewer")
 
 (define-application viewer
  ;; Example:
