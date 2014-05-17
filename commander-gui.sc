@@ -1,40 +1,46 @@
-(define *cdr-viewer-active* "DISCONNECTED")
+(define *cdr-viewer-active* #f)
+
+(define (my-quit-command)
+ ;;update variable first
+ (let ((tempvar (read-cdr-viewer-active)))
+ (if (= tempvar 1)
+     (set! *cdr-viewer-active* #t)
+     (set! *cdr-viewer-active* #f))
+ (if (not (dtrace "viewer active?" *cdr-viewer-active*))
+     (quit))))
 
 (define (define-buttons)
- (standard-buttons 2 (lambda () #f))
- (define-button 4 4
-  (lambda () (format #f "CDR viewer ~a" *cdr-viewer-active*))
-  #f
-  (lambda () #f))
- (define-button 3 3 "Start Cameras" #f
-  (lambda () (gamepad-start-cameras)))
- (define-button 3 4 "Stop Cameras" #f
-  (lambda () (gamepad-stop-cameras)))
- (define-button 4 0 "Start Emperor" #f
-  (lambda ()
-   (system "ssh -p 22222 root@localhost \"/root/bin/emperor &\" &")))
- (define-button 4 1 "Stop Emperor" #f
-  (lambda ()
-   (system "ssh -p 22222 root@localhost \"pkill emperor\" &")))
+ ;;(standard-buttons 2 (lambda () #f))
+ (define-button 0 0 "Quit" #f
+  (lambda () (my-quit-command)))
+ ;; (define-button 5 7 "Start Cameras" #f
+ ;;  (lambda () (gamepad-start-cameras)))
+ ;; (define-button 5 8 "Stop Cameras" #f
+ ;;  (lambda () (gamepad-stop-cameras)))
+ ;; (define-button 6 0 "Start Emperor" #f
+ ;;  (lambda ()
+ ;;   (system "ssh -p 22222 root@localhost \"/root/bin/emperor &\" &")))
+ ;; (define-button 6 1 "Stop Emperor" #f
+ ;;  (lambda ()
+ ;;   (system "ssh -p 22222 root@localhost \"pkill emperor\" &")))
+ (define-button 4 0 "Test Image Get" #f
+  (lambda () (cdr-get-next-image-command)))
  )
 
 (define (define-keys)
  ;; misc settings:
- 
- ;; (define-key (control #\c) "Connect bluetooth"
- ;;  (lambda () (dtrace ""  "Connecting to the bluetooth...")))
- (define-key escape "Get Images" get-next-image-command) ;;defined in toollib-rover.sc
+ (define-key escape "Get Images" cdr-get-next-image-command) ;;defined in toollib-rover.sc
  (define-key (control #\m) "Enter command"
   (lambda () (dtrace "the string you typed:" *input*))))
 
-(set! *program* "driver-viewer")
+(set! *program* "commander-viewer")
 
 (define-application viewer
  ;; Example:
  ;;   (viewer '())
  1600 800  ; Dimension of the window
  1        ; TRANSCRIPT-LINES
- 5        ; BUTTON-ROWS
+ 2        ; BUTTON-ROWS
  5        ; BUTTON-COLUMNS
  ;;; Pre-initialize procedure:
  (lambda ()
@@ -43,11 +49,9 @@
   (format #t "Calling Pre-init~%")
   (define-buttons)
   (define-keys)
-  (rover-server-setup)
-  (rover-server-start)
-  (gamepad-init)
+  (cdr-viewer-setup)
+  (cdr-viewer-start)
   (dtrace "Finished calling the god-damned pre-initialize function" "")
-  
   )
  ;;; Post-initialize procedure:
  (lambda () ;(wait-for-next-frame 0)
@@ -56,8 +60,7 @@
  ;;; Finalize procedure:
  (lambda ()
   (dtrace ""  "Calling Finalize")
-  (rover-server-cleanup)
-  (gamepad-shutdown)
+  (cdr-viewer-cleanup)
   (imlib-context-disconnect-display))
  ;;; Redraw procedure:
  (lambda ()

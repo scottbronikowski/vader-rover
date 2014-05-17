@@ -68,6 +68,7 @@
 //uses OpenCV C++ API
 struct PointGrey_t2 {
   int new_fd;
+  int cdr_new_fd;
   int img_size;
   cv::Mat uncompressedImage;
 };
@@ -80,6 +81,7 @@ struct CamGrab_t {
   int MostRecent;
   pthread_mutex_t MostRecentLock;
   char* PortNumber;
+  char* CdrPortNumber;
   int LastDisplayed;
   Imlib_Image LastDisplayedImage;
   FILE* file_ptr;
@@ -114,6 +116,8 @@ extern pthread_t log_thread;
 extern int log_thread_should_die, log_sockfd, log_new_fd;
 extern FILE* log_file;
 extern int cdr_viewer_active;
+extern int cdr_viewer_threads_should_die;
+extern pthread_t cdr_viewer_threads[k_numCams];
 
 // functions called from Scheme
 #ifdef __cplusplus
@@ -134,6 +138,11 @@ void rover_server_start(void);
 #ifdef __cplusplus
 extern "C"
 #endif
+void cdr_viewer_start(void);
+
+#ifdef __cplusplus
+extern "C"
+#endif
 Imlib_Image rover_get_front_cam(void);
 
 #ifdef __cplusplus
@@ -144,7 +153,27 @@ Imlib_Image rover_get_pano_cam(void);
 #ifdef __cplusplus
 extern "C"
 #endif
+Imlib_Image cdr_get_front_cam(void);
+
+#ifdef __cplusplus
+extern "C"
+#endif
+Imlib_Image cdr_get_pano_cam(void);
+
+#ifdef __cplusplus
+extern "C"
+#endif
 void rover_server_cleanup(void);
+
+#ifdef __cplusplus
+extern "C"
+#endif
+void cdr_viewer_cleanup(void);
+
+#ifdef __cplusplus
+extern "C" 
+#endif
+int read_cdr_viewer_active(void);
 
 // functions NOT called from Scheme
 void* rover_server_grab(void* args);
@@ -158,9 +187,12 @@ int CheckSaving(const char* dir);
 Imlib_Image Get_Image_from_ImgArray(struct CamGrab_t* CG);
 Window FindWindow(char* szWindowToFind);
 double rover_current_time(void);
+int ClientConnect(const char* server, const char* port);
+int sendall(int s, unsigned char *buf, int *len);
 #ifdef __cplusplus
 //use PointGrey_t2, which uses OpenCV C++ API
 int OpenCV_ReceiveFrame(PointGrey_t2* PG, FILE* file_ptr);
+int cdr_OpenCV_ReceiveFrame(PointGrey_t2* PG);
 void OpenCV_SaveFrame(PointGrey_t2* PG, int imageCount, char* PORT);
 Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
 Window SearchWindow(char* szWindowToFind, int level, Display *display, 

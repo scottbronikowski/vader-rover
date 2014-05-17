@@ -223,7 +223,9 @@ Goal: Start work on drivers for shaft encoders and IMU.
 
 16 May 14
 Goal: Continue work on shaft encoders and IMU.
-
+--Commander viewer is functional.  Tested in tandem with driver viewer (both side-by-side on seykhl via ssh into chino, and locally on the alykkyys desktop) and there does not appear to be any noticeable delay--we tested by putting a stopwatch in front of the camera and comparing the times in both windows, and the times matched.
+--A current limitation of the commander viewer is that it needs to be running prior to starting the cameras on the rover, otherwise it will not connect when seykhl (the driver gui) looks for it.  I have implemented a button on the driver's GUI that shows whether or not the commander's display is connected (updates on camera start).  I might want to try to modify this button to allow for an attempt at connecting if disconnected, but not sure if this is necessary.
+--Commander viewer originally had a problem with the 'Quit' button.  If operater hit 'Quit' button in commander viewer, the image stream would stop but the window would remain open until the cameras are stopped.  I changed that behavior with an int variable in C (read into a boolean in Scheme) that determines whether or not the commander viewer is active.  If the viewer is active, the quit button does nothing.  If the viewer is not active, the quit button closes the viewer window--in fact, the driver needs to completely exit his Scheme process before the commander's viewer can be closed.  This prevents the commander from accidentally or prematurely closing his window while the driver is still driving.
 
 
 
@@ -231,9 +233,7 @@ Goal: Continue work on shaft encoders and IMU.
 TODO:
 ***LOOK AT CALLING TOOLLIB-GAMEPAD FUNCTIONS FROM SCHEME FOR BUTTONS (START/STOP CAMERAS, MOTORS, ETC...*****
 
-Send timestamps with images over same network port and log into files on seykhl
-
-OpenCV:VideoWriter class (reading and writing images and video documentation page)
+imitate/tool/arm-servoing-gui.sc (search "min-consensus"
 
    
 
