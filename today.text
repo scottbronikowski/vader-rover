@@ -225,8 +225,27 @@ Goal: Start work on drivers for shaft encoders and IMU.
 Goal: Continue work on shaft encoders and IMU.
 --Commander viewer is functional.  Tested in tandem with driver viewer (both side-by-side on seykhl via ssh into chino, and locally on the alykkyys desktop) and there does not appear to be any noticeable delay--we tested by putting a stopwatch in front of the camera and comparing the times in both windows, and the times matched.
 --A current limitation of the commander viewer is that it needs to be running prior to starting the cameras on the rover, otherwise it will not connect when seykhl (the driver gui) looks for it.  I have implemented a button on the driver's GUI that shows whether or not the commander's display is connected (updates on camera start).  I might want to try to modify this button to allow for an attempt at connecting if disconnected, but not sure if this is necessary.
---Commander viewer originally had a problem with the 'Quit' button.  If operater hit 'Quit' button in commander viewer, the image stream would stop but the window would remain open until the cameras are stopped.  I changed that behavior with an int variable in C (read into a boolean in Scheme) that determines whether or not the commander viewer is active.  If the viewer is active, the quit button does nothing.  If the viewer is not active, the quit button closes the viewer window--in fact, the driver needs to completely exit his Scheme process before the commander's viewer can be closed.  This prevents the commander from accidentally or prematurely closing his window while the driver is still driving.
+--Commander viewer originally had a problem with the 'Quit' button.  If operator hit 'Quit' button in commander viewer, the image stream would stop but the window would remain open until the cameras are stopped.  I changed that behavior with an int variable in C (read into a boolean in Scheme) that determines whether or not the commander viewer is active.  If the viewer is active, the quit button does nothing.  If the viewer is not active, the quit button closes the viewer window--in fact, the driver needs to completely exit his Scheme process before the commander's viewer can be closed.  This prevents the commander from accidentally or prematurely closing his window while the driver is still driving.
 
+19 May 14
+Goal: Start work on shaft encoder driver.
+--Started by looking for existing code to read rotary encoders.  Found a couple of ARM-specific projects (running in user-space) that seem to do an adequate job of reading encoder position and counting ticks, but they use too much CPU (~50%) to work on the rover.  I tested these while running the cameras and observed noticeably slower frame rate and occasional freezes.  I am now researching ways to do interrupt handling (i.e., tick counting) in kernel-space to try to achieve lower CPU usage.  Another option (which I haven't researched yet) is to use one or two separate microcontrollers (with pulse accumulators) to count ticks and then have the Gumstix poll the microcontrollers at a reasonable interval for data.
+
+
+20 May 14
+Goal: Continue work on shaft encoder driver.
+
+
+21 May 14
+Goal: Complete work on shaft encoder driver.  Start work on IMU driver.
+
+
+22 May 14
+Goal: Continue work on IMU driver.
+
+
+23 May 14
+Goal: Complete work on IMU driver.
 
 
 
@@ -242,17 +261,11 @@ imitate/tool/arm-servoing-gui.sc (search "min-consensus"
 --Will changing front cam to black & white give sharper picture and/or lower CPU usage?
 
 Weekly Goals:
-M: Work on video annotations.
-T: Finish video annotations. Work on setting up commander viewer on second workstation--first try video stream going rover->seykhl (driver)->other ws (commander) in order to keep bandwidth usage at current level.  See if this setup causes perceptible delay.
-W: Finish commander viewer.  Work on setup and mounting of speakers and microphone on rover.  See machine shop if additional hardware needed.
-R: Start work on drivers for shaft encoders and IMU.
-F: Continue work on shaft encoders and IMU.
-
-
-
-
-
-
+M: Start work on shaft encoder driver
+T: Continue work on shaft encoder driver
+W: Complete work on shaft encoder driver.  Start work on IMU driver.
+R: Continue work on IMU driver.
+F: Complete work on IMU driver.
 
 
 
