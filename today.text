@@ -249,7 +249,22 @@ Goal: Complete work on IMU driver.
 --Ordered Teensy 3.1 microcontroller board (72 MHz ARM Cortex-M4, 256k flash, 64k RAM, 34 digital IO pins--all interruptable, USB interface to PC).  Not sure if it will be capable of running both encoders from one Teensy, so I ordered enough to put two Teensys on the rover, with spares.  There seems to be a fairly active dev community for the Teensy, with an already-existing Encoder library built for quadrature encoders (code appears to be all in C).  These boards were surprisingly cheap, <$20/board.
 --Installed longer whiskers on bump switches.  Rear switches seem to be working fine.  Front switch whiskers sag down in front of the ultrasonic sensor, which will render that sensor useless.  I need to figure out a way to keep the whiskers clear of the sensor.  The first thing I tried was to mount an old whisker sticking out the front of the rover for the new whiskers to rest on (above the sensor's path), but that doesn't seem to work to well--the new whiskers don't move as freely as they need to.  One thought is to use a smoother material (metal?) for the whisker rest to reduce friction.  Another thought is to move the ultrasonic sensor to another location--possibly mounted on top of the pan/tilt camera.  That might prove more useful, giving a distance to whatever the camera is looking at rather than a distance from the front of the rover.
 
+27 May 14
+Goal:  Read up on Teensy development and ensure development environment is set up and ready for when board arrives.  Visit machine shop to start work on mounting hardware for speakers and mic.
+--Discovered that all kernel module compilation work done on Friday needs to be undone--it destroyed my previous kernel modules and made the Gumstix unable to boot with the correct drivers.
 
+28 May 14
+Goal:  Start work on IMU code.
+--Got basic rotary_encoder.ko module compiled on rover.
+--Took rover down to machine shop for mic and speaker mounting.  Mic is mounted on rear left corner of rover, next to battery and DC-DC converter.  Speakers are mounted underneath, between front and middle wheels, angled outwards towards side of rover (angle is changeable due to hinges on back of speakers).
+--Started reading up on Teensy (Arduino) development environment.
+
+29 May 14
+Goal:  Continue work on IMU code.
+
+
+30 May 14
+Goal:  Complete and test IMU code.
 
 
 
@@ -264,11 +279,10 @@ TODO:
 --Will changing front cam to black & white give sharper picture and/or lower CPU usage?
 
 Weekly Goals:
-M: Start work on shaft encoder driver
-T: Continue work on shaft encoder driver
-W: Complete work on shaft encoder driver.  Start work on IMU driver.
-R: Continue work on IMU driver.
-F: Complete work on IMU driver.
+T:  Read up on Teensy development and ensure development environment is set up and ready for when board arrives.  Visit machine shop to start work on mounting hardware for speakers and mic.
+W:  Start work on IMU code.
+R:  Continue work on IMU code.
+F:  Complete and test IMU code.
 
 
 Critical tasks
@@ -284,7 +298,7 @@ Critical tasks
 -shaft encoders-->mounted and connected, need to do software interface (user-space interface on Gumstix too slow/CPU hog; currently trying to implement kernel-space interrupt-driven driver, but not sure if it will consume too much CPU; separate USB microcontroller board ordered)
 -IMU-->mounted and connected, need to do software interface
 -bidirectional speech between driver and rover-->not started, hardware on hand
--bidirectional speech between commander and driverr-->not started, hardware on hand
+-bidirectional speech between commander and driver-->not started, hardware on hand
 
 Non-critical tasks
 ------------------
