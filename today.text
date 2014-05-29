@@ -261,7 +261,7 @@ Goal:  Start work on IMU code.
 
 29 May 14
 Goal:  Continue work on IMU code.
-
+--Got Arduino/Teensyduino IDE installed on Ubuntu laptop and seykhl.  Arduino IDE does not require installation, it just runs via an executable script extracted with the download, and Teensyduino just installs helper files in the extracted directory.  Created an alias in my .bashrc to call that script.  Just need udev rules added by root to access boards via USB.
 
 30 May 14
 Goal:  Complete and test IMU code.
