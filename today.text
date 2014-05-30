@@ -18,11 +18,17 @@ from ~/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64$ darpa-wrap make dsc
 
 Buffers
 ---------------------------------------
+    today.text           35221  Text		  ~/vader-rover/today.text
+  * *Open Recent*         3988  recentf-dialog
+    commander-gui.sc      2321  Scheme		  ~/vader-rover/commander-gui.sc
+    toollib-rover.sc      2148  Scheme		  ~/vader-rover/toollib-rover.sc
+    toollib-rover-cpp.h   4712  C++/l		  ~/vader-rover/toollib-rover-cpp.h
+    toollib-rover-cpp.c: 33214  C++/l		  ~/vader-rover/toollib-rover-cpp.cpp
+    toollib-gamepad.sc     833  Scheme		  ~/vader-rover/toollib-gamepad.sc
+    toollib-gamepad-c.h   1954  C++/l		  ~/vader-rover/toollib-gamepad-c.h
+    toollib-gamepad-c.c  11221  C/l		  ~/vader-rover/toollib-gamepad-c.c
+
 .   simple-gui.sc         5686  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/simple-gui.sc
-    today.text           13381  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
-    toollib-rover-cpp.c: 15581  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover-cpp.cpp
-    toollib-rover.sc       927  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover.sc
-    toollib-rover-cpp.h   3453  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover-cpp.h
     vlad.sc              12997  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vlad.sc
     vladlib-c.c          90308  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vladlib-c.c
     vladlib-cpp.cpp       3000  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vladlib-cpp.cpp
@@ -290,14 +296,21 @@ Critical tasks
 -front camera video-->COMPLETE
 -fisheye camera video-->COMPLETE
 -game controller to control wheels-->COMPLETE
---pan-tilt commands-->COMPLETE
---wheel commands-->COMPLETE
+  --pan-tilt commands-->COMPLETE
+  --wheel commands-->COMPLETE
 -bump sensors-->COMPLETE
 -crossing bump sensors-->COMPLETE, may need adjustment
 -video feed to commander-->first draft COMPLETE, may need future enhancement
--shaft encoders-->mounted and connected, need to do software interface (user-space interface on Gumstix too slow/CPU hog; currently trying to implement kernel-space interrupt-driven driver, but not sure if it will consume too much CPU; separate USB microcontroller board ordered)
--IMU-->mounted and connected, need to do software interface
--bidirectional speech between driver and rover-->not started, hardware on hand
+-shaft encoders-->mounted and connected, need to do software interface 
+  --user-space interface on Gumstix too slow/CPU hog
+  --could try to implement kernel-space interrupt-driven driver, but not sure if it will consume too much CPU; compilation environment for kernel module rotary_encoder (provided with Linux kernel) set up, but need to figure out how to configure code to monitor the GPIO lines I'm using and have the module keep track of ticks and direction and report them to user-space code on demand
+  --separate USB microcontroller board ordered (Teensy 3.1), delivery expected m2jun14, dev environment for Teensy setup complete on rover and ubuntu laptop
+-IMU-->mounted and connected, working on software interface
+  --currently able to read data as Euler angles from IMU via serial monitor in Arduino IDE-->not sure if we want to get Euler angles or something else (like compass heading, etc.) 
+  --need to run calibration procedure and finish mounting, then implement IMU data request (over /dev/ttyUSB1) in emperor code on rover
+  --once data read into emperor, send it over network to seykhl and write to log file
+-bidirectional speech between driver and rover-->hardware mounted and connected, need to do software
+  --speakers and microphone mounted on rover, audio connections connected to Gumstix, USB socket broken out from the 5V DC-DC converter to power speakers.
 -bidirectional speech between commander and driver-->not started, hardware on hand
 
 Non-critical tasks
