@@ -271,7 +271,29 @@ Goal:  Continue work on IMU code.
 
 30 May 14
 Goal:  Complete and test IMU code.
+--All work done on rover.
 
+2 Jun 14
+Goal:  Continue work on IMU. Decide on what data I want to get from the IMU, and in what format.  
+--Teensy boards on hand.
+--Working on calibrating IMU and modifying AHRS code for IMU to report only info that is relevant to what I'm doing.
+
+
+3 Jun 14
+Goal:  Continue work on IMU.  Integrate IMU data request/reply and sending to seykhl over network into emperor code on rover.
+--IMU calibration on rover (mag: output.txt, others in today.text on rover).
+
+
+4 Jun 14
+Goal:  Complete work on IMU.
+--Revised IMU magnetometer calibration on rover (output2.txt).  Determined that IMU needs to be mounted higher off the rover's deck in order to minimize magnetic interference.
+
+5 Jun 14
+Goal:  Start work on Teensy as wheel encoder controller.
+
+
+6 Jun 14
+Goal:  Continue work on Teensy.
 
 
 TODO:
@@ -285,10 +307,11 @@ TODO:
 --Will changing front cam to black & white give sharper picture and/or lower CPU usage?
 
 Weekly Goals:
-T:  Read up on Teensy development and ensure development environment is set up and ready for when board arrives.  Visit machine shop to start work on mounting hardware for speakers and mic.
-W:  Start work on IMU code.
-R:  Continue work on IMU code.
-F:  Complete and test IMU code.
+M:  Continue work on IMU. Decide on what data I want to get from the IMU, and in what format.  (Note: I should have the Teensy boards on hand today.  UPS shows it was delivered to the ECE mailroom on Friday, but when I checked my mailbox this morning I didn't have a package slip and Bill wasn't around.  I will work on tracking him down today.)
+T:  Continue work on IMU.  Integrate IMU data request/reply and sending to seykhl over network into emperor code on rover.
+W:  Complete work on IMU.
+R:  Start work on Teensy as wheel encoder controller.
+F:  Continue work on Teensy.
 
 
 Critical tasks
