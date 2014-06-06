@@ -290,10 +290,12 @@ Goal:  Complete work on IMU.
 
 5 Jun 14
 Goal:  Start work on Teensy as wheel encoder controller.
+--New calibration in output3.txt
 
 
 6 Jun 14
 Goal:  Continue work on Teensy.
+--Spent about an hour and a half trying to figure out compass offset without success.  Tried in several different locations (on floor in office, on floor in hallway, further down the hallway) and got useless results--the same magnetic heading, as measured by my lensatic compass, gave different headings from the IMU when measured multiple times.  I think recalibration might be a fix, but not sure of what location to use for recalibration.  I'm starting to think that might just be too much EM interference here inside the building.  I'm going to give this issue a rest for a while and instead work on the data flow from IMU->rover->seykhl->log.
 
 
 TODO:
