@@ -331,8 +331,8 @@ Critical tasks
   --could try to implement kernel-space interrupt-driven driver, but not sure if it will consume too much CPU; compilation environment for kernel module rotary_encoder (provided with Linux kernel) set up, but need to figure out how to configure code to monitor the GPIO lines I'm using and have the module keep track of ticks and direction and report them to user-space code on demand
   --separate USB microcontroller board ordered (Teensy 3.1), delivery expected m2jun14, dev environment for Teensy setup complete on rover and ubuntu laptop
 -IMU-->mounted and connected, working on software interface
-  --currently able to read data as Euler angles from IMU via serial monitor in Arduino IDE-->not sure if we want to get Euler angles or something else (like compass heading, etc.) 
-  --need to run calibration procedure and finish mounting, then implement IMU data request (over /dev/ttyUSB1) in emperor code on rover
+  --remounted adjacent to camera to try and combat magnetic interference; probably need to recalibrate again in a location further away from rooms full of computers
+  --working on reading data from IMU into emperor
   --once data read into emperor, send it over network to seykhl and write to log file
 -bidirectional speech between driver and rover-->hardware mounted and connected, need to do software
   --speakers and microphone mounted on rover, audio connections connected to Gumstix, USB socket broken out from the 5V DC-DC converter to power speakers.
@@ -340,7 +340,7 @@ Critical tasks
 
 Non-critical tasks
 ------------------
--GPS-->mounted and connected, need to do software interface
+-GPS-->mounted and connected, can read raw NMEA data through a 4800 bps serial port, need to finish software interface
 -ultrasonic sensor-->mounted and connected, need to do software interface
 -touchscreen-->mounted and able to connect, need to work on connection to OS
 -4G-->COMPLETE
