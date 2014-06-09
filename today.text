@@ -297,6 +297,25 @@ Goal:  Start work on Teensy as wheel encoder controller.
 Goal:  Continue work on Teensy.
 --Spent about an hour and a half trying to figure out compass offset without success.  Tried in several different locations (on floor in office, on floor in hallway, further down the hallway) and got useless results--the same magnetic heading, as measured by my lensatic compass, gave different headings from the IMU when measured multiple times.  I think recalibration might be a fix, but not sure of what location to use for recalibration.  I'm starting to think that might just be too much EM interference here inside the building.  I'm going to give this issue a rest for a while and instead work on the data flow from IMU->rover->seykhl->log.
 
+9 Jun 14
+Goal: Continue work on IMU data flow. 
+
+
+10 Jun 14
+Goal:  Work on IMU calibration (probably outdoors)
+
+
+11 Jun 14
+Goal:  Finish work on IMU data flow. 
+
+
+12 Jun 14
+Goal:  Work on GPS data flow (should be a quick modification from IMU data flow). 
+
+
+13 Jun 14
+Goal:  Start work on encoder->Teensy interface. 
+
 
 TODO:
 ***LOOK AT CALLING TOOLLIB-GAMEPAD FUNCTIONS FROM SCHEME FOR BUTTONS (START/STOP CAMERAS, MOTORS, ETC...*****
@@ -309,11 +328,11 @@ TODO:
 --Will changing front cam to black & white give sharper picture and/or lower CPU usage?
 
 Weekly Goals:
-M:  Continue work on IMU. Decide on what data I want to get from the IMU, and in what format.  (Note: I should have the Teensy boards on hand today.  UPS shows it was delivered to the ECE mailroom on Friday, but when I checked my mailbox this morning I didn't have a package slip and Bill wasn't around.  I will work on tracking him down today.)
-T:  Continue work on IMU.  Integrate IMU data request/reply and sending to seykhl over network into emperor code on rover.
-W:  Complete work on IMU.
-R:  Start work on Teensy as wheel encoder controller.
-F:  Continue work on Teensy.
+M: Continue work on IMU data flow. 
+T:  Work on IMU calibration (probably outdoors)
+W:  Finish work on IMU data flow. 
+R:  Work on GPS data flow (should be a quick modification from IMU data flow). 
+F:  Start work on encoder->Teensy interface. 
 
 
 Critical tasks
