@@ -318,6 +318,7 @@ Goal:  Start work on encoder->Teensy interface.
 
 
 TODO:
+**HOW can I take acceleration data from IMU and integrate it to get velocity and position???
 ***LOOK AT CALLING TOOLLIB-GAMEPAD FUNCTIONS FROM SCHEME FOR BUTTONS (START/STOP CAMERAS, MOTORS, ETC...*****
 
 --LOOK AT INTERFACE TO TEENSY BOARD.  Specifically how to poll it for data.  Sending a request to it over serial interface might be too slow-->can I use a GPIO pin on the Gumstix to send an interrupt to the Teensy that will cause it to send its counts/directions over serial to Gumstix and then reset counters?   
@@ -328,11 +329,6 @@ TODO:
 --Will changing front cam to black & white give sharper picture and/or lower CPU usage?
 
 Weekly Goals:
-M: Continue work on IMU data flow. 
-T:  Work on IMU calibration (probably outdoors)
-W:  Finish work on IMU data flow. 
-R:  Work on GPS data flow (should be a quick modification from IMU data flow). 
-F:  Start work on encoder->Teensy interface. 
 
 
 Critical tasks
@@ -344,7 +340,6 @@ Critical tasks
   --wheel commands-->COMPLETE
 -bump sensors-->COMPLETE
 -crossing bump sensors-->COMPLETE, may need adjustment
--video feed to commander-->first draft COMPLETE, may need future enhancement
 -shaft encoders-->mounted and connected, need to do software interface 
   --user-space interface on Gumstix too slow/CPU hog
   --could try to implement kernel-space interrupt-driven driver, but not sure if it will consume too much CPU; compilation environment for kernel module rotary_encoder (provided with Linux kernel) set up, but need to figure out how to configure code to monitor the GPIO lines I'm using and have the module keep track of ticks and direction and report them to user-space code on demand
@@ -353,14 +348,15 @@ Critical tasks
   --remounted adjacent to camera to try and combat magnetic interference; probably need to recalibrate again in a location further away from rooms full of computers
   --working on reading data from IMU into emperor
   --once data read into emperor, send it over network to seykhl and write to log file
--bidirectional speech between driver and rover-->hardware mounted and connected, need to do software
-  --speakers and microphone mounted on rover, audio connections connected to Gumstix, USB socket broken out from the 5V DC-DC converter to power speakers.
--bidirectional speech between commander and driver-->not started, hardware on hand
+-GPS-->mounted and connected, can read raw NMEA data through a 4800 bps serial port, need to finish software interface
 
 Non-critical tasks
 ------------------
--GPS-->mounted and connected, can read raw NMEA data through a 4800 bps serial port, need to finish software interface
--ultrasonic sensor-->mounted and connected, need to do software interface
+-ultrasonic sensor-->need to remount, reconnect, and do software interface
+-video feed to commander-->first draft COMPLETE, may need future enhancement
+-bidirectional speech between driver and rover-->hardware mounted and connected, need to do software
+  --speakers and microphone mounted on rover, audio connections connected to Gumstix, USB socket broken out from the 5V DC-DC converter to power speakers.
+-bidirectional speech between commander and driver-->not started, hardware on hand
 -touchscreen-->mounted and able to connect, need to work on connection to OS
 -4G-->COMPLETE
 
