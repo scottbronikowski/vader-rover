@@ -20,7 +20,7 @@ const char* k_OutputDir = "/aux/sbroniko/images/";
 const char* k_LogPort = "2001";
 //const char* k_LogDir = "/home/sbroniko/vader-rover/logs/";
 const char* k_LogDir = "/aux/sbroniko/vader-rover/logs/";
-const int k_LogBufSize = 100;
+const int k_LogBufSize = 256;//100;
 const int k_timestamp_len = 18; //string length for timestamp only (18)
 //for commander viewer
 const char* k_CdrFrontCamPort = "36010";

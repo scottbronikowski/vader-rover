@@ -319,6 +319,9 @@ Goal:  Start work on encoder->Teensy interface.
 
 TODO:
 **HOW can I take acceleration data from IMU and integrate it to get velocity and position???
+
+--Time of day clock on IMU--sync it to Gumstix clock--use it to timestamp data from IMU
+
 ***LOOK AT CALLING TOOLLIB-GAMEPAD FUNCTIONS FROM SCHEME FOR BUTTONS (START/STOP CAMERAS, MOTORS, ETC...*****
 
 --LOOK AT INTERFACE TO TEENSY BOARD.  Specifically how to poll it for data.  Sending a request to it over serial interface might be too slow-->can I use a GPIO pin on the Gumstix to send an interrupt to the Teensy that will cause it to send its counts/directions over serial to Gumstix and then reset counters?   
