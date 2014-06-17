@@ -316,6 +316,29 @@ Goal:  Work on GPS data flow (should be a quick modification from IMU data flow)
 13 Jun 14
 Goal:  Start work on encoder->Teensy interface. 
 
+16 Jun 14
+Goal: Research availability of a time of day clock on the IMU and see if it can be used to timestamp data.  Start working on integrating accelerometer data to get velocity and position.
+--Discovered upon reading about the instruction set that the IMU has that there doesn't appear to be any kind of real time clock available on the IMU.  However, there is a millis() function that returns the number of milliseconds since the current program started running (overflows after ~50 days, so should be suitable for my purposes).  I could use this to implement a timer on the IMU that sends data to the Gumstix at a set interval (100 ms if we want 10 updates/sec), which would remove the need for the Gumstix to poll the IMU for data.  Timestamping of the data could then be done upon its arrival at the Gumstix, before transmission to seykhl.
+--Read more into the DCM algorithm implemented in the razor-9dof-ahrs code I'm using as my base.  The comments in the code seem to indicate that the DCM algorithm does some amount of integration, so I'm trying to understand that more in an effort to do my own integration on the IMU.  DCM (Direction Cosine Matrix) seems to be very similar to the rotation matrices used in ECE569.   
+
+
+17 Jun 14
+Goal:  Do outdoor calibration of IMU (best chance of a day without rain).  Continue working on integration on IMU.
+--Redid calibration of IMU outdoors (picnic table in front of south wing of EE building).  File saved as imu-calibration-17-jun-14.txt.
+--Broke one front bump switch during calibration--need to replace the switch with a spare.
+
+
+18 Jun 14
+Goal:  Continue working on integration on IMU.
+
+
+19 Jun 14
+Goal:  Finish IMU integration--IMU should be able to output raw/calibrated accel/gyro data, integrated velocity, integrated position, and heading.
+
+
+20 Jun 14
+Goal:  Work on GPS data flow to Gumstix.
+
 
 TODO:
 **HOW can I take acceleration data from IMU and integrate it to get velocity and position???
@@ -332,7 +355,11 @@ TODO:
 --Will changing front cam to black & white give sharper picture and/or lower CPU usage?
 
 Weekly Goals:
-
+M: Research availability of a time of day clock on the IMU and see if it can be used to timestamp data.  Start working on integrating accelerometer data to get velocity and position.
+T:  Do outdoor calibration of IMU (best chance of a day without rain).  Continue working on integration on IMU.
+W:  Continue working on integration on IMU.
+R:  Finish IMU integration--IMU should be able to output raw/calibrated accel/gyro data, integrated velocity, integrated position, and heading.
+F:  Work on GPS data flow to Gumstix.
 
 Critical tasks
 --------------
