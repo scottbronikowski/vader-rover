@@ -1,0 +1,161 @@
+Extensions
+----------
+There is a set of procedures for manipulating pathnames. Notice that I
+have standardized on the term `pathname' and excised all use of `file,'
+`filename,' `file-name,' `path,' and `path-name.'
+
+(extension pathname)
+Returns the extension of PATHNAME.
+E.g. (extension "/tmp/foo.sc") --> "sc"
+     (extension "/tmp/foo") --> ""
+
+(has-extension? pathname)
+
+Returns #T if PATHNAME has an extension and #F otherwise.
+E.g. (has-extension? "/tmp/foo.sc") --> #T
+     (has-extension? "/tmp/foo") --> #F
+
+(strip-extension pathname)
+
+Returns PATHNAME with the extension removed.
+E.g. (strip-extension "/tmp/foo.sc") --> "/tmp/foo"
+     (strip-extension "/tmp/foo") --> "/tmp/foo"
+
+(default-extension pathname extension)
+
+Returns PATHNAME unchanged if it has an extension. Otherwise adds the default
+EXTENSION.
+E.g. (default-extension "/tmp/foo.sc" "text") --> "/tmp/foo.sc"
+     (default-extension "/tmp/foo" "text") --> "/tmp/foo.text"
+
+(replace-extension pathname extension)
+
+Adds EXTENSION to PATHNAME if does not already have an extension. Otherwise
+replaces the extension with EXTENSION.
+E.g. (replace-extension "/tmp/foo.sc" "text") --> "/tmp/foo.text"
+     (replace-extension "/tmp/foo" "text") --> "/tmp/foo.text"
+
+I have also added a READ-LINE procedure
+
+(read-line [port])
+
+PORT defaults to (CURRENT-INPUT-PORT). Reads a line from PORT and returns it
+as a string with the terminating #\NEWLINE removed. Returns and EOF object on
+end of file.
+
+Tries
+-----
+Since we use tries a lot in some NLP work to store lexicons, I added a simple
+yet generic trie package. Tries are sparse tables that map strings to objects.
+
+(create-trie n char->integer [initial-value])
+
+Returns a trie where the strings are constructed out of N possible characters.
+The parameter CHAR->INTEGER must be a procedure that maps characters to an
+exact integer between 0 and N-1 inclusive. One possibility is to have N=256
+and use the standard CHAR->INTEGER procedure. But if you know that your
+strings will only have lower case alphabetic characters then you can have N=26
+and use (LAMBDA (C) (- (CHAR->INTEGER C) (CHAR->INTEGER #\a))) as
+CHAR->INTEGER.
+
+(trie-ref trie string)
+
+Returns the object in TRIE mapped to by STRING.
+
+(trie-set! trie string value)
+
+Updates TRIE to map STRING to VALUE.
+
+PNM Movies, Pixmaps, and MPEG
+-----------------------------
+There is now rudimentary support for displaying PNM images in application
+windows. First, there is a notion of a PNM movie. In memory, a PNM movie is
+simply a vector of PNM objects. On disk, a PNM movie of named foo.bar  of
+length N is a series of files foo_00001.bar through foo_<N>.bar. The naming
+convention was chosen to be compatible with mpeg_play. This means that
+
+a. underscore is used to separate the base name from the frame number
+b. the frame number is always five digits (this allows up to about 50 minutes
+   of movies at 30 fps)
+c. the frame number begins with 1
+
+PNM movies will typically have the extension `ppm' and will typically be
+composed out of PPM images but neither of these are necessary. In fact, a PNM
+movie can have frames of different types.
+
+Currently, PNM images can only be displayed on X servers that have 8-bit
+PSEUDOCOLOR displays. In the future, I plan to eventually support 24-bit
+TRUECOLOR and perhaps 15-bit or 16-bit TRUECOLOR but it is unlikely that I
+will ever support 1-bit B/W, 8-bit gray scale or other width PSEUDOCOLOR.
+(Note that qobi.ai is actually an 8-bit PSEUDOCOLOR server even though it only
+has a gray scale monitor. The color to gray scale conversion is done by the
+monitor. The hardware and software think it is a color display.)
+
+The PSEUDOCOLOR algorithm is very rudimetary. To avoid colormap problems, the
+default colormap is used. The program attempts to allocate a 6x6x6 color cube
+(216 entries). Each R/G/B coordinate is independently scaled from [0-255] to
+[0-5] and the coordinates then combined to yield an index into the colormap.
+This will produce degraded results if the program cannot allocate 216 entries
+(i.e. if there are already many distinct colors in use on the screen). It also
+produces displays that appear more quantized than if dithering was
+used. Someday I'll add dithering.
+
+There is also a capacity for reading and writing MPEG1 files. This requires
+that you have the programs mpeg_play and mpeg_encode from UC Berkeley installed
+and reachable from your PATH.
+
+(read-pnm-movie pathname)
+
+Reads a PNM movie from PATHNAME.
+
+(write-pnm-movie pnm-movie pathname)
+
+Writes PNM-MOVIE to PATHNAME. The default extension of each frame is
+determined by the type of that frame. If PNM-MOVIE contains a mixture of frame
+types and PATHNAME does not have an extension then it will be impossible to
+read the movie back in since it will be composed of files with a mixture of
+extensions.
+
+(read-mpeg pathname)
+
+Reads an MPEG1 file from PATHNAME (the extension defaults to Mpeg1) and
+returns a PNM movie.
+
+(write-mpeg pnm-movie pathname)
+
+Writes PNM-MOVIE as an MPEG1 file into PATHNAME (the extension defaults to
+Mpeg1). PNM-MOVIE can have a mixture of frame types.
+
+(clip-mpeg input-pathname output-pathname first-frame last-frame)
+
+Reads an MPEG1 file from INPUT-PATHNAME (the extension defaults to Mpeg1),
+selects the subsequence of frames starting at FIRST-FRAME and ending at
+LAST-FRAME inclusive (the frames are numbered from 0 to N-1), and writes the
+subsequence as an MPEG1 frile to OUTPUT-PATHNAME (the extension defaults to
+Mpeg1). This is done without loading the PNM images into memory so is a lot
+faster that what would be if that was done.
+
+(pnm->pixmap pnm)
+
+Downloads a PNM object to the X server and returns a pixmap object.
+
+(pnm-movie->pixmaps pnm-movie)
+
+Downloads a PNM movie to the X server and returns a vector of pixmap objects.
+
+(show-pixmap pixmap)
+
+Displays PIXMAP in the upper left corner of the display pane of an application.
+
+(show-pixmaps pixmaps)
+
+Displays the frames of PIXMAPS in the upper left corner of the display pane of
+an application at 30 fps.
+
+(free-pixmap pixmap)
+
+Frees PIXMAP.
+
+(free-pixmaps pixmaps)
+
+Frees all of the pixmaps in PIXMAPS.

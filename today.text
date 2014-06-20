@@ -318,7 +318,7 @@ Goal:  Start work on encoder->Teensy interface.
 
 16 Jun 14
 Goal: Research availability of a time of day clock on the IMU and see if it can be used to timestamp data.  Start working on integrating accelerometer data to get velocity and position.
---Discovered upon reading about the instruction set that the IMU has that there doesn't appear to be any kind of real time clock available on the IMU.  However, there is a millis() function that returns the number of milliseconds since the current program started running (overflows after ~50 days, so should be suitable for my purposes).  I could use this to implement a timer on the IMU that sends data to the Gumstix at a set interval (100 ms if we want 10 updates/sec), which would remove the need for the Gumstix to poll the IMU for data.  Timestamping of the data could then be done upon its arrival at the Gumstix, before transmission to seykhl.
+--Discovered upon reading about the instruction set that the IMU has that there doesn't appear to be any kind of time of day clock available on the IMU.  However, there is a millis() function that returns the number of milliseconds since the current program started running (overflows after ~50 days, so should be suitable for my purposes).  I could use this to implement a timer on the IMU that sends data to the Gumstix at a set interval (100 ms if we want 10 updates/sec), which would remove the need for the Gumstix to poll the IMU for data.  Timestamping of the data could then be done upon its arrival at the Gumstix, before transmission to seykhl.
 --Read more into the DCM algorithm implemented in the razor-9dof-ahrs code I'm using as my base.  The comments in the code seem to indicate that the DCM algorithm does some amount of integration, so I'm trying to understand that more in an effort to do my own integration on the IMU.  DCM (Direction Cosine Matrix) seems to be very similar to the rotation matrices used in ECE569.   
 
 
@@ -330,18 +330,23 @@ Goal:  Do outdoor calibration of IMU (best chance of a day without rain).  Conti
 
 18 Jun 14
 Goal:  Continue working on integration on IMU.
-
+--Started an in-depth reading of the paper by Premerlani that the razor-9dof-ahrs code is based on, with the goal of understanding their algorithm and exactly how it is implemented in the code in order to modify it in order to use the IMU for positioning.  Also started reading the papers by Mahony that the Premerlani paper is based on.
+--Also worked on MA511 readings and homework.
 
 19 Jun 14
 Goal:  Finish IMU integration--IMU should be able to output raw/calibrated accel/gyro data, integrated velocity, integrated position, and heading.
-
+--MA511 homework and Premerlani/Mahony paper reading.
 
 20 Jun 14
 Goal:  Work on GPS data flow to Gumstix.
-
+--Finished MA511 homework.  Next week I'll try to get the homework done in smaller chunks.
+--Continued reading the Premerlani and Mahony papers.  Reading these carefully in order to get a good understanding of the algorithm before I go mucking with the IMU code that implements it.  
+--Also read some more about Kalman filtering in general and how it can apply to robot navigation/positioning specifically.  Spent some time thinking about the fact that once I have working encoders, I will be able to measure my wheel velocity (and thereby the robot velocity) directly.  I know this won't be of much help with what I'm trying to do with the IMU right now, but it provides another input (along with IMU and GPS) to the Gumstix, where I'll implement some sort of filter (Kalman or ???) to synthesize my sensor data into position.  Since what I'm trying to do on the IMU is integrate linear acceleration to get linear velocity (albeit with accumulating error), will this directly measured velocity from the encoders enable me to correct my error before integrating the velocity into position?  Or with measured wheel velocity, can I just skip integrating the IMU linear acceleration and instead use the velocity from the encoders to go to position?  I would think that more sensor data would be better than less, but I'm not sure.  I'll have to keep thinking about this, especially as I continue reading and picking apart the IMU code.
 
 TODO:
 **HOW can I take acceleration data from IMU and integrate it to get velocity and position???
+
+**I can measure wheel velocity directly using the encoders--how does this help?
 
 --Time of day clock on IMU--sync it to Gumstix clock--use it to timestamp data from IMU
 
