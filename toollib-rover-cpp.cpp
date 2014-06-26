@@ -18,6 +18,7 @@ const char* k_PanoCamPort = "3602";
 const int BACKLOG = 5;
 const char* k_OutputDir = "/aux/sbroniko/images/";
 const char* k_LogPort = "2001";
+const char* k_imuLogPort = "2004";
 //const char* k_LogDir = "/home/sbroniko/vader-rover/logs/";
 const char* k_LogDir = "/aux/sbroniko/vader-rover/logs/";
 const int k_LogBufSize = 256;//100;
@@ -37,7 +38,9 @@ int grab_threads_should_die;
 Window display_pane, cdr_display_pane;
 pthread_t log_thread;
 int log_thread_should_die, log_sockfd, log_new_fd;
+int log_imu_sockfd, log_imu_new_fd;
 FILE* log_file;
+FILE* imu_log_file;
 unsigned int framecount;
 bool first_count = true;
 int cdr_viewer_active = FALSE;
@@ -118,6 +121,16 @@ extern "C" int rover_server_setup(void)
       printf("Failed to create file %s.  Please check permissions.\n", logFileName);
       return -1;
     }
+  //create log file for IMU data
+  logFileName[0] = '\0';
+  sprintf(logFileName, "%s%s/imu-log.txt", k_LogDir, tempName);
+  imu_log_file = fopen(logFileName, "w+");
+  if (imu_log_file == NULL)
+    {
+      printf("Failed to create file %s.  Please check permissions.\n", logFileName);
+      return -1;
+    }
+
   //create timestamp logs for front and pano cams
   logFileName[0] = '\0';
   sprintf(logFileName, "%s%s/camera_front.txt", k_LogDir, tempName);
@@ -153,14 +166,18 @@ extern "C" int rover_server_setup(void)
   memset(tempName, 0, sizeof(tempName));
   strftime(tempName, k_LogBufSize, "Log file created at %F-%T GMT", gmtime(&now));
   fprintf(log_file, "%s\n", tempName);
+  fprintf(imu_log_file, "%s\n", tempName);
   fprintf(FrontCam->file_ptr, "%s\n", tempName);
   fprintf(PanoCam->file_ptr, "%s\n", tempName);
-
 
   //open socket for log data from vader-rover
   log_sockfd = StartServer(k_LogPort);
   printf("server: waiting for data logging connection on port %s...\n",
 	 k_LogPort);  
+  //open socket for imu log data
+  log_imu_sockfd = StartServer(k_imuLogPort);
+  printf("server: waiting for data logging connection on port %s...\n",
+	 k_imuLogPort);  
   
   //success if we get here
   printf("rover_server_setup() succeeded\n");
@@ -276,16 +293,20 @@ extern "C" void rover_server_cleanup(void)
     }
   free(FrontCam);
   free(PanoCam);
-  //kill video save thread
-
   //kill data logging thread
   log_thread_should_die = TRUE;
   pthread_join(log_thread, NULL);
   fprintf(log_file, "%.6f: Logging completed\n", finish);
+  fprintf(imu_log_file, "%.6f: Logging completed\n", finish);
   close(log_sockfd);
+  close(log_imu_sockfd);
   fprintf(log_file, "%s\n", tempStr);
+  fprintf(imu_log_file, "%s\n", tempStr);
   fclose(log_file);
+  fclose(imu_log_file);
   printf("log_sockfd and log_file closed\n");
+  printf("log_imu_sockfd and imu_log_file closed\n");
+
   //complete
   printf("rover_server_cleanup completed\n");
 }
@@ -461,18 +482,27 @@ void* rover_server_log(void* args)
     {//main accept() loop
       usleep(10000);
       log_new_fd = AcceptConnection(log_sockfd);
+      log_imu_new_fd = AcceptConnection(log_imu_sockfd);
       /*
 	AcceptConnection set to non-blocking, so will spin here until it either gets 
 	a valid log_new_fd (and then goes into while loop below) or 
 	log_thread_should_die becomes TRUE, which will cause the while loop 
 	(and function) to exit.
        */
-      if (log_new_fd != -1)
-        printf("Log connection established with log_new_fd = %d, log_sockfd = %d\n", 
-		 log_new_fd, log_sockfd);
-
-      while (!log_thread_should_die && (log_new_fd != -1))
+      if (log_new_fd != -1) 
 	{
+	  printf("Log connection established with log_new_fd = %d,"
+		 "log_sockfd = %d\n", log_new_fd, log_sockfd);
+	}
+      if (log_imu_new_fd != -1)
+	{
+	  printf("IMU log connection established with log_imu_new_fd = %d,"
+		 "log_imu_sockfd = %d\n", log_imu_new_fd, log_imu_sockfd);
+	}
+
+      while (!log_thread_should_die && (log_new_fd != -1) && (log_new_fd != -1))
+	{
+	  //*************CHECK FDS HERE****************
 	  memset(logbuf, 0, sizeof(logbuf));  //clear buffer
 	  //wrapping recv in a select here to ensure loop checks 
 	  //log_thread_should_die every timeout
@@ -488,15 +518,24 @@ void* rover_server_log(void* args)
 	  else //retval >= 1-->we have data to receive
 	    {
 	      retval = recv(log_new_fd, &logbuf, sizeof(logbuf), 0);
-	      if (retval < 0)
+	      if (retval > 0) //received a valid message in logbuf
+		{
+		  fprintf(log_file, "%s\n", logbuf);
+		  //printf("retval = %d, printed to log_file: %s\n", retval, logbuf);
+		}
+	      else if (retval < 0) //error
 		{ //what error handling to do here??
 		  printf("retval = %d\n", retval);
+		  perror("rover_server_log:recv");
 		  break;
 		}
-	      fprintf(log_file, "%s\n", logbuf);
+	      else // retval == 0
+		//sender performed orderly shutdown, so don't print to log
+		break;
 	    }
 	}
       close(log_new_fd);
+      close(log_imu_new_fd);
     }
   return NULL;
 }

@@ -343,7 +343,42 @@ Goal:  Work on GPS data flow to Gumstix.
 --Continued reading the Premerlani and Mahony papers.  Reading these carefully in order to get a good understanding of the algorithm before I go mucking with the IMU code that implements it.  
 --Also read some more about Kalman filtering in general and how it can apply to robot navigation/positioning specifically.  Spent some time thinking about the fact that once I have working encoders, I will be able to measure my wheel velocity (and thereby the robot velocity) directly.  I know this won't be of much help with what I'm trying to do with the IMU right now, but it provides another input (along with IMU and GPS) to the Gumstix, where I'll implement some sort of filter (Kalman or ???) to synthesize my sensor data into position.  Since what I'm trying to do on the IMU is integrate linear acceleration to get linear velocity (albeit with accumulating error), will this directly measured velocity from the encoders enable me to correct my error before integrating the velocity into position?  Or with measured wheel velocity, can I just skip integrating the IMU linear acceleration and instead use the velocity from the encoders to go to position?  I would think that more sensor data would be better than less, but I'm not sure.  I'll have to keep thinking about this, especially as I continue reading and picking apart the IMU code.
 
-TODO:
+23 Jun 14
+Goal: Read Premerlani and Mahony papers
+--Completed reading Premerlani paper.  Started on first Mahony paper.
+--General algorithm idea is this:  In the DCM algorithm, they get orientation by integrating gyro signals and using accelerometer signals to correct for drift/error.  I want to do the same thing in reverse: integrate accel signals to get to velocity, and use gyros (or magnetometers) to correct drift/error.  Not sure what I can use to correct for error accumulation when going from velocity to position.
+
+24 Jun 14
+Goal: Finish reading Premerlani and Mahony papers
+--Continued reading Mahony.
+--Replaced broken bump switch on rover in preparation for IMU data gathering runs.
+
+
+25 Jun 14
+Goal: Start modifications to IMU code to get at least part of the way from acceleration to position.
+--Started building infrastructure to send raw IMU data (3 sensors x 3 axes) through gumstix to a separate log file on seykhl for offline algorithm development.
+--IMU currently outputting sensor values (from Razor_AHRS firmware) that don't seem to have any grounding in the physical world--numbers just seem to be values in the range of the ADC. I guess this was more efficient when doing the DCM algorithm, but I think it makes more sense for me to use values that mean something (i.e., accelerometer in m/s^2, gyro in deg/sec, magnetometer in degrees of declination/inclination).  Need to get the necessary info from the individual sensors' data sheets in order to convert these numbers to physical values.
+--Also started reading up on methods of numerical integration.  Discovered Verlet integration, which appears to have been developed as a way to numerically integrate Newton's equations of motion (i.e., from acceleration back to displacement--exactly what I'm trying to do!).  It seems to be computationally feasible, even on the IMU's microcontroller (4 multiplies and 2 adds per iteration).  However, I'm not sure about the error performance, and there will be additional computations needed if my time step is not fixed.  Also read a little bit about the Runge-Kutta method, which may be more accurate (but at the cost of more computations).
+
+26 Jun 14
+Goal: Continue work on IMU code.
+--Continued building infrastructure to log IMU data into separate log file.  Have the file created on seykhl and a socket listening on a separate port.  
+--Ran into a couple of bugs and had to spend some time fixing them before I could test interaction between seykhl and the rover for the new log file: 1) front camera was not working at all and the startup was hanging on it--troubleshot the software for a while, only to figure out that unplugging the camera and plugging it back in fixed the problem, and 2) my regular (command) log files were exploding to MB size with a ton (100,000s) of extra newlines at the end of the file--tracked it down to a logic mistake in the rover_server_log() function in toollib-rover-cpp.cpp
+--After I fixed those problems, I started testing the logging of IMU data.  I haven't been able to get IMU data across yet.  In toollib-rover-cpp on seykhl, currently trying to have new log socket monitored in rover_server_log thread, and I think this might be the problem--it doesn't seem to be accepting the connection from the rover until I shut down the viewer.  Will troubleshoot this more tomorrow.
+
+27 Jun 14
+Goal: Continue work on IMU code.
+
+***********************TODO*******************************
+
+**IMU dev/testing
+  -have IMU output raw (calibrated?) sensor data
+    --scrap DCM section (how to bypass??)
+  -output raw sensor data through Gumstix to seykhl with timestamps (separate text file??)
+    --collect ~10 minutes worth of data of driving around a known path (rectangle around EE313)
+  -develop algorithm on seykhl to take raw sensor data and convert to a trace (format something like timestamp:x:y:heading:??)
+  -have some small throw-away code on seykhl (scheme or matlab) that reads in trace data and plots it to compare against known path
+
 **HOW can I take acceleration data from IMU and integrate it to get velocity and position???
 
 **I can measure wheel velocity directly using the encoders--how does this help?
@@ -360,11 +395,11 @@ TODO:
 --Will changing front cam to black & white give sharper picture and/or lower CPU usage?
 
 Weekly Goals:
-M: Research availability of a time of day clock on the IMU and see if it can be used to timestamp data.  Start working on integrating accelerometer data to get velocity and position.
-T:  Do outdoor calibration of IMU (best chance of a day without rain).  Continue working on integration on IMU.
-W:  Continue working on integration on IMU.
-R:  Finish IMU integration--IMU should be able to output raw/calibrated accel/gyro data, integrated velocity, integrated position, and heading.
-F:  Work on GPS data flow to Gumstix.
+M: Read Premerlani and Mahony papers
+T: Finish reading Premerlani and Mahony papers
+W: Start modifications to IMU code to get at least part of the way from acceleration to position.
+R: Continue work on IMU code.
+F: Continue work on IMU code.
 
 Critical tasks
 --------------
@@ -378,11 +413,11 @@ Critical tasks
 -shaft encoders-->mounted and connected, need to do software interface 
   --user-space interface on Gumstix too slow/CPU hog
   --could try to implement kernel-space interrupt-driven driver, but not sure if it will consume too much CPU; compilation environment for kernel module rotary_encoder (provided with Linux kernel) set up, but need to figure out how to configure code to monitor the GPIO lines I'm using and have the module keep track of ticks and direction and report them to user-space code on demand
-  --separate USB microcontroller board ordered (Teensy 3.1), delivery expected m2jun14, dev environment for Teensy setup complete on rover and ubuntu laptop
+  --separate USB microcontroller board on hand (Teensy 3.1), dev environment for Teensy setup complete on rover and ubuntu laptop, will start work on this once IMU complete
 -IMU-->mounted and connected, working on software interface
-  --remounted adjacent to camera to try and combat magnetic interference; probably need to recalibrate again in a location further away from rooms full of computers
-  --working on reading data from IMU into emperor
-  --once data read into emperor, send it over network to seykhl and write to log file
+  --remounted adjacent to camera to try and combat magnetic interference; recalibrated outdoors and magnetometer seems to be working more consistently
+  --have data (from Razor_AHRS firmware) read into gumstix and sent over network to seykhl and logged in log file
+  --working on getting raw sensor data (possibly converted into m/s^2 for accelerometers???)  sent back to seykhl and logged in order to work on integration of acceleration to position offline
 -GPS-->mounted and connected, can read raw NMEA data through a 4800 bps serial port, need to finish software interface
 
 Non-critical tasks
