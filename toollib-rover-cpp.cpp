@@ -37,8 +37,10 @@ pthread_t grab_threads[k_numCams];
 int grab_threads_should_die;
 Window display_pane, cdr_display_pane;
 pthread_t log_thread;
-int log_thread_should_die, log_sockfd, log_new_fd;
-int log_imu_sockfd, log_imu_new_fd;
+int log_thread_should_die, log_sockfd;
+int log_new_fd = -1;
+int log_imu_sockfd;
+int log_imu_new_fd = -1;
 FILE* log_file;
 FILE* imu_log_file;
 unsigned int framecount;
@@ -176,7 +178,7 @@ extern "C" int rover_server_setup(void)
 	 k_LogPort);  
   //open socket for imu log data
   log_imu_sockfd = StartServer(k_imuLogPort);
-  printf("server: waiting for data logging connection on port %s...\n",
+  printf("server: waiting for IMU logging connection on port %s...\n",
 	 k_imuLogPort);  
   
   //success if we get here
@@ -481,28 +483,37 @@ void* rover_server_log(void* args)
   while (!log_thread_should_die)
     {//main accept() loop
       usleep(10000);
-      log_new_fd = AcceptConnection(log_sockfd);
-      log_imu_new_fd = AcceptConnection(log_imu_sockfd);
+      // printf("At top of rover_server_log main accept loop"
+      // 	     "log_new_fd = %d, log_sockfd = %d, "
+      // 	     "log_imu_new_fd = %d, log_imu_sockfd = %d\n",
+      // 	     log_new_fd, log_sockfd, log_imu_new_fd, log_imu_sockfd);
       /*
 	AcceptConnection set to non-blocking, so will spin here until it either gets 
 	a valid log_new_fd (and then goes into while loop below) or 
 	log_thread_should_die becomes TRUE, which will cause the while loop 
 	(and function) to exit.
        */
+      if (log_new_fd == -1)
+	log_new_fd = AcceptConnection(log_sockfd);
       if (log_new_fd != -1) 
 	{
 	  printf("Log connection established with log_new_fd = %d,"
 		 "log_sockfd = %d\n", log_new_fd, log_sockfd);
 	}
+      if ((log_imu_new_fd == -1) && (log_new_fd > 0))
+	log_imu_new_fd = AcceptConnection(log_imu_sockfd);
       if (log_imu_new_fd != -1)
 	{
 	  printf("IMU log connection established with log_imu_new_fd = %d,"
 		 "log_imu_sockfd = %d\n", log_imu_new_fd, log_imu_sockfd);
 	}
-
-      while (!log_thread_should_die && (log_new_fd != -1) && (log_new_fd != -1))
-	{
+      //LOOK AT CHANGING LOGIC TO FORCE THIS TO GO BACK AND PICK UP LOG_IMU_NEW_FD CONNECTION
+      while (!log_thread_should_die && (log_new_fd > 0) && (log_imu_new_fd > 0))
+	{  //!! need to recheck these loop conditions--the fds stay > 0 even when they are bad/closed, so need a function that check to see if they are good or bad
 	  //*************CHECK FDS HERE****************
+	  // printf("log_new_fd = %d, log_sockfd = %d\n", log_new_fd, log_sockfd);
+	  // printf("log_imu_new_fd = %d, log_imu_sockfd = %d\n", 
+	  // 	 log_imu_new_fd, log_imu_sockfd);
 	  memset(logbuf, 0, sizeof(logbuf));  //clear buffer
 	  //wrapping recv in a select here to ensure loop checks 
 	  //log_thread_should_die every timeout
@@ -512,7 +523,8 @@ void* rover_server_log(void* args)
 	  timeout.tv_usec = 1000 * 10; //10ms timeout
 	  retval = select(log_new_fd+1, &recv_set, NULL, NULL, &timeout);
 	  if (retval < 0)
-	    printf("select error\n");
+	    perror("rover_server_log--select()");
+	    //printf("select error\n");
 	  else if (retval == 0) //timeout
 	    continue; //go back to the top of the loop and recheck log_thread_should_die
 	  else //retval >= 1-->we have data to receive
@@ -534,8 +546,14 @@ void* rover_server_log(void* args)
 		break;
 	    }
 	}
-      close(log_new_fd);
-      close(log_imu_new_fd);
+      //only close if both have been opened
+      if ((log_new_fd > 0) && (log_imu_new_fd > 0))
+	{
+	  close(log_new_fd);
+	  close(log_imu_new_fd);
+	  printf("both new_fd's closed, log_new_fd = %d, log_imu_new_fd = %d\n",
+		 log_new_fd, log_imu_new_fd);
+	}
     }
   return NULL;
 }

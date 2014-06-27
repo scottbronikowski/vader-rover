@@ -368,6 +368,8 @@ Goal: Continue work on IMU code.
 
 27 Jun 14
 Goal: Continue work on IMU code.
+--Completed MA511 HW #2 (approx. 1 hour per day this week)
+--Troubleshot error with the new log socket on seykhl to the fact that both the old log socket and the new IMU log socket were somehow getting the same file descriptor number, which was causing an error.  I was able to overcome this by putting some additional logic conditions around when these file descriptors got closed, ensuring that the attempts to open them were sequential rather than simultaneous.  However, once I got that fixed I started getting bad file descriptor errors when I shut down the emperor code on the rover.  I believe the issue is with the loop conditions around my select/recv loop.  Need to find and use a function that checks if a given integer is a vaild file descriptor.
 
 ***********************TODO*******************************
 
