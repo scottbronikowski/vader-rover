@@ -192,6 +192,7 @@ Window FindWindow(char* szWindowToFind);
 double rover_current_time(void);
 int ClientConnect(const char* server, const char* port);
 int sendall(int s, unsigned char *buf, int *len);
+int is_valid_fd(int fd);
 #ifdef __cplusplus
 //use PointGrey_t2, which uses OpenCV C++ API
 int OpenCV_ReceiveFrame(PointGrey_t2* PG, FILE* file_ptr);
@@ -201,5 +202,4 @@ Imlib_Image Convert_OpenCV_to_Imlib(PointGrey_t2* PG);
 Window SearchWindow(char* szWindowToFind, int level, Display *display, 
 		    Window rootWindow, int iMatchMode, int showErrors);
 #endif
-
 #endif

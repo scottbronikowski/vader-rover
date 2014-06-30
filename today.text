@@ -18,15 +18,21 @@ from ~/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64$ darpa-wrap make dsc
 
 Buffers
 ---------------------------------------
-    today.text           35221  Text		  ~/vader-rover/today.text
-  * *Open Recent*         3988  recentf-dialog
-    commander-gui.sc      2321  Scheme		  ~/vader-rover/commander-gui.sc
-    toollib-rover.sc      2148  Scheme		  ~/vader-rover/toollib-rover.sc
-    toollib-rover-cpp.h   4712  C++/l		  ~/vader-rover/toollib-rover-cpp.h
-    toollib-rover-cpp.c: 33214  C++/l		  ~/vader-rover/toollib-rover-cpp.cpp
+    toollib-rover-cpp.c: 35630  C++/l		  ~/vader-rover/toollib-rover-cpp.cpp
+. * *shell*<2>           69526  Shell:run	  ~/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64/
+    toollib-rover-cpp.h   4815  C++/l		  ~/vader-rover/toollib-rover-cpp.h
+    today.text           46261  Text		  ~/vader-rover/today.text
+  * *shell*             327034  Shell:run	  ~/vader-rover/
+    deadReckoning.c       6423  C/l		  ~/Downloads/MatrixPilot_4_0/libDCM/deadReckoning.c
+    imu-calibration-17-ju: 548  Text		  ~/vader-rover/imu-calibration-17-jun-14.txt
     toollib-gamepad.sc     833  Scheme		  ~/vader-rover/toollib-gamepad.sc
-    toollib-gamepad-c.h   1954  C++/l		  ~/vader-rover/toollib-gamepad-c.h
+    driver-gui.sc         2158  Scheme		  ~/vader-rover/driver-gui.sc
     toollib-gamepad-c.c  11221  C/l		  ~/vader-rover/toollib-gamepad-c.c
+    toollib-rover.sc      2148  Scheme		  ~/vader-rover/toollib-rover.sc
+    commander-gui.sc      2321  Scheme		  ~/vader-rover/commander-gui.sc
+
+  * *Open Recent*         3988  recentf-dialog
+    toollib-gamepad-c.h   1954  C++/l		  ~/vader-rover/toollib-gamepad-c.h
 
 .   simple-gui.sc         5686  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/simple-gui.sc
     vlad.sc              12997  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vlad.sc
@@ -371,6 +377,25 @@ Goal: Continue work on IMU code.
 --Completed MA511 HW #2 (approx. 1 hour per day this week)
 --Troubleshot error with the new log socket on seykhl to the fact that both the old log socket and the new IMU log socket were somehow getting the same file descriptor number, which was causing an error.  I was able to overcome this by putting some additional logic conditions around when these file descriptors got closed, ensuring that the attempts to open them were sequential rather than simultaneous.  However, once I got that fixed I started getting bad file descriptor errors when I shut down the emperor code on the rover.  I believe the issue is with the loop conditions around my select/recv loop.  Need to find and use a function that checks if a given integer is a vaild file descriptor.
 
+30 Jun 14
+Goal: Finish debugging IMU logging and research conversion factors for IMU data to physical data.
+--Implemented a function in toollib-rover-cpp that checks for a file descriptor for validity using fcntl (is_valid_fd()).  Using it in loop conditions in rover_server_log() and it seems to fix the bad file descriptor errors I was having on Friday.
+---
+
+
+1 Jul 14
+Goal:  Implement IMU logging of physical quantities, collect data for algorithm development, and start algorithm development.
+
+
+2 Jul 14
+Goal: Continue working on algorithm.
+
+
+3 Jul 14
+Goal:  Complete algorithm development, implement on IMU, and test.
+
+
+
 ***********************TODO*******************************
 
 **IMU dev/testing
@@ -397,11 +422,7 @@ Goal: Continue work on IMU code.
 --Will changing front cam to black & white give sharper picture and/or lower CPU usage?
 
 Weekly Goals:
-M: Read Premerlani and Mahony papers
-T: Finish reading Premerlani and Mahony papers
-W: Start modifications to IMU code to get at least part of the way from acceleration to position.
-R: Continue work on IMU code.
-F: Continue work on IMU code.
+
 
 Critical tasks
 --------------
