@@ -478,8 +478,7 @@ void* rover_server_log(void* args)
   char logbuf[k_LogBufSize];
   fd_set recv_set;
   struct timeval timeout;
-  // timeout.tv_sec = 0;
-  // timeout.tv_usec = 1000 * 10; //10ms timeout
+
   while (!log_thread_should_die)
     {//main accept() loop
       usleep(10000);
@@ -493,28 +492,24 @@ void* rover_server_log(void* args)
 	log_thread_should_die becomes TRUE, which will cause the while loop 
 	(and function) to exit.
        */
-      //if (log_new_fd == -1)
       if (!is_valid_fd(log_new_fd))
 	log_new_fd = AcceptConnection(log_sockfd);
-      //if (log_new_fd != -1) 
       if (is_valid_fd(log_new_fd))
 	{
 	  printf("Log connection established with log_new_fd = %d,"
 		 "log_sockfd = %d\n", log_new_fd, log_sockfd);
 	}
-      //if ((log_imu_new_fd == -1) && (log_new_fd > 0))
       if ((!is_valid_fd(log_imu_new_fd)) && (is_valid_fd(log_new_fd)))
 	log_imu_new_fd = AcceptConnection(log_imu_sockfd);
-      //if (log_imu_new_fd != -1)
       if (is_valid_fd(log_imu_new_fd))
 	{
 	  printf("IMU log connection established with log_imu_new_fd = %d,"
 		 "log_imu_sockfd = %d\n", log_imu_new_fd, log_imu_sockfd);
 	}
-      //LOOK AT CHANGING LOGIC TO FORCE THIS TO GO BACK AND PICK UP LOG_IMU_NEW_FD CONNECTION
-      while (!log_thread_should_die && //(log_new_fd > 0) && (log_imu_new_fd > 0))
-	     (is_valid_fd(log_new_fd)) && (is_valid_fd(log_imu_new_fd)))
-	{  //!! need to recheck these loop conditions--the fds stay > 0 even when they are bad/closed, so need a function that checks to see if they are good or bad
+
+      while (!log_thread_should_die && (is_valid_fd(log_new_fd)) && 
+	     (is_valid_fd(log_imu_new_fd)))
+	{  
 	  //*************CHECK FDS HERE****************
 	  // printf("log_new_fd = %d, log_sockfd = %d\n", log_new_fd, log_sockfd);
 	  // printf("log_imu_new_fd = %d, log_imu_sockfd = %d\n", 
@@ -549,15 +544,23 @@ void* rover_server_log(void* args)
 	  else //retval >= 1-->we have data to receive
 	    {
 	      num_fds = retval; //this is the number of sockets with data ready
-	      printf("num_fds = %d\n", num_fds);
+	      //printf("num_fds = %d\n", num_fds);
 	      //first must see which socket received data
 	      if (FD_ISSET(log_new_fd, &recv_set))
 		{ //regular data log
 		  retval = recv(log_new_fd, &logbuf, sizeof(logbuf), 0);
-		  if (retval > 0) //received a valid message in logbuf
-		    {
-		      fprintf(log_file, "%s\n", logbuf);
-		      //printf("retval = %d, printed to log_file: %s\n", retval, logbuf);
+		  if (retval > 0) //received a message in logbuf
+		    { //so check to see if it's valid
+		      if ((logbuf[0] != '\0') && (logbuf[0] != '\n'))
+			{
+			  fprintf(log_file, "%s\n", logbuf);
+			  //printf("retval = %d, printed to log_file: %s\n", retval, logbuf);
+			}
+		      else
+			{
+			  //printf("skipped logging bogus message\n");
+			  continue;
+			}
 		    }
 		  else if (retval < 0) //error
 		    { //what error handling to do here??
@@ -568,6 +571,11 @@ void* rover_server_log(void* args)
 		  else // retval == 0
 		    //sender performed orderly shutdown, so don't print to log
 		    break;
+		  //if we get here, we handled the message properly, so decrement
+		  //num_fds and go back to top of loop if num_fds == 0
+		  --num_fds;
+		  if (num_fds == 0)
+		    continue;
 		}
 	      else if (FD_ISSET(log_imu_new_fd, &recv_set))
 		{ //imu data log
@@ -575,7 +583,7 @@ void* rover_server_log(void* args)
 		  if (retval > 0) //received a valid message in logbuf
 		    {
 		      fprintf(imu_log_file, "%s\n", logbuf);
-		      //printf("retval = %d, printed to log_file: %s\n", retval, logbuf);
+		      //printf("retval = %d, printed to imu_log_file: %s\n", retval, logbuf);
 		    }
 		  else if (retval < 0) //error
 		    { //what error handling to do here??
@@ -586,10 +594,16 @@ void* rover_server_log(void* args)
 		  else // retval == 0
 		    //sender performed orderly shutdown, so don't print to log
 		    break;
+		  //if we get here, we handled the message properly, so decrement
+		  //num_fds and go back to top of loop if num_fds == 0
+		  --num_fds;
+		  if (num_fds == 0)
+		    continue;
 		}
 	      else //unknown fd in recv_set
 		{
-		  printf("reached end");
+		  printf("ERROR: rover_server_log(): unknown fd in recv_set\n");
+		  break;
 		}
 	    }
 	}

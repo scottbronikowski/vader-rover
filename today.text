@@ -381,7 +381,8 @@ Goal: Continue work on IMU code.
 Goal: Finish debugging IMU logging and research conversion factors for IMU data to physical data.
 --Implemented a function in toollib-rover-cpp that checks for a file descriptor for validity using fcntl (is_valid_fd()).  Using it in loop conditions in rover_server_log() and it seems to fix the bad file descriptor errors I was having on Friday.
 ---
-
+--Successfully have IMU logging data split out to separate file.  Everything seems to be functioning properly after the split.
+--Noticed some extra newlines in the regular data log file.  After some debugging, figured out that there were some receives on seykhl that weren't receiving a full buffer before returning, so the receives following those were coming up empty.  Put a little check after the receive to make sure that the buffer didn't start with a '\0' or a '\n', and that seemed to fix the problem.
 
 1 Jul 14
 Goal:  Implement IMU logging of physical quantities, collect data for algorithm development, and start algorithm development.
