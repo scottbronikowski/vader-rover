@@ -494,18 +494,27 @@ void* rover_server_log(void* args)
        */
       if (!is_valid_fd(log_new_fd))
 	log_new_fd = AcceptConnection(log_sockfd);
-      if (is_valid_fd(log_new_fd))
+      // if (is_valid_fd(log_new_fd))
+      // 	{
+      // 	  printf("Log connection established with log_new_fd = %d,"
+      // 		 "log_sockfd = %d\n", log_new_fd, log_sockfd);
+      // 	}
+      if ((!is_valid_fd(log_imu_new_fd)))//&& (is_valid_fd(log_new_fd)))
+	log_imu_new_fd = AcceptConnection(log_imu_sockfd);
+      // if (is_valid_fd(log_imu_new_fd))
+      // 	{
+      // 	  printf("IMU log connection established with log_imu_new_fd = %d,"
+      // 		 "log_imu_sockfd = %d\n", log_imu_new_fd, log_imu_sockfd);
+      // 	}
+
+      if ((is_valid_fd(log_imu_new_fd)) && (is_valid_fd(log_new_fd)))
 	{
 	  printf("Log connection established with log_new_fd = %d,"
 		 "log_sockfd = %d\n", log_new_fd, log_sockfd);
-	}
-      if ((!is_valid_fd(log_imu_new_fd)) && (is_valid_fd(log_new_fd)))
-	log_imu_new_fd = AcceptConnection(log_imu_sockfd);
-      if (is_valid_fd(log_imu_new_fd))
-	{
 	  printf("IMU log connection established with log_imu_new_fd = %d,"
 		 "log_imu_sockfd = %d\n", log_imu_new_fd, log_imu_sockfd);
 	}
+
 
       while (!log_thread_should_die && (is_valid_fd(log_new_fd)) && 
 	     (is_valid_fd(log_imu_new_fd)))

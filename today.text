@@ -386,7 +386,7 @@ Goal: Finish debugging IMU logging and research conversion factors for IMU data 
 
 1 Jul 14
 Goal:  Implement IMU logging of physical quantities, collect data for algorithm development, and start algorithm development.
-
+--Got standalone IMU program working on rover.  Still only getting about 37 Hz updates (vice 50 Hz).  Trying to implement timestamp from IMU instead of from Gumstix.
 
 2 Jul 14
 Goal: Continue working on algorithm.

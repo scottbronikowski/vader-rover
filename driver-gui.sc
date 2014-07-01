@@ -12,10 +12,14 @@
   (lambda () (gamepad-stop-cameras)))
  (define-button 4 0 "Start Emperor" #f
   (lambda ()
-   (system "ssh -p 22222 root@localhost \"/root/bin/emperor &\" &")))
+   ;; (system "ssh -p 22222 root@localhost \"/root/bin/emperor &\" &")
+   (system "ssh -p 22222 root@localhost \"/root/bin/run-emperor start\" &")
+   ))
  (define-button 4 1 "Stop Emperor" #f
   (lambda ()
-   (system "ssh -p 22222 root@localhost \"pkill emperor\" &")))
+   ;; (system "ssh -p 22222 root@localhost \"pkill emperor\" &")
+   (system "ssh -p 22222 root@localhost \"/root/bin/run-emperor stop\" &")
+   ))
  )
 
 (define (define-keys)
