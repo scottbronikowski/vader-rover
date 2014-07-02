@@ -386,11 +386,11 @@ Goal: Finish debugging IMU logging and research conversion factors for IMU data 
 
 1 Jul 14
 Goal:  Implement IMU logging of physical quantities, collect data for algorithm development, and start algorithm development.
---Got standalone IMU program working on rover.  Still only getting about 37 Hz updates (vice 50 Hz).  Trying to implement timestamp from IMU instead of from Gumstix.
+--Got standalone IMU program working on rover.  Still only getting about 37 Hz updates (vice 50 Hz).  First draft at implementing timestamp from IMU instead of from Gumstix.
 
 2 Jul 14
 Goal: Continue working on algorithm.
-
+--Got IMU timestamp working more efficiently.  After IMU timestamp, could not get Gumstix to pull data from IMU faster than 25 Hz.  Changed the design to have the IMU push data as fast as it computes it, and have the Gumstix loop on a listener.  This got updates at as close to 50 Hz as I think we can get (intervals between IMU data -- measured by IMU clock -- were all either 20 or 21 ms, for a run of ~3000 samples).
 
 3 Jul 14
 Goal:  Complete algorithm development, implement on IMU, and test.
