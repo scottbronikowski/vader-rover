@@ -396,6 +396,24 @@ Goal: Continue working on algorithm.
 Goal:  Complete algorithm development, implement on IMU, and test.
 --See rover log
 
+7 Jul 14
+Goal: Collect IMU data for algorithm development.  Look at what IMU output is when rover is at rest and think about how it will affect velocity/position calculations.
+--Collected IMU data for rover at rest on desk (1 file, ~2300 samples), rover at rest on floor (1 file, ~5100 samples), rover driving just forward between the two marked points on the floor (2 files, ~3700 samples total, although there were some slight turns/pivots during these runs), and the rover driving back and forth between the two points (1 file, ~5100 samples, with minimal to no turning/pivoting).  Next need to analyze this data--probably plotting each acceleration axis as a function of time (for moving samples), or plotting histograms of acceleration values (for still samples)
+
+8 Jul 14
+Goal:  Start IMU algorithm development.
+****FIX MISSING : AFTER ROLL IN IMU DATA LOGGING ON ROVER****
+
+9 Jul 14
+Goal:  Continue work on IMU algorithm.
+
+
+10 Jul 14
+Goal:  Complete algorithm development, implement on IMU, and test.
+
+
+11 Jul 14
+Goal:  Refine IMU algorithm as needed.  Start setting up wheel encoder to Teensy interface.
 
 
 ***********************TODO*******************************
@@ -424,7 +442,11 @@ Goal:  Complete algorithm development, implement on IMU, and test.
 --Will changing front cam to black & white give sharper picture and/or lower CPU usage?
 
 Weekly Goals:
-
+M: Collect IMU data for algorithm development.  Look at what IMU output is when rover is at rest and think about how it will affect velocity/position calculations.
+T:  Start IMU algorithm development.
+W:  Continue work on IMU algorithm.
+R:  Complete algorithm development, implement on IMU, and test.
+F:  Refine IMU algorithm as needed.  Start setting up wheel encoder to Teensy interface.
 
 Critical tasks
 --------------
