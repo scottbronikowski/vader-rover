@@ -402,7 +402,8 @@ Goal: Collect IMU data for algorithm development.  Look at what IMU output is wh
 
 8 Jul 14
 Goal:  Start IMU algorithm development.
-****FIX MISSING : AFTER ROLL IN IMU DATA LOGGING ON ROVER****
+--Noticed that accelerometer output was not normalized, due to differently scaled x, y, z axes used in DCM algorithm.  Implemented a normalization of the axes just before multiplying by g0.  This seemed to improve accuracy of IMU output--prior to normalization, IMU output (x,y,z in cm/s^2) was on the order of ([-5.54,9.23], [-16.81,-5.60], [928.36, 947.04]) for the rover at rest, which was far off the ideal of (0, 0, 980.665).  After normalization, output was ([-17.35,-1.91], [-17.61, -1.93], [980.46, 980.65]).  The post-normalization data was taken with the rover on the desk, so the negative tilts on the x and y axes may be due to the fact that the rover doesn't sit perfectly level on the desk.  I will need to recheck the level of the IMU with the rover sitting on the floor.  I will also need to retake the data I took yesterday, since the non-normalized data is probably not useful.
+
 
 9 Jul 14
 Goal:  Continue work on IMU algorithm.
