@@ -414,6 +414,7 @@ Goal:  Complete algorithm development, implement on IMU, and test.
 --12V wall power supply in use.
 --Did some runs over measured distance to determine tick count per cm for each wheel.
 --Studied for MA511 midterm.
+--Started backup of rover SD card at 1707 using command 'dd if=/dev/sdg | gzip > ./sd-backup-2014-07-10.gz' in /aux/sbroniko/backup/20140710.  To unzip, use 'gzip -dc /path/to/image.gz | dd of=/dev/sdx' (directions found at http://raspberrypi.stackexchange.com/questions/311/how-do-i-backup-my-raspberry-pi).  Monitoring dd using 'watch -n60 'kill -USR1 $(pgrep ^dd)''
 
 11 Jul 14
 Goal:  Refine IMU algorithm as needed.  Start setting up wheel encoder to Teensy interface.
