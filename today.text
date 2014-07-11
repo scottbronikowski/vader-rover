@@ -418,6 +418,10 @@ Goal:  Complete algorithm development, implement on IMU, and test.
 
 11 Jul 14
 Goal:  Refine IMU algorithm as needed.  Start setting up wheel encoder to Teensy interface.
+--Backup of SD card completed overnight.
+--Shortened the wifi and front camera USB cables.
+--Had some sort of power surge when powering up the robot and had several components rendered inoperable (no physical damage, but will not power on or respond).  The destroyed components are: DC-DC converter, USB hub, Teensy, GPS, Wifi adapter.  I have ordered replacements for the Wifi (should arrive tomorrow), as well as the GPS and USB hub (should arrive by Tuesday).  I had a spare Teensy on hand, and it has already been replaced.  I also have the parts on hand to replace the DC-DC converter--I have started that repair and will come in tomorrow to finish it.  With any luck, I'll also have the new Wifi adapter by that time and can install that tomorrow as well.
+--I will be able to continue working on Teensy programming on Monday and Tuesday while awaiting parts, since I have to use my laptop to upload the code to the Teensy anyways.
 
 
 ***********************TODO*******************************
