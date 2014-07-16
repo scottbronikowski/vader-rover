@@ -421,7 +421,29 @@ Goal:  Refine IMU algorithm as needed.  Start setting up wheel encoder to Teensy
 --Backup of SD card completed overnight.
 --Shortened the wifi and front camera USB cables.
 --Had some sort of power surge when powering up the robot and had several components rendered inoperable (no physical damage, but will not power on or respond).  The destroyed components are: DC-DC converter, USB hub, Teensy, GPS, Wifi adapter.  I have ordered replacements for the Wifi (should arrive tomorrow), as well as the GPS and USB hub (should arrive by Tuesday).  I had a spare Teensy on hand, and it has already been replaced.  I also have the parts on hand to replace the DC-DC converter--I have started that repair and will come in tomorrow to finish it.  With any luck, I'll also have the new Wifi adapter by that time and can install that tomorrow as well.
---I will be able to continue working on Teensy programming on Monday and Tuesday while awaiting parts, since I have to use my laptop to upload the code to the Teensy anyways.
+--I will be able to continue working on Teensy programming on Monday and Tuesday while awaiting parts, since I have to use my laptop to upload the code to the Teensy anyways. 
+
+
+14 Jul 14
+Goal: Finish replacement of USB hub and recheck functionality.  Repeat experiment from last Thursday to see if the change in weight/distribution changed the ticks/cm count.  Start working on Teensy program to report cm traveled.
+--Got USB hub completely replaced (mounted, Gumstix remounted and wires rerouted, USB cable spliced, hub power cable built and wired into 5V bus on rover).  All systems appear to function normally.  
+
+15 Jul 14
+Goal:  Replace GPS receiver (exact replacement, no change to weight/distribution). Continue working on odometry program (Teensy->Gumstix->seykhl log file).
+--Got GPS receiver installed and plugged into permanent port (w/ shortened cable).  It appears to function normally--can read GPGGA, GPGSA, GPRMC, GPGSV NMEA sentences at 4800 baud via screen.
+
+
+16 Jul 14
+Goal:  Complete odometry program.  Write similar program to get data from GPS and send it back to seykhl.
+--Receiving raw NMEA sentences from rover into imu-log.txt.  First draft did not have both GPS and IMU data in the log file (only one or the other) because the code on the seykhl side was not set up to accept multiple connections to the port that logs to that file.  Need to modify rover_server_log in toollib-rover-cpp.cpp in order to allow 3 different connections (IMU, GPS, encoders) to the log_imu_sockfd port (which in turn is how we write to imu-log.txt)
+
+
+17 Jul 14
+Goal:  Complete GPS program.  Start collecting consolidated position sensor data over a known/measured route.
+
+
+18 Jul 14
+Goal:  Complete data collection and start development on trace algorithm.
 
 
 ***********************TODO*******************************

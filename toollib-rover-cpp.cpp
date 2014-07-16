@@ -40,7 +40,9 @@ pthread_t log_thread;
 int log_thread_should_die, log_sockfd;
 int log_new_fd = -1;
 int log_imu_sockfd;
-int log_imu_new_fd = -1;
+int log_imu_new_fd1 = -1; //need 3 of these: 1 each for 
+int log_imu_new_fd2 = -1; //IMU, GPS, encoders
+int log_imu_new_fd3 = -1;
 FILE* log_file;
 FILE* imu_log_file;
 unsigned int framecount;
@@ -484,8 +486,10 @@ void* rover_server_log(void* args)
       usleep(10000);
       // printf("At top of rover_server_log main accept loop"
       // 	     "log_new_fd = %d, log_sockfd = %d, "
-      // 	     "log_imu_new_fd = %d, log_imu_sockfd = %d\n",
-      // 	     log_new_fd, log_sockfd, log_imu_new_fd, log_imu_sockfd);
+      // 	     "log_imu_new_fd1 = %d, log_imu_new_fd2 = %d "
+      //             "log_imu_new_fd3 = %d, log_imu_sockfd = %d\n",
+      // 	     log_new_fd, log_sockfd, log_imu_new_fd1, log_imu_new_fd2,
+      //             log_imu_new_fd3, log_imu_sockfd);
       /*
 	AcceptConnection set to non-blocking, so will spin here until it either gets 
 	a valid log_new_fd (and then goes into while loop below) or 
@@ -494,52 +498,56 @@ void* rover_server_log(void* args)
        */
       if (!is_valid_fd(log_new_fd))
 	log_new_fd = AcceptConnection(log_sockfd);
-      // if (is_valid_fd(log_new_fd))
-      // 	{
-      // 	  printf("Log connection established with log_new_fd = %d,"
-      // 		 "log_sockfd = %d\n", log_new_fd, log_sockfd);
-      // 	}
-      if ((!is_valid_fd(log_imu_new_fd)))//&& (is_valid_fd(log_new_fd)))
-	log_imu_new_fd = AcceptConnection(log_imu_sockfd);
-      // if (is_valid_fd(log_imu_new_fd))
-      // 	{
-      // 	  printf("IMU log connection established with log_imu_new_fd = %d,"
-      // 		 "log_imu_sockfd = %d\n", log_imu_new_fd, log_imu_sockfd);
-      // 	}
+     
+      if ((!is_valid_fd(log_imu_new_fd1)))
+	log_imu_new_fd1 = AcceptConnection(log_imu_sockfd);
 
-      if ((is_valid_fd(log_imu_new_fd)) && (is_valid_fd(log_new_fd)))
+      if ((!is_valid_fd(log_imu_new_fd2)))
+	log_imu_new_fd2 = AcceptConnection(log_imu_sockfd);
+
+      if ((!is_valid_fd(log_imu_new_fd3)))
+	log_imu_new_fd3 = AcceptConnection(log_imu_sockfd);
+
+      if ((is_valid_fd(log_new_fd)) &&
+	  (is_valid_fd(log_imu_new_fd1)) && 
+	  (is_valid_fd(log_imu_new_fd2)))/*&&
+	  (is_valid_fd(log_imu_new_fd3)))  */
 	{
-	  printf("Log connection established with log_new_fd = %d,"
-		 "log_sockfd = %d\n", log_new_fd, log_sockfd);
-	  printf("IMU log connection established with log_imu_new_fd = %d,"
-		 "log_imu_sockfd = %d\n", log_imu_new_fd, log_imu_sockfd);
+	  printf("Log connection established with log_sockfd = %d,"
+		 "log_new_fd = %d\n", log_sockfd, log_new_fd);
+	  printf("IMU log connection established with log_imu_sockfd = %d,"
+		 "log_imu_new_fd1 = %d, log_imu_new_fd2 = %d, "
+		 "log_imu_new_fd3 = %d\n", log_imu_sockfd, log_imu_new_fd1, 
+		 log_imu_new_fd2, log_imu_new_fd3);
+	  //sort fds here
 	}
 
 
-      while (!log_thread_should_die && (is_valid_fd(log_new_fd)) && 
-	     (is_valid_fd(log_imu_new_fd)))
+      while (!log_thread_should_die && 
+	     b(is_valid_fd(log_new_fd)) && 
+	     (is_valid_fd(log_imu_new_fd1)))
 	{  
 	  //*************CHECK FDS HERE****************
 	  // printf("log_new_fd = %d, log_sockfd = %d\n", log_new_fd, log_sockfd);
-	  // printf("log_imu_new_fd = %d, log_imu_sockfd = %d\n", 
-	  // 	 log_imu_new_fd, log_imu_sockfd);
+	  // printf("log_imu_new_fd1 = %d, log_imu_sockfd = %d\n", 
+	  // 	 log_imu_new_fd1, log_imu_sockfd);
 	  memset(logbuf, 0, sizeof(logbuf));  //clear buffer
 	  //wrapping recv in a select here to ensure loop checks 
 	  //log_thread_should_die every timeout
 	  FD_ZERO(&recv_set);
 	  FD_SET(log_new_fd, &recv_set);
-	  FD_SET(log_imu_new_fd, &recv_set);
-	  if (log_new_fd < log_imu_new_fd)
+	  FD_SET(log_imu_new_fd1, &recv_set);
+	  if (log_new_fd < log_imu_new_fd1)
 	    {
 	      minfd = log_new_fd;
-	      maxfd = log_imu_new_fd;
-	      fddiff = log_imu_new_fd - log_new_fd;
+	      maxfd = log_imu_new_fd1;
+	      fddiff = log_imu_new_fd1 - log_new_fd;
 	    }
 	  else
 	    {
-	      minfd = log_imu_new_fd;
+	      minfd = log_imu_new_fd1;
 	      maxfd = log_new_fd;
-	      fddiff = log_new_fd - log_imu_new_fd;
+	      fddiff = log_new_fd - log_imu_new_fd1;
 	    }
 	  timeout.tv_sec = 0;
 	  timeout.tv_usec = 1000 * 10; //10ms timeout
@@ -586,9 +594,9 @@ void* rover_server_log(void* args)
 		  if (num_fds == 0)
 		    continue;
 		}
-	      else if (FD_ISSET(log_imu_new_fd, &recv_set))
+	      else if (FD_ISSET(log_imu_new_fd1, &recv_set))
 		{ //imu data log
-		  retval = recv(log_imu_new_fd, &logbuf, sizeof(logbuf), 0);
+		  retval = recv(log_imu_new_fd1, &logbuf, sizeof(logbuf), 0);
 		  if (retval > 0) //received a valid message in logbuf
 		    {
 		      fprintf(imu_log_file, "%s\n", logbuf);
@@ -617,13 +625,12 @@ void* rover_server_log(void* args)
 	    }
 	}
       //only close if both have been opened
-      //if ((log_new_fd > 0) && (log_imu_new_fd > 0))
-      if ((is_valid_fd(log_new_fd)) && (is_valid_fd(log_imu_new_fd)))
+      if ((is_valid_fd(log_new_fd)) && (is_valid_fd(log_imu_new_fd1)))
 	{
 	  close(log_new_fd);
-	  close(log_imu_new_fd);
-	  // printf("both new_fd's closed, log_new_fd = %d, log_imu_new_fd = %d\n",
-	  // 	 log_new_fd, log_imu_new_fd);
+	  close(log_imu_new_fd1);
+	  // printf("both new_fd's closed, log_new_fd = %d, log_imu_new_fd1 = %d\n",
+	  // 	 log_new_fd, log_imu_new_fd1);
 	}
     }
   return NULL;

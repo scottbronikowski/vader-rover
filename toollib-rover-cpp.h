@@ -115,7 +115,7 @@ extern pthread_t grab_threads[k_numCams];
 extern int grab_threads_should_die;
 extern pthread_t log_thread;
 extern int log_thread_should_die, log_sockfd, log_new_fd;
-extern int log_imu_sockfd, log_imu_new_fd;
+extern int log_imu_sockfd, log_imu_new_fd1, log_imu_new_fd2, log_imu_new_fd3;
 extern FILE* log_file;
 extern FILE* imu_log_file;
 extern int cdr_viewer_active;
