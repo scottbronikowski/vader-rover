@@ -444,6 +444,7 @@ Goal:  Complete GPS program.  Start collecting consolidated position sensor data
 --Noticed a slowdown in camera frame rate to ~6-7fps/cam (normally 11-12fps/cam).  Tried rebooting and it didn't seem to fix the problem.  Need to figure out what changes to the code caused the slowdown--suspect it is something in toollib-rover-cpp.cpp
 --Fixed camera frame rate slowdown by reworking the logic in the inner loop of rover_server_log() in toollib-rover-cpp.cpp.  Changed the loop to only check the log_threads_should_die flag instead of checking is_valid_fd() for each fd every iteration.  Framerate back to normal.
 --Changed frame rate parameter in call to cv::VideoWriter (in rover_server_setup(), toollib-rover-cpp.cpp) to 10.5 from 12.0 to better reflect the actual frame rate that I'm getting from the cameras (taken from the camera timestamp log files, dividing number of frames by (last frame time - first frame time))
+--Repeated the tick count over known distance drive experiment from 10 Jul to see if the change in hardware (different USB hub, different cable arrangement) had an effect on the ticks/cm measurements.  The new tick counts are LEFT = 328.288 ticks/cm and RIGHT = 323.709 ticks/cm.  Measurements were taken from 5 runs, varying between 15.66' and 68.38'.  R^2 values on both linear regressions were > 0.999998, so I'm confident that the linear fit is good and using ticks to measure cm traveled will give accurate numbers.
 
 18 Jul 14
 Goal:  Complete data collection and start development on trace algorithm.
