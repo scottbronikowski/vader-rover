@@ -161,9 +161,9 @@ extern "C" int rover_server_setup(void)
   cv::Size vid_size = cv::Size(640,480); //**HARDCODED** for 640x480 video
   int codec = CV_FOURCC('M','J','P','G');
   FrontCam->output_video = new cv::VideoWriter(FrontCam->video_file_name, codec, 
-					       12.0, vid_size, true);
+					       10.5, vid_size, true);
   PanoCam->output_video = new cv::VideoWriter(PanoCam->video_file_name, codec, 
-					      12.0, vid_size, true);
+					      10.5, vid_size, true);
 
 
   //set first lines for log file and timestamp log files

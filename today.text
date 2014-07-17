@@ -443,6 +443,7 @@ Goal:  Complete GPS program.  Start collecting consolidated position sensor data
 --Finished modifications to toollib-rover-cpp.cpp to allow simultaneous logging to the same file.  Logging works--GPS messages are interspersed among IMU messages.
 --Noticed a slowdown in camera frame rate to ~6-7fps/cam (normally 11-12fps/cam).  Tried rebooting and it didn't seem to fix the problem.  Need to figure out what changes to the code caused the slowdown--suspect it is something in toollib-rover-cpp.cpp
 --Fixed camera frame rate slowdown by reworking the logic in the inner loop of rover_server_log() in toollib-rover-cpp.cpp.  Changed the loop to only check the log_threads_should_die flag instead of checking is_valid_fd() for each fd every iteration.  Framerate back to normal.
+--Changed frame rate parameter in call to cv::VideoWriter (in rover_server_setup(), toollib-rover-cpp.cpp) to 10.5 from 12.0 to better reflect the actual frame rate that I'm getting from the cameras (taken from the camera timestamp log files, dividing number of frames by (last frame time - first frame time))
 
 18 Jul 14
 Goal:  Complete data collection and start development on trace algorithm.
