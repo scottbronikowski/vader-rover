@@ -440,7 +440,7 @@ Goal:  Complete odometry program.  Write similar program to get data from GPS an
 
 17 Jul 14
 Goal:  Complete GPS program.  Start collecting consolidated position sensor data over a known/measured route.
-
+--Finished modifications to toollib-rover-cpp.cpp to allow simultaneous logging to the same file.  Logging works--GPS messages are interspersed among IMU messages.
 
 18 Jul 14
 Goal:  Complete data collection and start development on trace algorithm.

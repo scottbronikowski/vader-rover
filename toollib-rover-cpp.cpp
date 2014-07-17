@@ -476,7 +476,7 @@ void* rover_server_grab(void* args)
 
 void* rover_server_log(void* args)
 {
-  int retval, maxfd, num_fds, minfd, fddiff;
+  int retval, maxfd, num_fds;//, minfd, fddiff;
   char logbuf[k_LogBufSize];
   fd_set recv_set;
   struct timeval timeout;
@@ -511,7 +511,7 @@ void* rover_server_log(void* args)
       if ((is_valid_fd(log_new_fd)) &&
 	  (is_valid_fd(log_imu_new_fd1)) && 
 	  (is_valid_fd(log_imu_new_fd2)))/*&&
-	  (is_valid_fd(log_imu_new_fd3)))  */
+	  (is_valid_fd(log_imu_new_fd3)))  */ //commented out until Teensy is sending data
 	{
 	  printf("Log connection established with log_sockfd = %d,"
 		 "log_new_fd = %d\n", log_sockfd, log_new_fd);
@@ -519,13 +519,23 @@ void* rover_server_log(void* args)
 		 "log_imu_new_fd1 = %d, log_imu_new_fd2 = %d, "
 		 "log_imu_new_fd3 = %d\n", log_imu_sockfd, log_imu_new_fd1, 
 		 log_imu_new_fd2, log_imu_new_fd3);
-	  //sort fds here
+	  //sort fds here ***START WORKING HERE****
+	  int arr[4] = {log_new_fd, log_imu_new_fd1, log_imu_new_fd2, log_imu_new_fd3};
+	  maxfd = arr[0];
+	  for (int i = 0; i < 4; i++)
+	    {
+	      if (arr[i] > maxfd)
+		maxfd = arr[i];
+	    }
+	  printf("maxfd = %d\n", maxfd); 
 	}
 
 
       while (!log_thread_should_die && 
-	     b(is_valid_fd(log_new_fd)) && 
-	     (is_valid_fd(log_imu_new_fd1)))
+	     (is_valid_fd(log_new_fd)) && 
+	     (is_valid_fd(log_imu_new_fd1)) &&
+	     (is_valid_fd(log_imu_new_fd2)))/*&&
+	     (is_valid_fd(log_imu_new_fd3)))  */ //commented out until Teensy is sending data
 	{  
 	  //*************CHECK FDS HERE****************
 	  // printf("log_new_fd = %d, log_sockfd = %d\n", log_new_fd, log_sockfd);
@@ -537,18 +547,20 @@ void* rover_server_log(void* args)
 	  FD_ZERO(&recv_set);
 	  FD_SET(log_new_fd, &recv_set);
 	  FD_SET(log_imu_new_fd1, &recv_set);
-	  if (log_new_fd < log_imu_new_fd1)
-	    {
-	      minfd = log_new_fd;
-	      maxfd = log_imu_new_fd1;
-	      fddiff = log_imu_new_fd1 - log_new_fd;
-	    }
-	  else
-	    {
-	      minfd = log_imu_new_fd1;
-	      maxfd = log_new_fd;
-	      fddiff = log_new_fd - log_imu_new_fd1;
-	    }
+	  FD_SET(log_imu_new_fd2, &recv_set);
+	  //FD_SET(log_imu_new_fd3, &recv_set);  //commented out until Teensy is sending data
+	  // if (log_new_fd < log_imu_new_fd1)
+	  //   {
+	  //     minfd = log_new_fd;
+	  //     maxfd = log_imu_new_fd1;
+	  //     fddiff = log_imu_new_fd1 - log_new_fd;
+	  //   }
+	  // else
+	  //   {
+	  //     minfd = log_imu_new_fd1;
+	  //     maxfd = log_new_fd;
+	  //     fddiff = log_new_fd - log_imu_new_fd1;
+	  //   }
 	  timeout.tv_sec = 0;
 	  timeout.tv_usec = 1000 * 10; //10ms timeout
 	  //retval = select(log_new_fd+1, &recv_set, NULL, NULL, &timeout);
@@ -595,8 +607,54 @@ void* rover_server_log(void* args)
 		    continue;
 		}
 	      else if (FD_ISSET(log_imu_new_fd1, &recv_set))
-		{ //imu data log
+		{ //imu data log from 1st connection
 		  retval = recv(log_imu_new_fd1, &logbuf, sizeof(logbuf), 0);
+		  if (retval > 0) //received a valid message in logbuf
+		    {
+		      fprintf(imu_log_file, "%s\n", logbuf);
+		      //printf("retval = %d, printed to imu_log_file: %s\n", retval, logbuf);
+		    }
+		  else if (retval < 0) //error
+		    { //what error handling to do here??
+		      printf("retval = %d\n", retval);
+		      perror("rover_server_log:recv(imu_log_file)");
+		      break;
+		    }
+		  else // retval == 0
+		    //sender performed orderly shutdown, so don't print to log
+		    break;
+		  //if we get here, we handled the message properly, so decrement
+		  //num_fds and go back to top of loop if num_fds == 0
+		  --num_fds;
+		  if (num_fds == 0)
+		    continue;
+		}
+	      else if (FD_ISSET(log_imu_new_fd2, &recv_set))
+		{ //imu data log from 2nd connection
+		  retval = recv(log_imu_new_fd2, &logbuf, sizeof(logbuf), 0);
+		  if (retval > 0) //received a valid message in logbuf
+		    {
+		      fprintf(imu_log_file, "%s\n", logbuf);
+		      //printf("retval = %d, printed to imu_log_file: %s\n", retval, logbuf);
+		    }
+		  else if (retval < 0) //error
+		    { //what error handling to do here??
+		      printf("retval = %d\n", retval);
+		      perror("rover_server_log:recv(imu_log_file)");
+		      break;
+		    }
+		  else // retval == 0
+		    //sender performed orderly shutdown, so don't print to log
+		    break;
+		  //if we get here, we handled the message properly, so decrement
+		  //num_fds and go back to top of loop if num_fds == 0
+		  --num_fds;
+		  if (num_fds == 0)
+		    continue;
+		}
+	      else if (FD_ISSET(log_imu_new_fd3, &recv_set))
+		{ //imu data log from 3rd connection
+		  retval = recv(log_imu_new_fd3, &logbuf, sizeof(logbuf), 0);
 		  if (retval > 0) //received a valid message in logbuf
 		    {
 		      fprintf(imu_log_file, "%s\n", logbuf);
@@ -624,13 +682,16 @@ void* rover_server_log(void* args)
 		}
 	    }
 	}
-      //only close if both have been opened
-      if ((is_valid_fd(log_new_fd)) && (is_valid_fd(log_imu_new_fd1)))
+      //only close if all have been opened
+      if ((is_valid_fd(log_new_fd)) && 
+	  (is_valid_fd(log_imu_new_fd1)) &&
+	  (is_valid_fd(log_imu_new_fd2)))/*&&
+          (is_valid_fd(log_imu_new_fd3)))  */ //commented out until Teensy is sending data
 	{
 	  close(log_new_fd);
 	  close(log_imu_new_fd1);
-	  // printf("both new_fd's closed, log_new_fd = %d, log_imu_new_fd1 = %d\n",
-	  // 	 log_new_fd, log_imu_new_fd1);
+	  close(log_imu_new_fd2);
+	  //close(log_imu_new_fd3); //commented out until Teensy is sending data
 	}
     }
   return NULL;
