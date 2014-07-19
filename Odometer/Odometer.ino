@@ -33,11 +33,11 @@ boolean output_single_on;
 #define STATUS_LED_PIN 13
 
 //odometer variables
-float left_cm;
-float right_cm;
+//float left_cm;
+//float right_cm;
 unsigned long timestamp;
 unsigned long timestamp_old;
-unsigned long timestamp_reading;
+unsigned long dt;
 long positionLeft;
 long positionRight;
 
@@ -47,37 +47,40 @@ Encoder encoderLeft(1,2);
 
 void output()
 {
-  left_cm = positionLeft * left_ticks_per_cm;
-  right_cm = positionRight * right_ticks_per_cm;
+  float cm[2]; //left is 0, right is 1
+  cm[0] = positionLeft / left_ticks_per_cm;
+  cm[1] = positionRight / right_ticks_per_cm;
   if (output_format == OUTPUT_FORMAT_BINARY)
   {
-    unsigned char buf[4]; //for timestamp (32-bit unsigned long)
-    memcpy(buf, &timestamp, 4);
-    Serial.write(buf, 4);
-    Serial.write((byte*) left_cm, 4);
-    Serial.write((byte*) right_cm, 4);
+    unsigned char buf1[4]; //for timestamp (4-byte unsigned long)
+    unsigned char buf2[4]; //for dt (also 4-byte unsigned long)
+    memcpy(buf1, &timestamp, 4);
+    memcpy(buf2, &dt, 4);
+    Serial.write(buf1, 4);
+    Serial.write(buf2, 4);
+    Serial.write((byte*) cm, 8); //2 4-byte floats
+    //Serial.write((byte*) left_cm, 4);
+    //Serial.write((byte*) right_cm, 4);
   }
   else if (output_format == OUTPUT_FORMAT_TEXT)
   {
     Serial.print("timestamp="); Serial.print(timestamp); Serial.print(",");
-    Serial.print("L distance="); Serial.print(left_cm); Serial.print("cm,");
-    Serial.print("R distance="); Serial.print(right_cm); Serial.print("cm");
+    Serial.print("dt="); Serial.print(dt); Serial.print(",");
+    Serial.print("L distance="); Serial.print(cm[0]); Serial.print("cm,");
+    Serial.print("R distance="); Serial.print(cm[1]); Serial.print("cm");
     Serial.println();
   }
 }
-
 void turn_output_stream_on()
 {
   output_stream_on = true;
-  digitalWrite(STATUS_LED_PIN, LOW);
+  digitalWrite(STATUS_LED_PIN, HIGH);
 }
-
 void turn_output_stream_off()
 {
   output_stream_on = false;
-  digitalWrite(STATUS_LED_PIN, HIGH);
+  digitalWrite(STATUS_LED_PIN, LOW);
 }
-
 // Blocks until another byte is available on serial port
 char readChar()
 {
@@ -106,14 +109,76 @@ void setup()
 
 void loop()
 {
-  //read control messages
+  //read control messages if available
   if (Serial.available() >= 2)
   {
     if (Serial.read() == '#') //start of new control message
     {
-
+      int command = Serial.read(); // Commands
+      if (command == 'f') // request one output _f_rame
+      {
+        digitalWrite(STATUS_LED_PIN, HIGH);
+        output_single_on = true;
+      }
+      else if (command == 's') // _s_ynch request
+      {
+        // Read ID
+        byte id[2];
+        id[0] = readChar();
+        id[1] = readChar();
+        // Reply with synch message
+        Serial.print("#SYNCH");
+        Serial.write(id, 2);
+        Serial.println();
+      }
+      else if (command == 'o') //set _o_utput mode
+      {
+	char output_param = readChar();
+	if (output_param == 't') //output text
+	  output_format = OUTPUT_FORMAT_TEXT;
+	else if (output_param == 'b') //output binary
+	  output_format = OUTPUT_FORMAT_BINARY;
+	else if (output_param == '0') //turn off streaming
+	  turn_output_stream_off();
+	else if (output_param == '1') //turn on streaming
+	  turn_output_stream_on();
+      }
     }
   }
+  //is it time to get another reading?
+  if ((millis() - timestamp) >= OUTPUT_DATA_INTERVAL)
+  {
+    //get new timestamp and dt
+    timestamp_old = timestamp;
+    timestamp = millis();
+    dt = timestamp - timestamp_old;
+    //read from endcoders
+    positionLeft = encoderLeft.read();
+    positionRight = encoderRight.read();
+    //reset encoders
+    encoderLeft.write(0);
+    encoderRight.write(0);
+    //send output
+    if (output_stream_on) 
+      output();
+    else if (output_single_on)
+    { //flash LED and send output
+      //digitalWrite(STATUS_LED_PIN, HIGH); //turned on earlier
+      output();
+      digitalWrite(STATUS_LED_PIN, LOW);
+      output_single_on = false; 
+    }
+#if DEBUG_PRINT_LOOP_TIME == true
+    Serial.print("loop time (ms) = ");
+    Serial.println(millis() - timestamp);
+#endif
+  }
+#if DEBUG_PRINT_LOOP_TIME == true
+  else
+  {
+    Serial.println("waiting...");
+  }
+#endif
   
 
 }

@@ -451,6 +451,9 @@ Goal:  Complete data collection and start development on trace algorithm.
 --Worked on MA511 HW4 and readings.
 --Started on Teensy code to read encoders and output each wheel's cm traveled every 20ms.  Have the code ~50% done, and rsync'ing it back to seykhl to be git'ed with the code there.  Will be in tomorrow (and probably Sunday as well) to work on it, since my family is on vacation in Kansas for the next week to 10 days.  By the end of the weekend I plan to have collected consolidated data files (IMU, GPS, encoder) of at least one or two runs of the rover driving loops around the EE313 complex.
 
+19 Jul 14
+--Completed Teensy code for odometers.  Teensy reliably outputs a cm traveled reading for each encoded wheel every 20ms.
+
 
 ***********************TODO*******************************
 
