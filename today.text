@@ -467,6 +467,10 @@ Goal:  Complete data collection and start development on trace algorithm.
 20 Jul 14
 --Changed binary mode of Teensy output to send floats (cm measurements) first so that encoders_data_read() in run-encoders.cpp can more closely match razor_data_read() in razor-imu.cpp.
 --Made modifications to toollib-rover-cpp.cpp to have 3rd sensor (encoders via Teensy) connected and logging to imu-log.txt.  Seems to be working.
+--Looked at camera logs and confirmed that with all 3 sensors running, the framerate is still ~10 fps/camera (same as before I wrote the sensor monitoring programs).
+--Looked at a log file from a run while on the stand and saw that once all three sensors got going, the output was generally as expected--alternating ENC and IMU messages (both at 50 Hz), with GPS messages interspersed at 1 Hz.  
+--Noticed a few cases where there was a series of two or three ENC messages followed by two or three IMU messages. On some of these the out-of-order messages would have been in-order if the Gumstix timestamps had been written in order (i.e., a line had a timestamp that was earlier--by ~.001s--than the line above it).  This leads me to believe that the out-of-order problem lies within the Gumstix and its context switching of the processes that do the logging.  I don't think this will be a problem, since the IMU and encoders each have their own internal timestamps that we can use (although those timestamps are not synchronized)
+--Also noticed that as the sensors come online, in about the 1st second of operation, there are a bunch of encoder messages in a row, all before the IMU comes online.  I wonder if there is a way to suppress these messages...or if it's even necessary to do so, since it should be easy to ignore them when processing the imu-log file.  Need to think about this a little more.  Once I figure this out, I'll be ready to do a few drives around the office in order to collect data to use with Dan's Kalman filter code.
 
 
 ***********************TODO*******************************
