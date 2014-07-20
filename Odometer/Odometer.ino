@@ -56,9 +56,9 @@ void output()
     unsigned char buf2[4]; //for dt (also 4-byte unsigned long)
     memcpy(buf1, &timestamp, 4);
     memcpy(buf2, &dt, 4);
+    Serial.write((byte*) cm, 8); //2 4-byte floats
     Serial.write(buf1, 4);
     Serial.write(buf2, 4);
-    Serial.write((byte*) cm, 8); //2 4-byte floats
     //Serial.write((byte*) left_cm, 4);
     //Serial.write((byte*) right_cm, 4);
   }

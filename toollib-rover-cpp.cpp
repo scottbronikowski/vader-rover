@@ -510,8 +510,8 @@ void* rover_server_log(void* args)
 
       if ((is_valid_fd(log_new_fd)) &&
 	  (is_valid_fd(log_imu_new_fd1)) && 
-	  (is_valid_fd(log_imu_new_fd2)))/*&&
-	  (is_valid_fd(log_imu_new_fd3)))  */ //commented out until Teensy is sending data
+	  (is_valid_fd(log_imu_new_fd2)) &&
+	  (is_valid_fd(log_imu_new_fd3))) 
 	{
 	  printf("Log connection established with log_sockfd = %d,"
 		 "log_new_fd = %d\n", log_sockfd, log_new_fd);
@@ -542,7 +542,7 @@ void* rover_server_log(void* args)
 	      FD_SET(log_new_fd, &recv_set);
 	      FD_SET(log_imu_new_fd1, &recv_set);
 	      FD_SET(log_imu_new_fd2, &recv_set);
-	      //FD_SET(log_imu_new_fd3, &recv_set);  //commented out until Teensy is sending data
+	      FD_SET(log_imu_new_fd3, &recv_set); 
 	      timeout.tv_sec = 0;
 	      timeout.tv_usec = 1000 * 10; //10ms timeout
 	      //retval = select(log_new_fd+1, &recv_set, NULL, NULL, &timeout);
@@ -673,13 +673,13 @@ void* rover_server_log(void* args)
   //only close if all have been opened
   if ((is_valid_fd(log_new_fd)) && 
       (is_valid_fd(log_imu_new_fd1)) &&
-      (is_valid_fd(log_imu_new_fd2)))/*&&
-      (is_valid_fd(log_imu_new_fd3)))  */ //commented out until Teensy is sending data
+      (is_valid_fd(log_imu_new_fd2)) &&
+      (is_valid_fd(log_imu_new_fd3)))
     {
       close(log_new_fd);
       close(log_imu_new_fd1);
       close(log_imu_new_fd2);
-      //close(log_imu_new_fd3); //commented out until Teensy is sending data
+      close(log_imu_new_fd3); 
     }
   return NULL;
 }

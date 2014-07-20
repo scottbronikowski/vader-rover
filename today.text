@@ -18,6 +18,16 @@ from ~/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64$ darpa-wrap make dsc
 
 Buffers
 ---------------------------------------
+.   today.text           56728  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
+  * *shell*              31093  Shell:run	  ~/vader-rover/
+  * *scheme*            489465  Inferior Scheme:
+    toollib-rover-cpp.c: 40230  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover-cpp.cpp
+    toollib-rover-cpp.h   4874  C++/l		  ~/vader-rover/toollib-rover-cpp.h
+    driver-gui.sc         2323  Scheme		  ~/vader-rover/driver-gui.sc
+  * *shell*<2>           28642  Shell:run	  ~/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64/
+    toollib-rover.sc      2148  Scheme		  ~/vader-rover/toollib-rover.sc
+
+----old----
     toollib-rover-cpp.c: 35630  C++/l		  ~/vader-rover/toollib-rover-cpp.cpp
 . * *shell*<2>           69526  Shell:run	  ~/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64/
     toollib-rover-cpp.h   4815  C++/l		  ~/vader-rover/toollib-rover-cpp.h
@@ -453,6 +463,10 @@ Goal:  Complete data collection and start development on trace algorithm.
 
 19 Jul 14
 --Completed Teensy code for odometers.  Teensy reliably outputs a cm traveled reading for each encoded wheel every 20ms.
+
+20 Jul 14
+--Changed binary mode of Teensy output to send floats (cm measurements) first so that encoders_data_read() in run-encoders.cpp can more closely match razor_data_read() in razor-imu.cpp.
+--Made modifications to toollib-rover-cpp.cpp to have 3rd sensor (encoders via Teensy) connected and logging to imu-log.txt.  Seems to be working.
 
 
 ***********************TODO*******************************
