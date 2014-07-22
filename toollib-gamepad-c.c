@@ -312,7 +312,7 @@ int gamepad_start_server(const char* PORT)
       if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) 
 	{
 	  close(sockfd);
-	  perror("server: bind");
+	  perror("toollib-gamepad-c:server: bind");
 	  continue;
 	}
       break;

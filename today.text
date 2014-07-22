@@ -472,8 +472,44 @@ Goal:  Complete data collection and start development on trace algorithm.
 --Noticed a few cases where there was a series of two or three ENC messages followed by two or three IMU messages. On some of these the out-of-order messages would have been in-order if the Gumstix timestamps had been written in order (i.e., a line had a timestamp that was earlier--by ~.001s--than the line above it).  This leads me to believe that the out-of-order problem lies within the Gumstix and its context switching of the processes that do the logging.  I don't think this will be a problem, since the IMU and encoders each have their own internal timestamps that we can use (although those timestamps are not synchronized)
 --Also noticed that as the sensors come online, in about the 1st second of operation, there are a bunch of encoder messages in a row, all before the IMU comes online.  I wonder if there is a way to suppress these messages...or if it's even necessary to do so, since it should be easy to ignore them when processing the imu-log file.  Need to think about this a little more.  Once I figure this out, I'll be ready to do a few drives around the office in order to collect data to use with Dan's Kalman filter code.
 
+21 Jul 14
+Goal: Finish final tweaks/debugging of sensor logging.  May have to slow IMU and encoder updates down to 40 Hz (instead of 50 Hz) because I saw in the log that the time interval between some IMU updates was 21 ms, while the encoders were always at 20 ms, which causes these two sensors to get out of sync with each other.  I think slowing the requested interval down to 25 ms between updates is the easiest fix.  Also look at sensor startup in log--is it necessary to sync the start of each sensor's messages?  Once these are fixed, take some log data of rover driving in different patterns around the office.
+--Changing the update interval on the IMU to 25 ms (vice 20 ms) did not seem to work.  With the interval set at 20 ms, the measured interval (using IMU clock) was roughly 50% at 20 ms, and 50% at 21 ms.  When I changed it to 25 ms, I measured roughly 50% at 25 ms, 40% at 26 ms, and 10% at 27 ms.  I tried changing then interval to 50 ms, I measured ~75% at 51 ms and ~25% AT 52 ms (i.e., NONE at exactly 50 ms).  Setting the interval at 40 ms also didn't work.  Next going to try to use the function micros() to try to get higher resolution timing.
+--Got timing on IMU working using micros() timer.
+--Modified rover_server_log() in toollib-rover-cpp.cpp to:
+   1) close the fds from each sensor (and command log) when the sender performs and orderly shutdown (recv retval == 0)
+   2) only log the start message ('X logging started') from each sensor until all 3 sensors have sent that message.
+
+
+22 Jul 14
+Goal:  Read up on Kalman filters (I have a couple of book chapters handy) and start looking at Dan's Kalman and NMEA (GPS) parser code.
+--Mods to rover_server_log() appear to work as intended.  Still have a few extra messages from the 3rd sensor to start appearing in rapid succession (< requested interval, according to Gumstix timestamp) after connection (seems like a serial buffer clearing out).  Implemented small 'null' loop on rover in run-imu and run-encoders that reads data without sending for ~200 ms before starting to send.
+--In long (>70 minute) run to test rollover logic in IMU code, noticed several garbled messages (excess newlines, cutoff lines, and lines that don't start with the timestamp as they should).  Fixed it by creating a function that handles the recv and fprint uniformly with error checks (same as I had done for just the command log file)
+--Noticed problem that when I would run (viewer '()) multiple times without closing and restarting dsci, there would be network errors that certain sockets wouldn't connect--usually the IMU, but sometimes one of the cameras.  The error messages were that bind() failed due to address already in use.  Tried to correct this by adjusting when sockets were closed, but had no luck. 
+--Was able to get multiple runs of (viewer '()) working by resetting all the new connection sockets to -1 at the start of rover_server_log().  This forced all to reconnect.  I think the problem was that the fd integer used by the previous call to connect was getting reused by another socket, which bypassed the call to reconnect since that fd integer was valid.
+--Next effort is to try to combine separate executables on rover for gps, imu, encoders into a single program that sends a consolidated sensor message to the log.  In addition to avoiding the socket problems, this would also solve the problem of synchronizing the messages from the imu and encoders.
+
+
+
+
+23 Jul 14
+Goal:  Start adapting Dan's code to work with my data.
+
+
+24 Jul 14
+Goal:  Continue adapting code.
+
+
+25 Jul 14
+Goal:  Produce first (x, y, orientation) trace from log data and Kalman filter and compare against path driven.
+
 
 ***********************TODO*******************************
+--Also look at adding Dan's mNMEAParser code to rover_server_log() or on rover
+
+***any value in trying to sync clocks on IMU and Teensy to Gumstix system clock?
+
+*****in rover_server_log, do I want to close the FDs when the sender shuts down?????
 
 **IMU dev/testing
   -have IMU output raw (calibrated?) sensor data
@@ -498,12 +534,6 @@ Goal:  Complete data collection and start development on trace algorithm.
 --When/where to log????
 --Will changing front cam to black & white give sharper picture and/or lower CPU usage?
 
-Weekly Goals:
-M: Collect IMU data for algorithm development.  Look at what IMU output is when rover is at rest and think about how it will affect velocity/position calculations.
-T:  Start IMU algorithm development.
-W:  Continue work on IMU algorithm.
-R:  Complete algorithm development, implement on IMU, and test.
-F:  Refine IMU algorithm as needed.  Start setting up wheel encoder to Teensy interface.
 
 Critical tasks
 --------------

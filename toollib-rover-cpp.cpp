@@ -27,6 +27,8 @@ const int k_timestamp_len = 18; //string length for timestamp only (18)
 const char* k_CdrFrontCamPort = "36010";
 const char* k_CdrPanoCamPort = "36020";
 const char* k_Server = "seykhl.ecn.purdue.edu"; //driver's workstation
+//for logging
+const char* start_string = "logging started";
 
 //global variables
 struct CamGrab_t* FrontCam;
@@ -50,6 +52,8 @@ bool first_count = true;
 int cdr_viewer_active = FALSE;
 int cdr_viewer_threads_should_die = TRUE;
 pthread_t cdr_viewer_threads[k_numCams];
+//for logging
+int senders_ready;
 
 // functions called from Scheme (must have extern "C" to prevent mangling)
 extern "C" int rover_server_setup(void)
@@ -304,6 +308,11 @@ extern "C" void rover_server_cleanup(void)
   fprintf(imu_log_file, "%.6f: Logging completed\n", finish);
   close(log_sockfd);
   close(log_imu_sockfd);
+  //make sure new_fds are closed as well
+  close(log_new_fd);
+  close(log_imu_new_fd1);
+  close(log_imu_new_fd2);
+  close(log_imu_new_fd3);
   fprintf(log_file, "%s\n", tempStr);
   fprintf(imu_log_file, "%s\n", tempStr);
   fclose(log_file);
@@ -480,7 +489,17 @@ void* rover_server_log(void* args)
   char logbuf[k_LogBufSize];
   fd_set recv_set;
   struct timeval timeout;
+  //const char* start_string = "logging started";
 
+  //senders_ready = 0;
+  // close(log_new_fd);
+  // close(log_imu_new_fd1);
+  // close(log_imu_new_fd2);  
+  // close(log_imu_new_fd3);
+  log_new_fd = -1;
+  log_imu_new_fd1 = -1;
+  log_imu_new_fd2 = -1;
+  log_imu_new_fd3 = -1;
   while (!log_thread_should_die)
     {//main accept() loop
       usleep(10000);
@@ -497,28 +516,42 @@ void* rover_server_log(void* args)
 	(and function) to exit.
        */
       if (!is_valid_fd(log_new_fd))
-	log_new_fd = AcceptConnection(log_sockfd);
-     
+	{
+	  log_new_fd = AcceptConnection(log_sockfd);
+	  if (is_valid_fd(log_new_fd))
+	    printf("Log connection established with log_sockfd = %d,"
+		   "log_new_fd = %d\n", log_sockfd, log_new_fd);
+	}
       if ((!is_valid_fd(log_imu_new_fd1)))
-	log_imu_new_fd1 = AcceptConnection(log_imu_sockfd);
+	{
+	  log_imu_new_fd1 = AcceptConnection(log_imu_sockfd);
+	  if (is_valid_fd(log_imu_new_fd1))
+	    printf("IMU log connection #1 established with log_imu_sockfd = %d,"
+		   "log_imu_new_fd1 = %d\n", log_imu_sockfd, log_imu_new_fd1);
+	}
 
       if ((!is_valid_fd(log_imu_new_fd2)))
-	log_imu_new_fd2 = AcceptConnection(log_imu_sockfd);
+	{
+	  log_imu_new_fd2 = AcceptConnection(log_imu_sockfd);
+	  if (is_valid_fd(log_imu_new_fd2))
+	    printf("IMU log connection #2 established with log_imu_sockfd = %d,"
+		   "log_imu_new_fd2 = %d\n", log_imu_sockfd, log_imu_new_fd2);
+	}
 
       if ((!is_valid_fd(log_imu_new_fd3)))
-	log_imu_new_fd3 = AcceptConnection(log_imu_sockfd);
+	{
+	  log_imu_new_fd3 = AcceptConnection(log_imu_sockfd);
+	  if (is_valid_fd(log_imu_new_fd3))
+	    printf("IMU log connection #3 established with log_imu_sockfd = %d,"
+		   "log_imu_new_fd3 = %d\n", log_imu_sockfd, log_imu_new_fd3);
+	}
 
       if ((is_valid_fd(log_new_fd)) &&
 	  (is_valid_fd(log_imu_new_fd1)) && 
 	  (is_valid_fd(log_imu_new_fd2)) &&
 	  (is_valid_fd(log_imu_new_fd3))) 
 	{
-	  printf("Log connection established with log_sockfd = %d,"
-		 "log_new_fd = %d\n", log_sockfd, log_new_fd);
-	  printf("IMU log connection established with log_imu_sockfd = %d,"
-		 "log_imu_new_fd1 = %d, log_imu_new_fd2 = %d, "
-		 "log_imu_new_fd3 = %d\n", log_imu_sockfd, log_imu_new_fd1, 
-		 log_imu_new_fd2, log_imu_new_fd3);
+	  
 	  //sort fds here 
 	  int arr[4] = {log_new_fd, log_imu_new_fd1, log_imu_new_fd2, log_imu_new_fd3};
 	  maxfd = arr[0];
@@ -527,7 +560,7 @@ void* rover_server_log(void* args)
 	      if (arr[i] > maxfd)
 		maxfd = arr[i];
 	    }
-	  printf("maxfd = %d\n", maxfd); 
+	  //printf("all fds valid, maxfd = %d\n", maxfd); 
 	
 	  while (!log_thread_should_die) 
 	    {  
@@ -555,33 +588,11 @@ void* rover_server_log(void* args)
 	      else //retval >= 1-->we have data to receive
 		{
 		  num_fds = retval; //this is the number of sockets with data ready
-		  //printf("num_fds = %d\n", num_fds);
 		  //first must see which socket received data
 		  if (FD_ISSET(log_new_fd, &recv_set))
 		    { //regular data log
-		      retval = recv(log_new_fd, &logbuf, sizeof(logbuf), 0);
-		      if (retval > 0) //received a message in logbuf
-			{ //so check to see if it's valid
-			  if ((logbuf[0] != '\0') && (logbuf[0] != '\n'))
-			    {
-			      fprintf(log_file, "%s\n", logbuf);
-			      //printf("retval = %d, printed to log_file: %s\n", retval, logbuf);
-			    }
-			  else
-			    {
-			      //printf("skipped logging bogus message\n");
-			      continue;
-			    }
-			}
-		      else if (retval < 0) //error
-			{ //what error handling to do here??
-			  printf("retval = %d\n", retval);
-			  perror("rover_server_log:recv(log_file)");
-			  break;
-			}
-		      else // retval == 0
-			//sender performed orderly shutdown, so don't print to log
-			break;
+		      if (!rover_server_recv_and_print(log_new_fd, log_file))
+			break; //break if recv fails (due to error or remote shutdown)
 		      //if we get here, we handled the message properly, so decrement
 		      //num_fds and go back to top of loop if num_fds == 0
 		      --num_fds;
@@ -590,21 +601,8 @@ void* rover_server_log(void* args)
 		    }
 		  else if (FD_ISSET(log_imu_new_fd1, &recv_set))
 		    { //imu data log from 1st connection
-		      retval = recv(log_imu_new_fd1, &logbuf, sizeof(logbuf), 0);
-		      if (retval > 0) //received a valid message in logbuf
-			{
-			  fprintf(imu_log_file, "%s\n", logbuf);
-			  //printf("retval = %d, printed to imu_log_file: %s\n", retval, logbuf);
-			}
-		      else if (retval < 0) //error
-			{ //what error handling to do here??
-			  printf("retval = %d\n", retval);
-			  perror("rover_server_log:recv(imu_log_file)");
-			  break;
-			}
-		      else // retval == 0
-			//sender performed orderly shutdown, so don't print to log
-			break;
+		      if (!rover_server_recv_and_print(log_imu_new_fd1, imu_log_file))
+			break; //break if recv fails (due to error or fd closure)
 		      //if we get here, we handled the message properly, so decrement
 		      //num_fds and go back to top of loop if num_fds == 0
 		      --num_fds;
@@ -613,21 +611,8 @@ void* rover_server_log(void* args)
 		    }
 		  else if (FD_ISSET(log_imu_new_fd2, &recv_set))
 		    { //imu data log from 2nd connection
-		      retval = recv(log_imu_new_fd2, &logbuf, sizeof(logbuf), 0);
-		      if (retval > 0) //received a valid message in logbuf
-			{
-			  fprintf(imu_log_file, "%s\n", logbuf);
-			  //printf("retval = %d, printed to imu_log_file: %s\n", retval, logbuf);
-			}
-		      else if (retval < 0) //error
-			{ //what error handling to do here??
-			  printf("retval = %d\n", retval);
-			  perror("rover_server_log:recv(imu_log_file)");
-			  break;
-			}
-		      else // retval == 0
-			//sender performed orderly shutdown, so don't print to log
-			break;
+		      if (!rover_server_recv_and_print(log_imu_new_fd2, imu_log_file))
+			break; //break if recv fails (due to error or fd closure)
 		      //if we get here, we handled the message properly, so decrement
 		      //num_fds and go back to top of loop if num_fds == 0
 		      --num_fds;
@@ -636,21 +621,30 @@ void* rover_server_log(void* args)
 		    }
 		  else if (FD_ISSET(log_imu_new_fd3, &recv_set))
 		    { //imu data log from 3rd connection
-		      retval = recv(log_imu_new_fd3, &logbuf, sizeof(logbuf), 0);
-		      if (retval > 0) //received a valid message in logbuf
-			{
-			  fprintf(imu_log_file, "%s\n", logbuf);
-			  //printf("retval = %d, printed to imu_log_file: %s\n", retval, logbuf);
-			}
-		      else if (retval < 0) //error
-			{ //what error handling to do here??
-			  printf("retval = %d\n", retval);
-			  perror("rover_server_log:recv(imu_log_file)");
-			  break;
-			}
-		      else // retval == 0
-			//sender performed orderly shutdown, so don't print to log
-			break;
+		      // retval = recv(log_imu_new_fd3, &logbuf, sizeof(logbuf), 0);
+		      // if (retval > 0) //received a valid message in logbuf
+		      // 	{ //only log start message or if all 3 sensors have started
+		      // 	  if (strstr(logbuf, start_string) != NULL)
+		      // 	    {
+		      // 	      fprintf(imu_log_file, "%s\n", logbuf);
+		      // 	      senders_ready++;
+		      // 	    }
+		      // 	  else if (senders_ready == 3)
+		      // 	    fprintf(imu_log_file, "%s\n", logbuf);
+		      // 	}
+		      // else if (retval < 0) //error
+		      // 	{ //what error handling to do here??
+		      // 	  printf("retval = %d\n", retval);
+		      // 	  perror("rover_server_log:recv(imu_log_file)");
+		      // 	  break;
+		      // 	}
+		      // else // retval == 0
+		      // 	{//sender performed orderly shutdown, so don't print to log
+		      // 	  close(log_imu_new_fd3);
+		      // 	  break;
+		      // 	}
+		      if (!rover_server_recv_and_print(log_imu_new_fd3, imu_log_file))
+			break; //break if recv fails (due to error or fd closure)
 		      //if we get here, we handled the message properly, so decrement
 		      //num_fds and go back to top of loop if num_fds == 0
 		      --num_fds;
@@ -670,17 +664,16 @@ void* rover_server_log(void* args)
       //printf("AT END OF MAIN LOOP\n");
     }
   //we only get here when log_thread_should_die is true
-  //only close if all have been opened
-  if ((is_valid_fd(log_new_fd)) && 
-      (is_valid_fd(log_imu_new_fd1)) &&
-      (is_valid_fd(log_imu_new_fd2)) &&
-      (is_valid_fd(log_imu_new_fd3)))
-    {
-      close(log_new_fd);
-      close(log_imu_new_fd1);
-      close(log_imu_new_fd2);
-      close(log_imu_new_fd3); 
-    }
+  //only close those that are still open, after waiting a bit
+  usleep(100000);
+  if (is_valid_fd(log_new_fd))
+    close(log_new_fd);
+  if (is_valid_fd(log_imu_new_fd1))
+    close(log_imu_new_fd1);
+  if (is_valid_fd(log_imu_new_fd2))
+    close(log_imu_new_fd2);
+  if(is_valid_fd(log_imu_new_fd3))
+    close(log_imu_new_fd3); 
   return NULL;
 }
 
@@ -805,7 +798,9 @@ int StartServer(const char* PORT)
       if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) 
 	{
 	  close(sockfd);
-	  perror("server: bind");
+	  perror("toollib-rover-cpp:server: bind");
+	  printf("error binding port %s to sockfd = %d\n",
+		 PORT, sockfd);
 	  continue;
 	}
       break;
@@ -1228,4 +1223,31 @@ int sendall(int s, unsigned char *buf, int *len)
 int is_valid_fd(int fd)
 {
   return fcntl(fd, F_GETFL) != -1 || errno != EBADF;
+}
+
+int rover_server_recv_and_print(int fd, FILE* my_log_file)
+{
+  int retval;
+  char logbuf[k_LogBufSize];
+  memset(logbuf, 0, sizeof(logbuf));  //clear buffer
+  retval = recv(fd, &logbuf, sizeof(logbuf), 0);
+  if (retval > 0) //received a message in logbuf
+    { //so check to see if it's valid
+      if ((logbuf[0] != '\0') && (logbuf[0] != '\n'))
+	  fprintf(my_log_file, "%s\n", logbuf);
+    }
+  else if (retval < 0) //error
+    { //what error handling to do here??
+      printf("retval = %d, fd = %d\n", retval, fd);
+      perror("rover_server_recv_and_print:recv");
+      //close(fd);  //close fd here so it can get reopened on the next loop
+      return FALSE;
+    }
+  else // retval == 0
+    { //sender performed orderly shutdown, so don't print to log
+      //close(fd);
+      return FALSE;
+    }
+  //if we get here, we handled the message properly, so return true
+  return TRUE;
 }

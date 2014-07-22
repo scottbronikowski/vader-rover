@@ -105,6 +105,9 @@ extern const int k_timestamp_len;
 extern const char* k_CdrFrontCamPort;
 extern const char* k_CdrPanoCamPort;
 extern const char* k_Server; //driver's workstation
+//for logging
+extern const char* start_string;
+
 
 //global variables
 extern struct CamGrab_t* FrontCam;
@@ -121,6 +124,8 @@ extern FILE* imu_log_file;
 extern int cdr_viewer_active;
 extern int cdr_viewer_threads_should_die;
 extern pthread_t cdr_viewer_threads[k_numCams];
+//for logging
+extern int senders_ready;
 
 // functions called from Scheme
 #ifdef __cplusplus
@@ -183,6 +188,7 @@ void* rover_server_grab(void* args);
 void* rover_server_log(void* args);
 void* cdr_viewer_grab(void* args);
 void* get_in_addr(struct sockaddr *sa);
+int rover_server_recv_and_print(int fd, FILE* my_log_file);
 int StartServer(const char* PORT);
 int AcceptConnection(int sockfd);
 int recvall(int s, unsigned char* buf, int* len);
