@@ -11,6 +11,7 @@ Date: 11 March 2014
 */
 
 #include "toollib-rover-cpp.h"
+#include "mNMEAParser.h"
 
 //global constants;
 const char* k_FrontCamPort = "3601";
@@ -1252,3 +1253,4 @@ int rover_server_recv_and_print(int fd, FILE* my_log_file)
   //if we get here, we handled the message properly, so return true
   return TRUE;
 }
+

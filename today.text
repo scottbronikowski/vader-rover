@@ -492,22 +492,25 @@ Goal:  Read up on Kalman filters (I have a couple of book chapters handy) and st
 23 Jul 14
 Goal:  Start adapting Dan's code to work with my data.
 --Drove rover on one loop (counterclockwise) of EE313 complex and one run out EE313G, left down to water fountain, and back into EE313G to give Dan some live log files with IMU and encoder data to use with Kalman filter.
-
 --Built run-sensors.{cpp,h}, which will run the encoders and IMU in sync with each other.  Basically it's a merge of run-encoders and run-imu.
---Modified rover_server_log() in toollib-rover-cpp.cpp to use only two connections to imu-log.txt (since encoders and IMU are now together)
-
-
+--Modified rover_server_log() in toollib-rover-cpp.cpp to use only two connections to imu-log.txt (since encoders and IMU are now together).  Seems to work well--combined IMU & encoder messages are on a single line, and the GPS messages are interspersed.
 
 24 Jul 14
 Goal:  Continue adapting code.
+--First trace plots done from small run around EE313.  Results based almost completely on odometer readings look pretty good.  Trouble seems to happen when we go from tile to carpet (odometers read more distance covered than actually covered) or on long straightaways (heading tends to drift left--might be because of encoder ticks to cm conversion).  Other sensors seem to be too inaccurate/inconsistent to use.  Working on how to get other sensors (compass/yaw, acceleration) to provide meaningful data/input to Kalman.
+--Added mNMEAParser and mGPSInfo to dsci in order to parse GPS messages.  Still need to finish and test.
 
---Also look at adding Dan's mNMEAParser code to rover_server_log() or on rover
 
 25 Jul 14
 Goal:  Produce first (x, y, orientation) trace from log data and Kalman filter and compare against path driven.
 
 
 ***********************TODO*******************************
+
+**THOUGHTS FOR AFTER PAPERS ARE DONE**
+--Can we integrate Ax to help with odometry to figure out distance covered?  Ax is noisy, but we might be able to somehow offset it (a -1 offset had pretty good results on data from 2014-07-24-18:16:58) to get integrated speed to start and end at 0.
+
+***any value in converting GPS time stamp to Unix time?
 
 ***any value in trying to sync clocks on IMU and Teensy to Gumstix system clock?
 
