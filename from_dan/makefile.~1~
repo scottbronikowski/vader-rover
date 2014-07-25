@@ -1,0 +1,6 @@
+OPENCV = `pkg-config --cflags --libs opencv`
+OPENCV_I = `pkg-config --cflags opencv` -I${HOME}/darpa-collaboration/include/`architecture-path`/arv
+
+
+code: control_system.c Dstar.cpp kalmaninit.c main.cpp mGPSInfo.cpp mNMEAParser.cpp
+g++ $(OPENCV) $(OPENCV_I) control_system.c Dstar.cpp kalmaninit.c main.cpp mGPSInfo.cpp mNMEAParser.cpp -o ATV.out

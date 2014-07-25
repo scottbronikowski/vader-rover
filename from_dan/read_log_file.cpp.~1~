@@ -1,0 +1,16 @@
+int main(int, char**)
+{
+  filename = "/aux/dpbarret/vader-rover/logs/2014-07-23-19:35:13/imu-log.txt";
+  FILE* fp = fopen(filename,"r");
+  char linebuf[1000];
+
+  while (fgets(linebuf,1000,fp)!=NULL)
+    {
+      encoder_items = sscanf(linebuf,"%f: ENC:time:%lu:dt:%lu:L:%.3f:R:%.3f",&logtime,&time,&dt,&L,&R);
+      if (encoder_items == 5)
+	{
+	  printf("read full encoder line: %lu %lu %.3f %.3f",logtime,time,dt,L,R);
+	}
+    }
+  return 0;
+}

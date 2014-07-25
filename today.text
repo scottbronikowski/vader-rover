@@ -1,3 +1,26 @@
+Paper deadlines:
+AAAI-15: January 25–29, 2015   Austin, Texas
+         May 1, 2014 - September 10, 2014: Authors register on the AAAI web site
+	 September 10, 2014: Electronic abstracts due
+         September 15, 2014: Electronic papers due
+      	 October 22 - 24, 2014: Author feedback about initial reviews
+	 November 7, 2014: Notification of acceptance or rejection
+	 November 20, 2014: Camera-ready copy due at AAAI office
+ICRA-15: May 26-30, 2015 at the Washington State Convention Center in Seattle, WA
+	 1 October 2014: Paper Submission deadline
+      	 30 January 2015: Paper acceptance notification
+      	 27 February 2015: Final contribution deadline
+IJCAI-15: 25 July-1 August 2015, Buenos Aires, Argentina 
+    	  Feb 1, 2015 (11:59PM, UTC-12): Abstract submission
+    	  Feb 5, 2015 (11:59PM, UTC-12): Paper submission
+    	  March 10-16, 2015 (11:59PM, UTC-12): Author feedback
+    	  April 9, 2015: Notification of acceptance/rejection
+    	  May 2, 2015: Camera-ready copy due
+IROS-15: September 28 - October 02, 2015, Hamburg, Germany
+	 Mar. 6, 2015: Submission of full-length papers 
+      	 Jun. 17, 2015: Notiﬁcation of acceptance for papers 
+      	 Jul. 24, 2015: Submission of ﬁnal papers 
+
 Random notes:
 ------------------
 (define duplicates (removeq #f (map-indexed (lambda (line i) (if (> (length (removeq #f (map-indexed (lambda (other j) (and (equal? other line) (not (equal? i j)))) symtable))) 0) line #f)) symtable)))
@@ -500,21 +523,38 @@ Goal:  Continue adapting code.
 --First trace plots done from small run around EE313.  Results based almost completely on odometer readings look pretty good.  Trouble seems to happen when we go from tile to carpet (odometers read more distance covered than actually covered) or on long straightaways (heading tends to drift left--might be because of encoder ticks to cm conversion).  Other sensors seem to be too inaccurate/inconsistent to use.  Working on how to get other sensors (compass/yaw, acceleration) to provide meaningful data/input to Kalman.
 --Added mNMEAParser and mGPSInfo to dsci in order to parse GPS messages.  Still need to finish and test.
 
-
 25 Jul 14
 Goal:  Produce first (x, y, orientation) trace from log data and Kalman filter and compare against path driven.
+--Changed Odometer.ino program on Teensy to use an average of the left and right ticks/cm for both wheels instead of the individual numbers--trying to see if this will help correct the "pull" we observed yesterday.  Plan on also taking the robot down to the MSEE atrium to drive around there to see if we can get better magnetometer data in a different environment.
+--Ran drive test in MSEE atrium.  Had some issues with wifi dropping out, but was able to get in a couple of decent runs.  At the beginning of the runs the plots looked pretty good (with better--though not perfect--compass heading data), but the plots of the runs would stop before they were complete.  Upon examining the logs, saw a lot of garbled IMU/encoder data lines, and they all seemed to happen around the time a GPS line was coming in.  The problem shouldn't be with my logging code on seykhl, since that is a single thread that services the different file descriptors (sockets) sequentially.  That leads me to believe I need to restructure the rover-side code to have the GPS read in the same file, so that only one file is writing to a socket that writes to imu-log.txt.  I plan on coming in tomorrow to work on that, as well as the GPS sentence parser.
 
+--Starting to think about the design of the experiment.  Need to come up with the following:
+  -- Robot range of ~30' x 30' (inside Armory--should be no problem)
+  -- ~5-8 obstacles to use in the range (some may be repeated)
+  -- ~5 different arrangements for obstacles within range (do we want to use completely different positions for the obstacles, or have set obstaccle positions and just rearrange which obstacle is at which position?)
+  -- a context-free grammar for the sentences that the robot will use consisting of:
+     -- 1 subject noun: robot
+     -- 1 verb: go/went or drive/drove (does it make a difference?)
+     -- Prepositions (how many?)
+     -- 5-8 object nouns (the obstacles)
+  -- From the CFG, generate ~50 sentences that describe robot motion
+     -- ~half will be simple (single preposition/single object)
+     -- ~half will be complex (multiple prepositions/multiple objects)
+  -- Arrange the sentences and obstacle arrangements so that each sentence is tested 10 times each in two different arrangements (20 tests per sentence, 1000 tests total).
 
 ***********************TODO*******************************
+
+***run null loop in run-sensors to clear bogus data
+***run AHRS_test with rover on desk and motors running. --> still off quite a bit, 180 turn looks ok(ish), but 90 turn does not-->checked on the speakers in my notes and found that the speakers were installed prior to the last calibration, so that shouldn't be the problem-->is it just this building?
+
+***any value in trying to sync clocks on IMU and Teensy to Gumstix system clock?
+***any value in converting GPS time stamp to Unix time?
 
 **THOUGHTS FOR AFTER PAPERS ARE DONE**
 --Can we integrate Ax to help with odometry to figure out distance covered?  Ax is noisy, but we might be able to somehow offset it (a -1 offset had pretty good results on data from 2014-07-24-18:16:58) to get integrated speed to start and end at 0.
 
-***any value in converting GPS time stamp to Unix time?
 
-***any value in trying to sync clocks on IMU and Teensy to Gumstix system clock?
 
-*****in rover_server_log, do I want to close the FDs when the sender shuts down?????
 
 **IMU dev/testing
   -have IMU output raw (calibrated?) sensor data
@@ -548,16 +588,15 @@ Critical tasks
   --pan-tilt commands-->COMPLETE
   --wheel commands-->COMPLETE
 -bump sensors-->COMPLETE
--crossing bump sensors-->COMPLETE, may need adjustment
--shaft encoders-->mounted and connected, need to do software interface 
-  --user-space interface on Gumstix too slow/CPU hog
-  --could try to implement kernel-space interrupt-driven driver, but not sure if it will consume too much CPU; compilation environment for kernel module rotary_encoder (provided with Linux kernel) set up, but need to figure out how to configure code to monitor the GPIO lines I'm using and have the module keep track of ticks and direction and report them to user-space code on demand
-  --separate USB microcontroller board on hand (Teensy 3.1), dev environment for Teensy setup complete on rover and ubuntu laptop, will start work on this once IMU complete
--IMU-->mounted and connected, working on software interface
-  --remounted adjacent to camera to try and combat magnetic interference; recalibrated outdoors and magnetometer seems to be working more consistently
-  --have data (from Razor_AHRS firmware) read into gumstix and sent over network to seykhl and logged in log file
-  --working on getting raw sensor data (possibly converted into m/s^2 for accelerometers???)  sent back to seykhl and logged in order to work on integration of acceleration to position offline
--GPS-->mounted and connected, can read raw NMEA data through a 4800 bps serial port, need to finish software interface
+-crossing bump sensors-->COMPLETE
+-shaft encoders-->COMPLETE, giving consistent & reliable readings
+-IMU-->working, but inconsistent
+  --logging data back to imu-log.txt on seykhl (actually file is for IMU/ENC and GPS)
+  --have output of accelerometer sending data in cm/s^2 based on 1g reference--seem to have noticed a slight DC shift in Ax data
+  --magnetometer output in degrees (the default).  Magnetic interference seems to be plaguing the magnetometer (and thus the YPR from the DCM algorithm)--going to try driving in a less-magnetic environment
+  --gyros output in deg/s--noticing output that is a bit wonky (hitting max of 2000deg/s when turning--no way the robot can actually turn that quickly)
+-GPS-->nearly complete
+  --Currently reading raw NMEA messages and logging them on seykhl.  Need to use mNMEAParser to read raw sentence into usable variables.
 
 Non-critical tasks
 ------------------

@@ -1,0 +1,579 @@
+#include "opencv2/video/tracking.hpp"
+#include "opencv2/highgui/highgui.hpp"
+
+#include <stdio.h>
+#include <time.h>
+#include "Dstar.h"
+#include "cv.h"
+#include "mGPSInfo.h"
+#include "mNMEAParser.h"
+
+#define drawCross( center, color, d )                                 \
+                line( img, Point( center.x - d, center.y - d ),                \
+                             Point( center.x + d, center.y + d ), color, 1, CV_AA, 0); \
+                line( img, Point( center.x + d, center.y - d ),                \
+                             Point( center.x - d, center.y + d ), color, 1, CV_AA, 0 )
+
+#define pi (3.14159)
+#define METERS_PER_DEGREE (111310.4035)
+
+//////Zoomed out
+// #define  MAPL (86.93213056)
+// #define  MAPR (86.90999167)
+// #define  MAPT (40.43241667)
+// #define  MAPB (40.42354722)
+//////Engr fountain
+// #define  MAPL (86.91629167)
+// #define  MAPR (86.91122778)
+// #define  MAPT (40.42976389)
+// #define  MAPB (40.42775556)
+//////Bogus map
+#define  MAPL (86.91620167)
+#define  MAPR (86.91610778)
+#define  MAPT (40.42970389)
+#define  MAPB (40.42960556)
+
+//////Hilltop
+//#define  MAPL (86+55.0/60+39.87/3600)
+//#define  MAPR (86+55.0/60+15.52/3600)
+//#define  MAPT (40+26.0/60+1.59/3600)
+//#define  MAPB (40+25.0/60+51.89/3600)
+
+using namespace cv;
+
+int main(int, char**)
+{
+
+    double avgtime=0;
+    double iterations=0;
+    double total_time=0;
+    char LPWM=0xFF,RPWM=0xFF,DIR=0x11;
+    clock_t start_time;
+    class Atom_board_module Atom = Atom_board_module();
+    Atom.Initialize();
+    imshow("Kalman",Atom.ui_module.img);
+    start_time=clock();
+    Atom.SYNCH1_IN=0;
+    Atom.SYNCH2_IN=0;
+   /* while(waypoint==NULL)
+    {
+        Sleep(10);
+        waitKey(1);
+    }*/
+    while(1)
+    {
+      Atom.Camera_Tracking = 0;
+#ifdef WINDOWS
+      Atom.Camera_Tracking = camera_track(Atom.scan);
+#endif
+        iterations= iterations+1;
+        //printf("\n\n-------------\n\n");
+        //Atom.SYNCH1_IN=255;
+        waitKey(6);
+	#ifdef WINDOWS
+        Atom.Get_Sensor_Data();
+	#endif
+        printf("Measurements: Theta = %f(degrees) Lspeed = %f(m/s) Rspeed = %f (m/s)\n",Atom.kalman_module.Rmeasurement.at<float>(2)*360/(2*pi),Atom.kalman_module.Rmeasurement.at<float>(4),Atom.kalman_module.Rmeasurement.at<float>(5));
+        //printf("-------SYNCH1=%d  SYNCH2=%d-------",Atom.SYNCH1_IN,Atom.SYNCH2_IN);
+        //--------- Timing stuff------//
+        Atom.seconds = clock()/(double)CLOCKS_PER_SEC;//-Atom.start_time;
+        Atom.dt = Atom.seconds - Atom.prev_seconds;
+
+        Atom.seconds_since_last_GPS+=Atom.dt;
+        Atom.communication_module.time_since_sync+=Atom.dt;
+        Atom.prev_seconds = Atom.seconds;
+        total_time= total_time+Atom.dt;
+        avgtime = total_time/iterations;
+        //printf("steps_per_sec=%f average fps=%lf \n",1/Atom.dt,1.0/avgtime);
+
+        Atom.kalman_module.dt = Atom.dt;
+
+        //--------------------------------
+
+
+
+        /*   if (Atom.IR2<45)
+           {
+              LPWM=0xFF;
+              RPWM=0xFF;
+              DIR=0x44;
+              printf("stop too close ir2=%d\n",Atom.IR2);
+           }
+           else if (Atom.IR1>43 )
+           {
+               LPWM=0xFF;
+               RPWM=0xFF;
+               DIR=0x44;
+               printf("stop drop ir1=%d\n",Atom.IR1);
+           }
+           else if (Atom.IR1<30)
+           {
+               LPWM=0xFF;
+               RPWM=0xFF;
+               DIR=0x44;
+               printf("stop bump ir1=%d\n",Atom.IR1);
+           }
+           else
+           {*/
+        //    LPWM=0x40;
+        //    RPWM=0x40;
+        //    DIR=0x11;
+        //   printf("Go!\n");
+        // }
+
+
+        //----temporary test code--------
+
+
+        //-----------------------------------
+
+          Atom.Get_Fake_Sensor_Data();
+          //Atom.Get_Fake_Packets();
+         if(Atom.SONIC<120)
+         {
+
+
+          Atom.navigation_module.find_obstacle_location();
+           Atom.navigation_module.clear_line_of_sight();
+           Atom.navigation_module.add_obstacle();
+          }
+          else
+          {
+              //Atom.SONIC=120;
+             Atom.navigation_module.find_obstacle_location();
+             Atom.navigation_module.clear_line_of_sight();
+          }
+        // printf("Sonic reads %d(cm)\n",Atom.SONIC);
+        //printf("1\n");
+        Atom.navigation_module.Navigate();
+        //printf("2\n");
+
+        //Atom.navigation_module.control_vec.ul=1;//LPWM/256.0;
+        // Atom.navigation_module.control_vec.ur=1;//RPWM/256.0;
+
+        /*Atom.kalman_module.Rmeasurement.at<float>(0) = 0;
+        Atom.kalman_module.Rmeasurement.at<float>(1) = 0;
+        Atom.kalman_module.Rmeasurement.at<float>(2) = (pi/2);
+        Atom.kalman_module.Rmeasurement.at<float>(3) = 0;
+        Atom.kalman_module.Rmeasurement.at<float>(4) = .7;
+        Atom.kalman_module.Rmeasurement.at<float>(5) = .7;
+        Atom.kalman_module.Rmeasurement.at<float>(6) = 0;
+        Atom.kalman_module.Rmeasurement.at<float>(7) = 0;*/
+        //printf("3\n");
+        Atom.kalman_module.KalmanUpdate();
+        //printf("4\n");
+        float x,y,theta,dtheta,sl,sr;
+        x = Atom.kalman_module.RKF.statePost.at<float>(0);
+        y = Atom.kalman_module.RKF.statePost.at<float>(1);
+        theta = Atom.kalman_module.RKF.statePost.at<float>(2);
+        dtheta = Atom.kalman_module.RKF.statePost.at<float>(3);
+        sl = Atom.kalman_module.RKF.statePost.at<float>(4);
+        sr = Atom.kalman_module.RKF.statePost.at<float>(5);
+        //printf("Estimated state: x=%f y=%f theta=%f, dtheta=%f sl=%f, sr=%f\n",x,y,theta*360/2/pi,dtheta*360/2/pi,sl,sr);
+
+        //printf("5\n");
+        Atom.ui_module.Display();
+       // printf("6\n");
+        //Sleep(1000);
+        waitKey(1);
+    }
+    /*  //used for displaying the error circle
+          float xzerr,yzerr;
+      //possibly unneccessary
+          Point2d localpoint;
+      // a point in front of MSEE, this is a global variable
+          local_origin.x = (MAPL+MAPR)/2.0;//86.91304444;
+          local_origin.y = (MAPT+MAPB)/2.0;//40.42911111;
+
+      // creation of the window
+          namedWindow( "Kalman", 1 );
+          setMouseCallback( "Kalman", onMouse, 0 );
+
+     // Mat img0 = imread("googleearth_campus_zoomed_out.bmp");
+     // Mat img0 = imread("googleearth_campus_zoomed_in_engineering_mall.bmp");
+      // setting the background
+          Mat img0 = imread("googleearth_campus_zoomed_in_hilltop.bmp");
+          Size2i size = img0.size();
+          // printf("img has %d rows, %d cols\n",size.width,size.height);
+          size.height = 2*size.height/3;
+          size.width = 2*size.width/3;
+          // printf("img has %d rows, %d cols\n",size.width,size.height);
+          Mat img;
+
+          mapwidth = size.width;
+          mapheight = size.height;
+
+          resize(img0, img, size);//, double fx=0, double fy=0, int interpolation=INTER_LINEAR)
+          //img = Scalar::all(0);
+      // setting up the obstacles
+          Obstacle* obstaclelist = Obstaclesinit(dstar);
+          // display_real_obstacles(obstaclelist,&img);
+          Detection_line* detection_lines;
+          Known_Obstacle* knownlist;
+      // setting up the pathfinder
+          dstar = new Dstar();
+          dstar->init(0,0,20,20);
+          list<state> mypath;
+          dstar->replan();               // plan a path
+          mypath = dstar->getPath();     // retrieve path
+
+      // setting up the control system
+          Control_Vector control_vec;
+          waypointlist = NULL;//init_waypoints();
+          waypoint = waypointlist;
+          Waypoint* subwaypoint;
+          Waypoint dummy;
+          subwaypoint=&dummy;
+
+          control_vec.dist_err=0;
+          control_vec.theta_err=0;
+          control_vec.ul = 0;
+          control_vec.ur = 0;
+
+      // some kkind of error check
+          if (waypoint!=NULL)
+              if (waypoint->next==NULL)
+              {
+                  printf("FAIL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+              }
+      // setting simulation parameters
+          float real_dt= .001;
+          float dt = .05;
+      // related to fake measurements
+          int GPS_count=0;
+      // related to UI
+          display_real_obstacles(obstaclelist,&img,local_origin,mapwidth,mapheight);
+          // display_path(mypath,&img);
+      // Kalman filter
+          Mat control;
+          Mat Rmeasurement;
+          Mat Rprediction;
+          Mat Rcorrection;
+
+          Mat Realprediction;
+          Mat Realcontrol;
+
+          // constants
+          float w = .15;
+          float mr =1;
+          float ml =1;
+
+          // intitialization
+          float x=0;
+          float y=0;
+          float theta = -pi/2;
+          float realsl=0,realsr=0;
+
+          float sl = realsl;
+          float sr = realsr;
+
+          float a= 0;
+
+          float XN = 7.0/2;
+          float YN = 7.0/2;
+          float ThetaN = .0087;
+          float dThetaN = 0;
+          float slN = .01;
+          float srN = .01;
+          float aN = .01;
+
+      // relate to UI
+          float GPSavgx=0,GPSavgy=0;
+          float nGPS=0;
+          //float t=0;
+
+      // related to control output
+          float ul=0;
+          float ur=0;
+      // kalman initialization
+          KalmanFilter RKF = kalmaninit(theta,ml,mr,dt);
+          KalmanFilter RealState = kalmaninit(theta,ml,mr,real_dt);
+
+          RKF.measurementNoiseCov.at<float>(0,0)=XN;
+          RKF.measurementNoiseCov.at<float>(1,1)=YN;
+          RKF.measurementNoiseCov.at<float>(2,2)=ThetaN;
+          RKF.measurementNoiseCov.at<float>(3,3)=100;
+          RKF.measurementNoiseCov.at<float>(4,4)=slN;
+          RKF.measurementNoiseCov.at<float>(5,5)=srN;
+          RKF.measurementNoiseCov.at<float>(6,6)=aN;
+
+          RKF.processNoiseCov.at<float>(4,4)=slN;
+          RKF.processNoiseCov.at<float>(5,5)=srN;
+          RKF.processNoiseCov.at<float>(6,6)=aN;
+
+          Mat MeasurementMAT_noGPS = *(Mat_<float>(8,8) <<
+                                   0, 0, 0, 0, 0, 0,  0,   0,
+                                   0, 0, 0, 0, 0, 0,  0,   0,
+                                   0, 0, 1, 0, 0, 0,  0,   0,
+                                   0, 0, 0, 0, 0, 0,  0,   0,
+                                   0, 0, 0, 0, 1, 0,  0,   0,
+                                   0, 0, 0, 0, 0, 1,  0,   0,
+                                   0, 0, 0, 0, 0, 0, .5,  .5,
+                                   0, 0, 0, 0, 0, 0,  0,   0);
+
+          Mat MeasurementMAT = *(Mat_<float>(8,8) <<
+                             1, 0, 0, 0, 0, 0,  0,   0,
+                             0, 1, 0, 0, 0, 0,  0,   0,
+                             0, 0, 1, 0, 0, 0,  0,   0,
+                             0, 0, 0, 0, 0, 0,  0,   0,
+                             0, 0, 0, 0, 1, 0,  0,   0,
+                             0, 0, 0, 0, 0, 1,  0,   0,
+                             0, 0, 0, 0, 0, 0, .5,  .5,
+                             0, 0, 0, 0, 0, 0,  0,   0);
+
+
+          RKF.statePost = *(Mat_<float>(8,1) << x, y, theta, 0, sl, sr, a,a);
+          RealState.statePost = *(Mat_<float>(8,1) << x, y, theta, 0, sl, sr, a,a);
+
+      // Navigation
+          if (waypoint!=NULL)
+          dstar->updateGoal(waypoint->x,waypoint->y);
+              if(dstar->replan())
+              {
+                  display_path(mypath,&img,0,local_origin,mapwidth,mapheight);
+                  mypath = dstar->getPath();
+                  display_path(mypath,&img,255,local_origin,mapwidth,mapheight);
+              }
+
+      // related to UI and GPS, possibly unneccessary
+          Point2d coord;
+          coord.x = 86.912622;
+          coord.y = 40.428738;
+          Point2d pixcoord;
+          pixcoord = GPS_to_pixel(coord,mapwidth,mapheight);
+          Point pixpoint;
+          pixpoint.x = pixcoord.x;
+          pixpoint.y = pixcoord.y;
+
+          imshow( "Kalman", img );
+
+      pixpoint = GPS_to_pixel(local_origin,mapwidth,mapheight);
+      drawCross( pixpoint, Scalar(0,0,255), 10 );
+      localpoint = GPS_to_local(coord,local_origin);
+
+      float latitude,longitude; // in degrees
+      NMEAParser *parser = new NMEAParser();
+      GPSInfo info;
+      char *bytes = (char*)malloc(sizeof(char)*1000);
+
+    ////-----------------------------------------------------------------------------------
+      HANDLE hSerial;
+    DCB dcbSerialParams = {0};
+    DCB dcbSerial;
+    DWORD dwBytesRead = 0;
+
+    hSerial = CreateFile("COM5",GENERIC_READ | GENERIC_WRITE,0,	0,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,0);
+    if(hSerial==INVALID_HANDLE_VALUE)
+    {
+    	if(GetLastError()==ERROR_FILE_NOT_FOUND)
+    	{
+    		printf("failed to open serial port\n");
+    	//serial port does not exist. Inform user.
+    	}
+    //some other error occurred. Inform user.
+    }
+
+    dcbSerial.DCBlength=sizeof(dcbSerialParams);
+    if (!GetCommState(hSerial, &dcbSerialParams))
+    {
+    	printf("error getting state\n");
+    	//error getting state
+    }
+    dcbSerialParams.BaudRate=CBR_9600; //GPS is 4800
+    dcbSerialParams.ByteSize=8;
+    dcbSerialParams.StopBits=ONESTOPBIT;
+    dcbSerialParams.Parity=NOPARITY;
+    if(!SetCommState(hSerial, &dcbSerialParams))
+    {
+
+    	printf("error setting serial port state\n");
+    }
+
+
+    COMMTIMEOUTS timeouts={0};
+    timeouts.ReadIntervalTimeout=50;
+    timeouts.ReadTotalTimeoutConstant=50;
+    timeouts.ReadTotalTimeoutMultiplier=10;
+    timeouts.WriteTotalTimeoutConstant=50;
+    timeouts.WriteTotalTimeoutMultiplier=10;
+    if(!SetCommTimeouts(hSerial, &timeouts))
+    //error occureed. Inform user
+    {
+      printf("unable to set timeout\n");
+    }
+
+      int i=0;
+      Point2d GPSavg(0,0);
+      int num=0;
+
+
+      while(waypoint==NULL)
+      {
+          Sleep(10);
+          waitKey(1);
+      }
+      while(1) //for (t=0; t<5000; t+=dt)
+      {
+          GPS_count++;
+
+          Rmeasurement = generate_noisy_signals(RealState.statePre, XN,YN, ThetaN, dThetaN, slN, srN, aN);
+          detection_lines = create_detection_lines(RealState.statePost);
+          //display_detection_lines(detection_lines,&img,1);
+          knownlist = detect_obstacles(obstaclelist, RealState.statePost,dstar);
+          display_known_obstacles(knownlist,&img,local_origin,mapwidth,mapheight);
+
+          float x,y;
+          x = RKF.statePost.at<float>(0);
+          y = RKF.statePost.at<float>(1);
+
+          float distance = sqrt((waypoint->x-x)*(waypoint->x-x) + (waypoint->y-y)*(waypoint->y-y));
+        //  printf("distance to waypoint: %f\n",distance);
+
+          if ( distance < 1 && waypoint->next!=NULL)
+          {
+              waypoint=waypoint->next;
+              dstar->updateGoal((int)waypoint->x, (int)waypoint->y);
+              if(dstar->replan())
+              {
+                  display_path(mypath,&img,0,local_origin,mapwidth,mapheight);
+                  mypath = dstar->getPath();
+                  display_path(mypath,&img,255,local_origin,mapwidth,mapheight);
+              }
+              printf("\n\nmade it to WAYPOINT\n\n");
+          }
+
+
+              if (sqrt((x-mypath.front().x)*(x-mypath.front().x)+(y-mypath.front().y)*(y-mypath.front().y))<3)
+              {
+
+                  mypath.pop_front();
+                  if (!mypath.empty())
+                  {
+
+
+                  subwaypoint->x=mypath.front().x;
+                  subwaypoint->y=mypath.front().y;
+                  }
+                  else
+                  {
+                      subwaypoint->x=waypoint->x;
+                      subwaypoint->y=waypoint->y;
+                    //  printf("getting closer: (%f,%f)\n",x,y);
+                  }
+                 // printf("moving to next sub-waypoint: (%f,%f)\n",subwaypoint->x,subwaypoint->y);
+              }
+
+
+
+          control_vec = set_control(control_vec, RKF.statePost, subwaypoint,w);
+          ul = control_vec.ul;
+          ur = control_vec.ur;
+
+
+
+
+          control =   *(Mat_<float>(8,1) << 0, 0, 0, atan((sr-sl)/w),0,0,control_vec.ul,control_vec.ur);
+
+
+
+
+
+
+
+          if (GPS_count==20)
+          {
+              GPS_count=0;
+              RKF.measurementMatrix = MeasurementMAT;//MeasurementMAT_noGPS;//
+              dstar->updateStart(int_round(x), int_round(y));
+              if(dstar->replan())
+              {
+                  display_path(mypath,&img,0,local_origin,mapwidth,mapheight);
+                  mypath = dstar->getPath();
+                  display_path(mypath,&img,255,local_origin,mapwidth,mapheight);
+              }
+              imshow( "Kalman", img );
+              Sleep((int)5*dt);
+              waitKey(1);
+
+          }
+          else
+          {
+              RKF.measurementMatrix = MeasurementMAT_noGPS;
+              Rmeasurement.at<float>(0) = 0;
+              Rmeasurement.at<float>(1) = 0;
+              //imshow( "Kalman", img );
+              //Sleep((int)5*dt);
+             // waitKey(1);
+          }
+
+
+          GPSavgx = (GPSavgx*nGPS + Rmeasurement.at<float>(0))/(nGPS+1);
+          GPSavgy = (GPSavgy*nGPS + Rmeasurement.at<float>(1))/(nGPS+1);
+          nGPS++;
+
+          for (int i=0; i<50; i++) RealState = updateRealstate(RealState,real_dt, control_vec.ul, control_vec.ur, w);
+          Rprediction = RKF.predict(control);
+          Rcorrection = RKF.correct(Rmeasurement);
+
+
+
+
+          RKF.transitionMatrix.at<float>(0,4) = .5*cos( Rcorrection.at<float>(2))*dt;
+          RKF.transitionMatrix.at<float>(0,5) = .5*cos( Rcorrection.at<float>(2))*dt;
+
+          RKF.transitionMatrix.at<float>(1,4) = .5*sin( Rcorrection.at<float>(2))*dt;
+          RKF.transitionMatrix.at<float>(1,5) = .5*sin( Rcorrection.at<float>(2))*dt;
+
+
+          sl = Rcorrection.at<float>(4);
+          sr = Rcorrection.at<float>(5);
+
+
+         // printf("\ntime %f estimated speed %f real speed %f\n",t,(sl+sr)/2,(RealState.statePost.at<float>(4)+RealState.statePost.at<float>(5))/2);
+
+         // printf("waypoint: x=%f y=%f distance=%f, ul=%f, ur=%f next=%p\n",waypoint->x,waypoint->y,distance,ul,ur,waypoint->next);
+
+          // Point2f center(img.cols*0.5f, img.rows*0.5f);
+
+
+
+          Point2d statePt(Rcorrection.at<float>(0),Rcorrection.at<float>(1));
+          Point2d pixstatePt = local_to_pixel(statePt,local_origin,mapwidth,mapheight);
+
+          Point2d realPt(RealState.statePre.at<float>(0),RealState.statePre.at<float>(1));
+          Point2d pixrealPt = local_to_pixel(realPt,local_origin,mapwidth,mapheight);
+
+          Point2d measurePt(Rmeasurement.at<float>(0),Rmeasurement.at<float>(1));
+          Point2d pixmeasurePt = local_to_pixel(measurePt,local_origin,mapwidth,mapheight);
+          //statePt= statePt+center;
+          //img = Scalar::all(0);
+          drawCross( pixstatePt, Scalar(255,0,0), .25 );
+          drawCross( pixrealPt, Scalar(255,255,255), .25 );
+          drawCross( pixmeasurePt, Scalar(0,0,255), .25);
+
+         //printf("error matrix[0,0]=%f, [1,1]=%f\n",RKF.errorCovPost.at<float>(0,0),RKF.errorCovPost.at<float>(1,1));
+          xzerr = RKF.errorCovPost.at<float>(0,0);
+          yzerr = RKF.errorCovPost.at<float>(0,0);
+
+          float rerr = sqrt(xzerr*xzerr+yzerr*yzerr);
+
+         circle(img,pixstatePt,rerr,Scalar(0,0,0));
+          //drawCross( GPSavgPt, Scalar(0,255,0), 0);
+
+         // imshow( "Kalman", img );
+        //  Sleep((int)5*dt);
+         // waitKey(1);
+          //printf("\ntime1 %f\n",t);
+
+         // printf("\ntime2 %f\n",t);
+
+          //display_detection_lines(detection_lines,&img,0);
+
+
+
+
+      }*/
+
+
+    return 0;
+}

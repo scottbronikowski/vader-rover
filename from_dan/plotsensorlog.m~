@@ -1,0 +1,15 @@
+fid = fopen('/aux/dpbarret/vader-rover/logs/2014-07-24-18:16:58/imu-log.txt')
+tline = fgets(fid)
+i=1;
+
+while (~isempty(tline) && isa(tline,'char'))
+    disp('read a line')
+    items= sscanf(tline,...
+    '%lf: EIS:IMU:time:%u:dt:%u:Y:%f:P:%f:R:%f:Y(a):%f:M_h(a):%f:M_h:%f:Ax:%f:Ay:%f:Az:%f:Mx:%f:My:%f:Mz:%f:Gx:%f:Gy:%f:Gz:%f:ENC:time:%u:dt:%u:L:%f:R:%f')
+    if (length(items)==22)
+        data(i,:)=items;
+        i=i+1;
+    end
+    tline = fgets(fid)
+end
+fclose(fid)
