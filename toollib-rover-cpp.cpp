@@ -44,7 +44,7 @@ int log_thread_should_die, log_sockfd;
 int log_new_fd = -1;
 int log_imu_sockfd;
 int log_imu_new_fd1 = -1; //need 3 of these: 1 each for 
-int log_imu_new_fd2 = -1; //IMU, GPS, encoders
+//int log_imu_new_fd2 = -1; //IMU, GPS, encoders
 //int log_imu_new_fd3 = -1;
 FILE* log_file;
 FILE* imu_log_file;
@@ -312,7 +312,7 @@ extern "C" void rover_server_cleanup(void)
   //make sure new_fds are closed as well
   close(log_new_fd);
   close(log_imu_new_fd1);
-  close(log_imu_new_fd2);
+  //close(log_imu_new_fd2);
   //close(log_imu_new_fd3);
   fprintf(log_file, "%s\n", tempStr);
   fprintf(imu_log_file, "%s\n", tempStr);
@@ -499,7 +499,7 @@ void* rover_server_log(void* args)
   // close(log_imu_new_fd3);
   log_new_fd = -1;
   log_imu_new_fd1 = -1;
-  log_imu_new_fd2 = -1;
+  //log_imu_new_fd2 = -1;
   //  log_imu_new_fd3 = -1;
   while (!log_thread_should_die)
     {//main accept() loop
@@ -531,13 +531,13 @@ void* rover_server_log(void* args)
 		   "log_imu_new_fd1 = %d\n", log_imu_sockfd, log_imu_new_fd1);
 	}
 
-      if ((!is_valid_fd(log_imu_new_fd2)))
-	{
-	  log_imu_new_fd2 = AcceptConnection(log_imu_sockfd);
-	  if (is_valid_fd(log_imu_new_fd2))
-	    printf("IMU log connection #2 established with log_imu_sockfd = %d,"
-		   "log_imu_new_fd2 = %d\n", log_imu_sockfd, log_imu_new_fd2);
-	}
+      // if ((!is_valid_fd(log_imu_new_fd2)))
+      // 	{
+      // 	  log_imu_new_fd2 = AcceptConnection(log_imu_sockfd);
+      // 	  if (is_valid_fd(log_imu_new_fd2))
+      // 	    printf("IMU log connection #2 established with log_imu_sockfd = %d,"
+      // 		   "log_imu_new_fd2 = %d\n", log_imu_sockfd, log_imu_new_fd2);
+      // 	}
 
       // if ((!is_valid_fd(log_imu_new_fd3)))
       // 	{
@@ -548,14 +548,15 @@ void* rover_server_log(void* args)
       // 	}
 
       if ((is_valid_fd(log_new_fd)) &&
-	  (is_valid_fd(log_imu_new_fd1)) && 
-	  (is_valid_fd(log_imu_new_fd2))) //  &&
+	  (is_valid_fd(log_imu_new_fd1)))//  && 
+	  // (is_valid_fd(log_imu_new_fd2)))
+    //  &&
 	  // (is_valid_fd(log_imu_new_fd3)))
     
 	{
 	  
 	  //sort fds here 
-	  int arr[3] = {log_new_fd, log_imu_new_fd1, log_imu_new_fd2};//, log_imu_new_fd3};
+	  int arr[3] = {log_new_fd, log_imu_new_fd1};//, log_imu_new_fd2};//, log_imu_new_fd3};
 	  maxfd = arr[0];
 	  for (int i = 0; i < 3; i++)
 	    {
@@ -576,7 +577,7 @@ void* rover_server_log(void* args)
 	      FD_ZERO(&recv_set);
 	      FD_SET(log_new_fd, &recv_set);
 	      FD_SET(log_imu_new_fd1, &recv_set);
-	      FD_SET(log_imu_new_fd2, &recv_set);
+	      //FD_SET(log_imu_new_fd2, &recv_set);
 	      //FD_SET(log_imu_new_fd3, &recv_set); 
 	      timeout.tv_sec = 0;
 	      timeout.tv_usec = 1000 * 10; //10ms timeout
@@ -611,16 +612,16 @@ void* rover_server_log(void* args)
 		      if (num_fds == 0)
 			continue;
 		    }
-		  else if (FD_ISSET(log_imu_new_fd2, &recv_set))
-		    { //imu data log from 2nd connection
-		      if (!rover_server_recv_and_print(log_imu_new_fd2, imu_log_file))
-			break; //break if recv fails (due to error or fd closure)
-		      //if we get here, we handled the message properly, so decrement
-		      //num_fds and go back to top of loop if num_fds == 0
-		      --num_fds;
-		      if (num_fds == 0)
-			continue;
-		    }
+		  // else if (FD_ISSET(log_imu_new_fd2, &recv_set))
+		  //   { //imu data log from 2nd connection
+		  //     if (!rover_server_recv_and_print(log_imu_new_fd2, imu_log_file))
+		  // 	break; //break if recv fails (due to error or fd closure)
+		  //     //if we get here, we handled the message properly, so decrement
+		  //     //num_fds and go back to top of loop if num_fds == 0
+		  //     --num_fds;
+		  //     if (num_fds == 0)
+		  // 	continue;
+		  //   }
 		  // else if (FD_ISSET(log_imu_new_fd3, &recv_set))
 		  //   { //imu data log from 3rd connection
 		  //     // retval = recv(log_imu_new_fd3, &logbuf, sizeof(logbuf), 0);
@@ -672,8 +673,8 @@ void* rover_server_log(void* args)
     close(log_new_fd);
   if (is_valid_fd(log_imu_new_fd1))
     close(log_imu_new_fd1);
-  if (is_valid_fd(log_imu_new_fd2))
-    close(log_imu_new_fd2);
+  // if (is_valid_fd(log_imu_new_fd2))
+  //   close(log_imu_new_fd2);
   // if(is_valid_fd(log_imu_new_fd3))
   //   close(log_imu_new_fd3); 
   return NULL;

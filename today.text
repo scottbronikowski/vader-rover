@@ -523,9 +523,10 @@ Goal:  Continue adapting code.
 --First trace plots done from small run around EE313.  Results based almost completely on odometer readings look pretty good.  Trouble seems to happen when we go from tile to carpet (odometers read more distance covered than actually covered) or on long straightaways (heading tends to drift left--might be because of encoder ticks to cm conversion).  Other sensors seem to be too inaccurate/inconsistent to use.  Working on how to get other sensors (compass/yaw, acceleration) to provide meaningful data/input to Kalman.
 --Added mNMEAParser and mGPSInfo to dsci in order to parse GPS messages.  Still need to finish and test.
 
+
 25 Jul 14
 Goal:  Produce first (x, y, orientation) trace from log data and Kalman filter and compare against path driven.
---Changed Odometer.ino program on Teensy to use an average of the left and right ticks/cm for both wheels instead of the individual numbers--trying to see if this will help correct the "pull" we observed yesterday.  Plan on also taking the robot down to the MSEE atrium to drive around there to see if we can get better magnetometer data in a different environment.
+--Changed Odometer.ino program on Teensy to use an average of the left and right ticks/cm for both wheels instead of the individual numbers--trying to see if this will help correct the 'pull' we observed yesterday.  Plan on also taking the robot down to the MSEE atrium to drive around there to see if we can get better magnetometer data in a different environment.
 --Ran drive test in MSEE atrium.  Had some issues with wifi dropping out, but was able to get in a couple of decent runs.  At the beginning of the runs the plots looked pretty good (with better--though not perfect--compass heading data), but the plots of the runs would stop before they were complete.  Upon examining the logs, saw a lot of garbled IMU/encoder data lines, and they all seemed to happen around the time a GPS line was coming in.  The problem shouldn't be with my logging code on seykhl, since that is a single thread that services the different file descriptors (sockets) sequentially.  That leads me to believe I need to restructure the rover-side code to have the GPS read in the same file, so that only one file is writing to a socket that writes to imu-log.txt.  I plan on coming in tomorrow to work on that, as well as the GPS sentence parser.
 
 --Starting to think about the design of the experiment.  Need to come up with the following:
@@ -541,6 +542,9 @@ Goal:  Produce first (x, y, orientation) trace from log data and Kalman filter a
      -- ~half will be simple (single preposition/single object)
      -- ~half will be complex (multiple prepositions/multiple objects)
   -- Arrange the sentences and obstacle arrangements so that each sentence is tested 10 times each in two different arrangements (20 tests per sentence, 1000 tests total).
+
+26 Jul 14
+--Removed all references to log_imu_new_fd2 in toollib-rover-cpp.cpp in order to support the change of run-sensors.cpp running the GPS on the rover.
 
 ***********************TODO*******************************
 
