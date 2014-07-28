@@ -532,7 +532,7 @@ Goal:  Produce first (x, y, orientation) trace from log data and Kalman filter a
 --Starting to think about the design of the experiment.  Need to come up with the following:
   -- Robot range of ~30' x 30' (inside Armory--should be no problem)
   -- ~5-8 obstacles to use in the range (some may be repeated)
-  -- ~5 different arrangements for obstacles within range (do we want to use completely different positions for the obstacles, or have set obstaccle positions and just rearrange which obstacle is at which position?)
+  -- ~5 different arrangements for obstacles within range (do we want to use completely different positions for the obstacles, or have set obstacle positions and just rearrange which obstacle is at which position?)
   -- a context-free grammar for the sentences that the robot will use consisting of:
      -- 1 subject noun: robot
      -- 1 verb: go/went or drive/drove (does it make a difference?)
@@ -550,17 +550,60 @@ Goal:  Produce first (x, y, orientation) trace from log data and Kalman filter a
 --Changed structure of rover_server_recv_and_print() in toollib-rover-cpp.cpp to deal with a buffer of messages coming from the IMU socket. Also added constants k_messsages_per_second and k_msg_buf_size to toollib-rover-cpp.{h,cpp} for buffer size--must keep these in sync with the same constants on rover.
 --NEED TO FIX the receive of the buffer on the seykhl side--look at sensor_send_data() on rover.
 
+28 Jul 14
+Goal: Finish fixing the receive side of the IMU (sensors) log on seykhl to deal with a large buffer of messages instead of a single message.  Start working on fixing sending side of sensors log on rover.
+--Discovered that rover_server_recv_and_print() was never receiving a full message buffer (13312 bytes), the recv() calls were returning after between 1448 and 3176 bytes.  Restructured rover_server_recv_and_print() to use the recvall() function that I use to receive the image frames as unsigned char buffers.  This seems to be working well--I'm receiving all of the messages I'm expecting to receive, and none are mangled.
+
+29 Jul 14
+Goal:  Finish fixing sending side sensor code--envision 4 threads: 3 producers (IMU, encoder, GPS) that put data into a buffer, and 1 consumer that sends the buffer once it fills up.
+
+
+30 Jul 14
+Goal:  Test new sensor code.  Do another set of runs in MSEE atrium to see if we can get better magnetometer readings there.  Continue thinking about structure of experiment.
+
+
+31 Jul 14
+Goal:  Continue thinking about/discussing structure of experiment.  Collect  up (or at least settle on) obstacles to use.  Start investigating the possibility of 3D printing a new mount for the IMU from plastic.
+
+
+1 Aug 14
+Goal:  Continue thinking about/discussing structure of experiment.  Start solidifying the grammar that we will use.  Start studying for MA511 final (next Thursday, 7 Aug).
+
 
 ***********************TODO*******************************
 
 ***run null loop in run-sensors to clear bogus data
 ***run AHRS_test with rover on desk and motors running. --> still off quite a bit, 180 turn looks ok(ish), but 90 turn does not-->checked on the speakers in my notes and found that the speakers were installed prior to the last calibration, so that shouldn't be the problem-->is it just this building?
 
+***NEW MOUNT FOR IMU.  Look into 3D printing something out of plastic.
+
 ***any value in trying to sync clocks on IMU and Teensy to Gumstix system clock?
 ***any value in converting GPS time stamp to Unix time?
 
+--Starting to think about the design of the experiment.  Need to come up with the following:
+  -- Robot range of ~30' x 30' (inside Armory--should be no problem)
+  -- ~5-8 obstacles to use in the range (some may be repeated)
+  -- ~5 different arrangements for obstacles within range (do we want to use completely different positions for the obstacles, or have set obstacle positions and just rearrange which obstacle is at which position?)
+  -- a context-free grammar for the sentences that the robot will use consisting of:
+     -- 1 subject noun: robot
+     -- 1 verb: go/went or drive/drove (does it make a difference?)
+     -- Prepositions (how many?)
+     -- 5-8 object nouns (the obstacles)
+  -- From the CFG, generate ~50 sentences that describe robot motion
+     -- ~half will be simple (single preposition/single object)
+     -- ~half will be complex (multiple prepositions/multiple objects)
+  -- Arrange the sentences and obstacle arrangements so that each sentence is tested 10 times each in two different arrangements (20 tests per sentence, 1000 tests total).
+
+****Mini-dataset before big experiment
+--Taken in MSEE Atrium.
+--5 sentences, with a single preposition each (get prepositions from Jeff's January NSF proposal)
+--1 or 2 obstacles (use what is in the Atrium already).
+--2 runs per sentence
+--Use simple model from proposal to figure out if we can reliably map traces to sentences and sentences to traces.
+
 **THOUGHTS FOR AFTER PAPERS ARE DONE**
 --Can we integrate Ax to help with odometry to figure out distance covered?  Ax is noisy, but we might be able to somehow offset it (a -1 offset had pretty good results on data from 2014-07-24-18:16:58) to get integrated speed to start and end at 0.
+
 
 
 

@@ -1233,33 +1233,82 @@ int is_valid_fd(int fd)
 
 int rover_server_recv_and_print(int fd, FILE* my_log_file)
 {
-  int retval;
+  //int retval;
   int num_messages;
+  const char* format_string;
   if (fd == log_imu_new_fd1)  //receiving a buffer of messages
-    num_messages = k_msg_buf_size;
+    {
+      num_messages = k_msg_buf_size;
+      format_string = "%s";
+    }
   else //receiving single message
-    num_messages = 1;
-  char logbuf[k_msg_buf_size * k_LogBufSize];
-  memset(logbuf, 0, (num_messages * k_LogBufSize));  //clear buffer
-  retval = recv(fd, &logbuf, (num_messages * k_LogBufSize), 0);
-  if (retval > 0) //received a message in logbuf
-    { //so check to see if it's valid
-      if ((logbuf[0] != '\0') && (logbuf[0] != '\n'))
-	fprintf(my_log_file, "%s\n", logbuf);
+    {
+      num_messages = 1;
+      format_string = "%s\n";
+    }
+  int msg_buf_bytes = num_messages * k_LogBufSize;
+  unsigned char logbuf[msg_buf_bytes];
+  memset(logbuf, 0, msg_buf_bytes);  //clear buffer
+  // retval = recv(fd, &logbuf, msg_buf_bytes, 0);
+  // if (retval == msg_buf_bytes) 
+  //   {//received full buffer
+  //     for (int i = 0; i < num_messages; i++)
+  // 	{
+  // 	  if ((logbuf[i * k_LogBufSize] != '\0') &&
+  // 	      (logbuf[i * k_LogBufSize] != '\n'))
+  // 	    fprintf(my_log_file, format_string, logbuf+(i*k_LogBufSize));
+  // 	  else
+  // 	    fprintf(my_log_file, "**BAD LINE\n");
+  // 	}
+  //   }
+  // else if ((retval > 0) && (retval < msg_buf_bytes) )
+  //   { //received shortened buffer--probably an error
+  //     printf("%s, retval = %d\n", "BAD BUFFER", retval);
+  //     fprintf(my_log_file, "%s, retval = %d\n", "BAD BUFFER", retval);
+  //     // return false here????
+  //   }
+
+  // // if (retval > 0) //received a message in logbuf
+  // //   { //so check to see if it's valid
+  // //     if ((logbuf[0] != '\0') && (logbuf[0] != '\n'))
+  // // 	fprintf(my_log_file, format_string, logbuf);
 	  
+  // //   }
+  // else if (retval < 0) //error
+  //   { //what error handling to do here??
+  //     printf("retval = %d, fd = %d\n", retval, fd);
+  //     perror("rover_server_recv_and_print:recv");
+  //     //close(fd);  //close fd here so it can get reopened on the next loop
+  //     return FALSE;
+  //   }
+  // else // retval == 0
+  //   { //sender performed orderly shutdown, so don't print to log
+  //     //close(fd);
+  //     return FALSE;
+  //   }
+  if (recvall(fd, logbuf, &msg_buf_bytes) != 0)
+    {//recvall did not complete, so check msg_buf_bytes
+      if (msg_buf_bytes == 0) //sender shut down
+	return FALSE;
+      else
+	{
+	  printf("******RECVALL ERROR, msg_buf_bytes = %d, fd = %d\n", msg_buf_bytes, fd);
+	  perror("rover_server_recv_and_print:recvall:");
+	  return FALSE;
+	}
     }
-  else if (retval < 0) //error
-    { //what error handling to do here??
-      printf("retval = %d, fd = %d\n", retval, fd);
-      perror("rover_server_recv_and_print:recv");
-      //close(fd);  //close fd here so it can get reopened on the next loop
-      return FALSE;
+  else //recvall completed, so process the buffer
+    {
+      for (int i = 0; i < num_messages; i++)
+  	{
+  	  if ((logbuf[i * k_LogBufSize] != '\0') &&
+  	      (logbuf[i * k_LogBufSize] != '\n'))
+  	    fprintf(my_log_file, format_string, logbuf+(i*k_LogBufSize));
+  	  else
+  	    fprintf(my_log_file, "**BAD LINE\n");
+  	}
     }
-  else // retval == 0
-    { //sender performed orderly shutdown, so don't print to log
-      //close(fd);
-      return FALSE;
-    }
+
   //if we get here, we handled the message properly, so return true
   return TRUE;
 }
