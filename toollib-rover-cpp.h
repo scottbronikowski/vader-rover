@@ -107,7 +107,9 @@ extern const char* k_CdrPanoCamPort;
 extern const char* k_Server; //driver's workstation
 //for logging
 extern const char* start_string;
-
+extern const int k_messages_per_second; //if it's working right, there should be 50 IMU/encoder
+                                 //messages plus 2 GPS messages every second
+extern const int k_msg_buf_size;
 
 //global variables
 extern struct CamGrab_t* FrontCam;

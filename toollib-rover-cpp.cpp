@@ -30,6 +30,9 @@ const char* k_CdrPanoCamPort = "36020";
 const char* k_Server = "seykhl.ecn.purdue.edu"; //driver's workstation
 //for logging
 const char* start_string = "logging started";
+const int k_messages_per_second = 52; //if it's working right, there should be 50 IMU/encoder
+                                      //messages plus 2 GPS messages every second
+const int k_msg_buf_size = k_messages_per_second * 1;
 
 //global variables
 struct CamGrab_t* FrontCam;
@@ -1231,13 +1234,19 @@ int is_valid_fd(int fd)
 int rover_server_recv_and_print(int fd, FILE* my_log_file)
 {
   int retval;
-  char logbuf[k_LogBufSize];
-  memset(logbuf, 0, sizeof(logbuf));  //clear buffer
-  retval = recv(fd, &logbuf, sizeof(logbuf), 0);
+  int num_messages;
+  if (fd == log_imu_new_fd1)  //receiving a buffer of messages
+    num_messages = k_msg_buf_size;
+  else //receiving single message
+    num_messages = 1;
+  char logbuf[k_msg_buf_size * k_LogBufSize];
+  memset(logbuf, 0, (num_messages * k_LogBufSize));  //clear buffer
+  retval = recv(fd, &logbuf, (num_messages * k_LogBufSize), 0);
   if (retval > 0) //received a message in logbuf
     { //so check to see if it's valid
       if ((logbuf[0] != '\0') && (logbuf[0] != '\n'))
-	  fprintf(my_log_file, "%s\n", logbuf);
+	fprintf(my_log_file, "%s\n", logbuf);
+	  
     }
   else if (retval < 0) //error
     { //what error handling to do here??

@@ -546,6 +546,11 @@ Goal:  Produce first (x, y, orientation) trace from log data and Kalman filter a
 26 Jul 14
 --Removed all references to log_imu_new_fd2 in toollib-rover-cpp.cpp in order to support the change of run-sensors.cpp running the GPS on the rover.
 
+27 Jul 14
+--Changed structure of rover_server_recv_and_print() in toollib-rover-cpp.cpp to deal with a buffer of messages coming from the IMU socket. Also added constants k_messsages_per_second and k_msg_buf_size to toollib-rover-cpp.{h,cpp} for buffer size--must keep these in sync with the same constants on rover.
+--NEED TO FIX the receive of the buffer on the seykhl side--look at sensor_send_data() on rover.
+
+
 ***********************TODO*******************************
 
 ***run null loop in run-sensors to clear bogus data
