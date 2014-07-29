@@ -30,8 +30,8 @@ const char* k_CdrPanoCamPort = "36020";
 const char* k_Server = "seykhl.ecn.purdue.edu"; //driver's workstation
 //for logging
 const char* start_string = "logging started";
-const int k_messages_per_second = 52; //if it's working right, there should be 50 IMU/encoder
-                                      //messages plus 2 GPS messages every second
+const int k_messages_per_second = 102; //if it's working right, there should be 50 IMU
+                                      // + 50 encoder + 2 GPS messages every second
 const int k_msg_buf_size = k_messages_per_second * 1;
 
 //global variables

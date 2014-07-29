@@ -575,7 +575,7 @@ Goal:  Continue thinking about/discussing structure of experiment.  Start solidi
 ***run null loop in run-sensors to clear bogus data
 ***run AHRS_test with rover on desk and motors running. --> still off quite a bit, 180 turn looks ok(ish), but 90 turn does not-->checked on the speakers in my notes and found that the speakers were installed prior to the last calibration, so that shouldn't be the problem-->is it just this building?
 
-***NEW MOUNT FOR IMU.  Look into 3D printing something out of plastic.
+***NEW MOUNT FOR IMU.  Look into 3D printing something out of plastic. PROF CHAPPEL in MSEE
 
 ***any value in trying to sync clocks on IMU and Teensy to Gumstix system clock?
 ***any value in converting GPS time stamp to Unix time?
