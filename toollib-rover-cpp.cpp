@@ -1233,13 +1233,24 @@ int is_valid_fd(int fd)
 
 int rover_server_recv_and_print(int fd, FILE* my_log_file)
 {
-  //int retval;
+  int retval;
   int num_messages;
   const char* format_string;
   if (fd == log_imu_new_fd1)  //receiving a buffer of messages
     {
-      num_messages = k_msg_buf_size;
       format_string = "%s";
+      //num_messages = k_msg_buf_size;
+      //receive size of message buffer
+      retval = recv(fd, &num_messages, sizeof(num_messages), 0);
+      if (retval < 0)
+	{
+	  printf("rover_server_recv_and_print(): error receiving number of messages\n");
+	  return FALSE;
+	}
+      else if ((retval == 0) || (num_messages == 0)) //use sent 0 for escape char
+	//sender stopped sending, so just return
+	return FALSE;
+      //else we have a good num_messages
     }
   else //receiving single message
     {
@@ -1299,6 +1310,7 @@ int rover_server_recv_and_print(int fd, FILE* my_log_file)
     }
   else //recvall completed, so process the buffer
     {
+      //printf("received %d bytes\n", msg_buf_bytes);
       for (int i = 0; i < num_messages; i++)
   	{
   	  if ((logbuf[i * k_LogBufSize] != '\0') &&
@@ -1308,7 +1320,6 @@ int rover_server_recv_and_print(int fd, FILE* my_log_file)
   	    fprintf(my_log_file, "**BAD LINE\n");
   	}
     }
-
   //if we get here, we handled the message properly, so return true
   return TRUE;
 }

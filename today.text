@@ -552,7 +552,7 @@ Goal:  Produce first (x, y, orientation) trace from log data and Kalman filter a
 
 28 Jul 14
 Goal: Finish fixing the receive side of the IMU (sensors) log on seykhl to deal with a large buffer of messages instead of a single message.  Start working on fixing sending side of sensors log on rover.
---Discovered that rover_server_recv_and_print() was never receiving a full message buffer (13312 bytes), the recv() calls were returning after between 1448 and 3176 bytes.  Restructured rover_server_recv_and_print() to use the recvall() function that I use to receive the image frames as unsigned char buffers.  This seems to be working well--I'm receiving all of the messages I'm expecting to receive, and none are mangled.
+--Discovered that rover_server_recv_and_print() was never receiving a full message buffer (13312 bytes), the recv() calls were returning after between 1448 and 3176 bytes.  Restructured rover_server_recv_and_print() to use the recvall() function that I use to receive the image frames as unsigned char buffers.  This seems to be working well--I'm receiving all of the messages I'm expecting to receive, and none are mangled.b
 
 29 Jul 14
 Goal:  Finish fixing sending side sensor code--envision 4 threads: 3 producers (IMU, encoder, GPS) that put data into a buffer, and 1 consumer that sends the buffer once it fills up.
@@ -560,7 +560,7 @@ Goal:  Finish fixing sending side sensor code--envision 4 threads: 3 producers (
 
 30 Jul 14
 Goal:  Test new sensor code.  Do another set of runs in MSEE atrium to see if we can get better magnetometer readings there.  Continue thinking about structure of experiment.
-
+--Modified rover_server_recv_and_print() in toollib-rover-cpp.cpp to deal with variable sized buffers coming from IMU log.  Seems to be working correctly.
 
 31 Jul 14
 Goal:  Continue thinking about/discussing structure of experiment.  Collect  up (or at least settle on) obstacles to use.  Start investigating the possibility of 3D printing a new mount for the IMU from plastic.
