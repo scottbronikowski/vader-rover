@@ -1,0 +1,46 @@
+Log file created at 2014-07-31-21:04:18 GMT
+1406840660.996812: Logging started
+1406840660.997422: Bump switch monitoring active
+1406840660.997605: executed: pan_15500, tilt_14500
+1406840661.027878: executed: motor_stop
+1406840662.172072: executed: start_cameras
+1406840665.221669: executed: motor_forward_1
+1406840666.143519: executed: motor_forward_right_1
+1406840667.463856: executed: motor_forward_right_2
+1406840668.213865: executed: motor_pivot_right_2
+1406840668.831188: executed: motor_pivot_right_1
+1406840668.893717: executed: motor_stop
+1406840669.596670: executed: motor_forward_1
+1406840670.213840: executed: motor_forward_right_1
+1406840670.721822: executed: motor_stop
+1406840671.151345: executed: motor_forward_1
+1406840673.214764: executed: motor_stop
+1406840673.854517: executed: motor_forward_1
+1406840679.768600: executed: motor_forward_left_1
+1406840679.877972: executed: motor_forward_left_2
+1406840680.502925: executed: motor_pivot_left_2
+1406840680.924880: executed: motor_pivot_left_1
+1406840680.956221: executed: motor_stop
+1406840682.167033: executed: motor_pivot_left_1
+1406840682.729549: executed: motor_stop
+1406840683.315501: executed: motor_forward_1
+1406840685.417128: executed: motor_forward_left_1
+1406840685.471692: executed: motor_pivot_left_1
+1406840685.502941: executed: motor_pivot_left_2
+1406840685.534221: executed: motor_pivot_left_1
+1406840685.565409: executed: motor_pivot_left_2
+1406840685.596658: executed: motor_pivot_left_1
+1406840685.628060: executed: motor_pivot_left_2
+1406840685.776341: executed: motor_pivot_left_1
+1406840685.831271: executed: motor_stop
+1406840686.698252: executed: motor_forward_1
+1406840689.206851: executed: motor_stop
+1406840689.956128: executed: motor_forward_1
+1406840690.612269: executed: motor_stop
+1406840692.385811: executed: motor_forward_1
+1406840692.831081: executed: motor_stop
+1406840694.706031: executed: motor_forward_1
+1406840695.088833: executed: motor_stop
+1406840702.547618: executed: stop_cameras
+1406840704.587644: Logging completed
+Log file closed at 2014-07-31-21:05:04 GMT

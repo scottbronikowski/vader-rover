@@ -1,0 +1,35 @@
+Log file created at 2014-07-31-21:09:07 GMT
+1406840974.356825: Logging started
+1406840974.357436: Bump switch monitoring active
+1406840974.357619: executed: pan_15500, tilt_14500
+1406840974.385664: executed: motor_stop
+1406840974.723275: executed: start_cameras
+1406840979.823276: executed: motor_pivot_left_1
+1406840980.190428: executed: motor_stop
+1406840980.534265: executed: motor_pivot_left_1
+1406840980.667198: executed: motor_stop
+1406840981.096789: executed: motor_forward_1
+1406840989.041935: executed: motor_forward_2
+1406840990.026938: executed: motor_forward_1
+1406840990.176258: executed: motor_forward_left_1
+1406840991.534303: executed: motor_forward_left_2
+1406840992.174828: executed: motor_forward_left_1
+1406840992.299857: executed: motor_forward_1
+1406840993.260782: executed: motor_forward_left_1
+1406840993.565373: executed: motor_forward_left_2
+1406840994.409234: executed: motor_forward_left_1
+1406840995.471659: executed: motor_forward_1
+1406840999.002892: executed: motor_forward_2
+1406840999.706160: executed: motor_forward_1
+1406840999.792005: executed: motor_forward_right_1
+1406840999.971629: executed: motor_forward_right_2
+1406841000.003214: executed: motor_pivot_right_2
+1406841000.768585: executed: motor_pivot_right_1
+1406841000.799834: executed: motor_stop
+1406841001.800126: executed: motor_pivot_left_1
+1406841002.003065: executed: motor_stop
+1406841003.127897: executed: motor_pivot_left_1
+1406841003.221799: executed: motor_stop
+1406841010.020626: executed: stop_cameras
+1406841012.238517: Logging completed
+Log file closed at 2014-07-31-21:10:12 GMT
