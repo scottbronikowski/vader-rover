@@ -564,7 +564,8 @@ Goal:  Test new sensor code.  Do another set of runs in MSEE atrium to see if we
 
 31 Jul 14
 Goal:  Continue thinking about/discussing structure of experiment.  Collect  up (or at least settle on) obstacles to use.  Start investigating the possibility of 3D printing a new mount for the IMU from plastic.
-
+--Confirmed that new IMU log buffered message passing works-->ran sensors for >14 hours with no errors (and imu-log.txt was >700MB).
+--Have IMU log now getting parsed GPS sentences (instead of raw, as previously).
 
 1 Aug 14
 Goal:  Continue thinking about/discussing structure of experiment.  Start solidifying the grammar that we will use.  Start studying for MA511 final (next Thursday, 7 Aug).

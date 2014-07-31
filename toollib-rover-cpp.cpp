@@ -1260,43 +1260,6 @@ int rover_server_recv_and_print(int fd, FILE* my_log_file)
   int msg_buf_bytes = num_messages * k_LogBufSize;
   unsigned char logbuf[msg_buf_bytes];
   memset(logbuf, 0, msg_buf_bytes);  //clear buffer
-  // retval = recv(fd, &logbuf, msg_buf_bytes, 0);
-  // if (retval == msg_buf_bytes) 
-  //   {//received full buffer
-  //     for (int i = 0; i < num_messages; i++)
-  // 	{
-  // 	  if ((logbuf[i * k_LogBufSize] != '\0') &&
-  // 	      (logbuf[i * k_LogBufSize] != '\n'))
-  // 	    fprintf(my_log_file, format_string, logbuf+(i*k_LogBufSize));
-  // 	  else
-  // 	    fprintf(my_log_file, "**BAD LINE\n");
-  // 	}
-  //   }
-  // else if ((retval > 0) && (retval < msg_buf_bytes) )
-  //   { //received shortened buffer--probably an error
-  //     printf("%s, retval = %d\n", "BAD BUFFER", retval);
-  //     fprintf(my_log_file, "%s, retval = %d\n", "BAD BUFFER", retval);
-  //     // return false here????
-  //   }
-
-  // // if (retval > 0) //received a message in logbuf
-  // //   { //so check to see if it's valid
-  // //     if ((logbuf[0] != '\0') && (logbuf[0] != '\n'))
-  // // 	fprintf(my_log_file, format_string, logbuf);
-	  
-  // //   }
-  // else if (retval < 0) //error
-  //   { //what error handling to do here??
-  //     printf("retval = %d, fd = %d\n", retval, fd);
-  //     perror("rover_server_recv_and_print:recv");
-  //     //close(fd);  //close fd here so it can get reopened on the next loop
-  //     return FALSE;
-  //   }
-  // else // retval == 0
-  //   { //sender performed orderly shutdown, so don't print to log
-  //     //close(fd);
-  //     return FALSE;
-  //   }
   if (recvall(fd, logbuf, &msg_buf_bytes) != 0)
     {//recvall did not complete, so check msg_buf_bytes
       if (msg_buf_bytes == 0) //sender shut down
