@@ -506,7 +506,7 @@ int main(int, char**)
   //char filename[1000] = "/aux/dpbarret/vader-rover/logs/2014-07-24-18:16:58/imu-log.txt";
   //char filename[1000] = "/aux/dpbarret/vader-rover/logs/2014-07-25-22:10:03/imu-log.txt";
   //char filename[1000] = "/aux/dpbarret/vader-rover/logs/2014-07-25-22:07:19/imu-log.txt";
-  char filename[1000] = "/aux/dpbarret/vader-rover/logs/trial-2014-07-31/trial-square/imu-log.txt";
+  char filename[1000] = "/aux/dpbarret/vader-rover/logs/trial-square/imu-log.txt";
   Mat measurements[50000];
   //  int nmeasurements = read_log_file("/net/mohio//aux/dpbarret/vader-rover/logs/2014-07-23-19\:43\:35/imu-log.txt", measurements);
   int nmeasurements = read_log_file(filename, measurements);

@@ -566,15 +566,24 @@ Goal:  Test new sensor code.  Do another set of runs in MSEE atrium to see if we
 Goal:  Continue thinking about/discussing structure of experiment.  Collect  up (or at least settle on) obstacles to use.  Start investigating the possibility of 3D printing a new mount for the IMU from plastic.
 --Confirmed that new IMU log buffered message passing works-->ran sensors for >14 hours with no errors (and imu-log.txt was >700MB).
 --Have IMU log now getting parsed GPS sentences (instead of raw, as previously).
---Ran test-2014-07-31.  Data looking decent, but may need to repeat. 
+--Ran test-2014-07-31.  Data looking decent--had one out of 10 runs not log data.  Have data for 5 sentences (2 runs x 4 sentences, 1 run x 1 sentence), plus an additional run where I drove a square for calibration.
 
 1 Aug 14
 Goal:  Continue thinking about/discussing structure of experiment.  Start solidifying the grammar that we will use.  Start studying for MA511 final (next Thursday, 7 Aug).
+--Ran an overnight test with the robot sitting on its wheels on the floor to collect data from the IMU while the robot is not moving.  Test ran for ~5 hours, errored for about 5 seconds, ran for ~1 more hour, and then died completely--looked like the USB had an error which knocked out all USB peripherals.  I still think that I got a decent amount of data from that test.  Also ran another test today for ~3 hours with the robot not moving.  Plan on taking all this data and then computing the mean, variance, and standard deviation for all the IMU outputs to see what those look like for when the robot is not moving.  I figure only the 3 axes of the accelerometer and the 3 axes of the gyroscope will be useful, but it's just as easy to calculate all of them. **After today's meeting, put this effort on hold until after at least initial analysis of yesterday's data is complete**
+--Starting to think about how to formulate cost functions for the 5 sentences we drove yesterday.  Initial thought is to just consider final point of each path and score it against a potential field function that accounts for both the preposition and the location of the object (since that will change where the potential field is located in our plane).
+--Have Dan's code to turn imu-logs into tracks in ./from_dan/linuxport/log_to_track.cpp (which also uses config.txt)
 
 
-***********************TODO*******************************
 
-***run null loop in run-sensors to clear bogus data
+
+***********************TO DO*******************************
+
+*ONCE first data analysis is finished
+ --Change odometers back to individual ticks/cm
+ --Calculate mean & std. dev. for IMU data output based on imu log files in 2014-07-31-22:10:12 and 2014-08-01-14:22:47 to figure out what the output looks like while robot is stationary on floor
+
+
 ***run AHRS_test with rover on desk and motors running. --> still off quite a bit, 180 turn looks ok(ish), but 90 turn does not-->checked on the speakers in my notes and found that the speakers were installed prior to the last calibration, so that shouldn't be the problem-->is it just this building?
 
 ***NEW MOUNT FOR IMU.  Look into 3D printing something out of plastic. PROF CHAPPEL in MSEE
