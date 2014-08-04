@@ -574,7 +574,36 @@ Goal:  Continue thinking about/discussing structure of experiment.  Start solidi
 --Starting to think about how to formulate cost functions for the 5 sentences we drove yesterday.  Initial thought is to just consider final point of each path and score it against a potential field function that accounts for both the preposition and the location of the object (since that will change where the potential field is located in our plane).
 --Have Dan's code to turn imu-logs into tracks in ./from_dan/linuxport/log_to_track.cpp (which also uses config.txt)
 
+4 Aug 14
+Goal: Work on data analysis from runs.  Study for MA511 final.
+--Have first draft of data analysis done.  Matrix is:
+                       LofT  LofT  RofC  FofT  FofT  BhT   BhT   BwTC  BwTC
+Robot left of table:  -0.52 -0.68 -3.09 -1.69 -1.44 -1.56 -0.04 -3.03 -3.14
+Robot right of table: -2.62 -2.46 -0.05 -1.45 -1.70 -1.58 -3.10 -0.11 -0.01
+Robot front of table: -7.33 -7.17 -4.76 -6.16 -6.41 -3.13 -7.82 -4.60 -4.71
+Robot behind table:   -1.05 -0.89 -1.52 -0.12 -0.13 -0.01 -1.53 -1.46 -1.57
+Robot left of chair:  -0.19 -0.23 -2.89 -0.37 -0.46 -0.43 -0.01 -0.12 -0.01
+Robot right of chair: -2.95 -2.92 -0.26 -2.77 -2.68 -2.71 -3.13 -3.02 -3.13
+Robot front of chair: -7.66 -7.63 -4.97 -7.48 -7.39 -2.00 -7.85 -1.69 -1.59
+Robot behind chair:   -1.38 -1.34 -1.31 -1.20 -1.11 -1.14 -1.56 -1.45 -1.56
+Robot between
+table and chair:      -2.81 -2.68 -2.94 -1.82 -2.16 -2.01 -3.11 -0.23 -0.02
+--Not quite sure that I've got the right output--some data may be misprinting.
 
+5 Aug 14
+Goal: Work on data analysis from runs.  Study for MA511 final.
+
+
+6 Aug 14
+Goal: Finish up data analysis.  Study for MA511 final.
+
+
+7 Aug 14
+Goal: Study for MA511 final (final is at 3:30)
+
+
+8 Aug 14
+Goal: Evaluate results for data analysis.  Start considering larger grammar for next data collection effort.
 
 
 ***********************TO DO*******************************
