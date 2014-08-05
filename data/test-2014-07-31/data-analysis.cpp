@@ -17,7 +17,8 @@
 
 using namespace cv;
 
-#define pi (3.14159265359)
+#define PI (3.14159265359)
+#define NEGATIVE_INFINITY (-1.0/0.0)
 #define METERS_PER_FOOT (0.3048)
 //measurements of the area
 #define FIELD_WIDTH (20.1) //in feet
@@ -29,6 +30,24 @@ const float k_left_edge = -ORIGIN_OFFSET * METERS_PER_FOOT;
 const float k_right_edge = (FIELD_WIDTH - ORIGIN_OFFSET) * METERS_PER_FOOT;
 const float k_bottom_edge = 0.0;
 const float k_top_edge = k_height;
+const double sig_a = PI/8;
+const double sig_b = 2.0;
+
+double my_exp(double x){ 
+  if (x == NEGATIVE_INFINITY)
+    return 0.0;
+  return exp(x);
+}
+
+double sigmoid(double x, double a, double b){ //a is threshold, b is steepness
+  return 1.0 / (1 + my_exp(- b * (x - a)));
+}
+
+double normalize_angle(double angle){
+  if (angle > PI) return normalize_angle(angle - (2*PI));
+  else if (angle < -PI) return normalize_angle(angle + (2*PI));
+  else return angle;
+}
 
 //gives the angle from p2 back to p1
 double AngleBetween(Point2d p1, Point2d p2){ 
@@ -38,20 +57,34 @@ double AngleBetween(Point2d p1, Point2d p2){
 //possible value is 0
 double Left(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(fabs(angle) - pi);}
+  //return -fabs(fabs(angle) - PI);
+  return -fabs(normalize_angle(angle - PI));
+  // double left_angle = normalize_angle(fabs(angle) - PI);
+  // return sigmoid(left_angle, sig_a, sig_b);
+}
+
 double Right(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(angle);}
+  return -fabs(angle); //no need to normalize here b/c atan2 is always between +/-pi
+}
+
 double Front(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(angle - (3*pi/2));}
+  return -fabs(normalize_angle(angle - (-PI/2)));
+}
+
 double Behind(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(fabs(angle) - pi/2);}
+  return -fabs(normalize_angle(angle - PI/2));
+}
+
 double Between(Point2d robot, Point2d obstacle1, Point2d obstacle2){
   double angle1 = AngleBetween(robot,obstacle1);
   double angle2 = AngleBetween(robot,obstacle2);
-  return -fabs(pi - fabs(angle1 - angle2));}
+  //return -fabs(PI - fabs(angle1 - angle2));
+  return -fabs(PI - normalize_angle(angle1 - angle2));
+}
+
 Point2d ReadTrack(char* filename){
   FILE* fp = fopen(filename,"r");
   char linebuf[1000];
@@ -75,10 +108,10 @@ int main(int /*argc*/, char** /*argv*/)
   Point2d chair;
   chair.x = k_right_edge - (5.75 * METERS_PER_FOOT);
   chair.y = 8.33 * METERS_PER_FOOT;
-  // printf("k_left_edge = %.2f, k_right_edge = %.2f, k_top_edge = %.2f\n",
-  // 	 k_left_edge, k_right_edge, k_top_edge);
-  // printf("chair at %.2f, %.2f; table at %.2f, %.2f\n",
-  // 	 chair.x, chair.y, table.x, table.y);
+  printf("k_left_edge = %.2f, k_right_edge = %.2f, k_top_edge = %.2f\n",
+  	 k_left_edge, k_right_edge, k_top_edge);
+  printf("chair at %.2f, %.2f; table at %.2f, %.2f\n",
+  	 chair.x, chair.y, table.x, table.y);
   
   //read endpoints in from files
   int num_tracks = 9;
@@ -92,11 +125,29 @@ int main(int /*argc*/, char** /*argv*/)
     else 
       offset = 1;
     sprintf(namebuf, "./trial0%02d/track.txt", i+offset);
-    endpoints[i] = ReadTrack(namebuf);}
-    // printf("endpoints[%d]: x = %f, y = %f, trial0%02d\n",
-    // 	   i, endpoints[i].x, endpoints[i].y, i+offset);
-    //}
+    endpoints[i] = ReadTrack(namebuf);//}
+    printf("endpoints[%d]: x = %f, y = %f, trial0%02d\n",
+    	   i, endpoints[i].x, endpoints[i].y, i+offset);
+    }
 
+  //make matrix of angles to obstacles
+  int num_obstacles = 2;
+  double angle_matrix[num_obstacles][num_tracks];
+  for (int i = 0; i < num_tracks; i++){
+    angle_matrix[0][i] = AngleBetween(endpoints[i], table);
+    angle_matrix[1][i] = AngleBetween(endpoints[i], chair);
+  }
+  //print the matrix
+  printf("\n");
+  printf("Angle    1     2     4     5     6     7     8     9     10\n");
+  printf("Table: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+	 angle_matrix[0][0], angle_matrix[0][1], angle_matrix[0][2],
+	 angle_matrix[0][3], angle_matrix[0][4], angle_matrix[0][5],
+	 angle_matrix[0][6], angle_matrix[0][7], angle_matrix[0][8]);
+  printf("Chair: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+	 angle_matrix[1][0], angle_matrix[1][1], angle_matrix[1][2],
+	 angle_matrix[1][3], angle_matrix[1][4], angle_matrix[1][5],
+	 angle_matrix[1][6], angle_matrix[1][7], angle_matrix[1][8]);
   //make matrix of scores
   int num_sentences = 9; //4x single-obstacle prepositions * 2 obstacles
                          //+ 1x double-obstacle preposition
@@ -113,15 +164,16 @@ int main(int /*argc*/, char** /*argv*/)
     the_matrix[8][i] = Between(endpoints[i],table, chair);
   }
   //print the matrix
-  printf("                       LofT  LofT  RofC  FofT  FofT  BhT   BhT   BwTC  BwTC\n");
+  printf("\n");
+  printf("                      1.L-T 2.L-T 4.R-C 5.F-T 6.F-T 7.B-T 8.B-T 9.BTC 10.BTC\n");
   printf("Robot left of table:  %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
 	 the_matrix[0][0], the_matrix[0][1], the_matrix[0][2],
 	 the_matrix[0][3], the_matrix[0][4], the_matrix[0][5],
 	 the_matrix[0][6], the_matrix[0][7], the_matrix[0][8]);
-  printf("Robot right of table: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 the_matrix[1][0], the_matrix[1][1], the_matrix[1][2],
-	 the_matrix[1][3], the_matrix[1][4], the_matrix[1][5],
-	 the_matrix[1][6], the_matrix[1][7], the_matrix[1][8]);
+ printf("Robot right of chair: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+	 the_matrix[5][0], the_matrix[5][1], the_matrix[5][2],
+	 the_matrix[5][3], the_matrix[5][4], the_matrix[5][5],
+	 the_matrix[5][6], the_matrix[5][7], the_matrix[5][8]);
   printf("Robot front of table: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
 	 the_matrix[2][0], the_matrix[2][1], the_matrix[2][2],
 	 the_matrix[2][3], the_matrix[2][4], the_matrix[2][5],
@@ -130,14 +182,22 @@ int main(int /*argc*/, char** /*argv*/)
 	 the_matrix[3][0], the_matrix[3][1], the_matrix[3][2],
 	 the_matrix[3][3], the_matrix[3][4], the_matrix[3][5],
 	 the_matrix[3][6], the_matrix[3][7], the_matrix[3][8]);
+  printf("Robot between\n"
+	 "table and chair:      %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+	 the_matrix[8][0], the_matrix[8][1], the_matrix[8][2],
+	 the_matrix[8][3], the_matrix[8][4], the_matrix[8][5],
+	 the_matrix[8][6], the_matrix[8][7], the_matrix[8][8]);
+
+  printf("DIDN'T DO THE COMBINATIONS BELOW\n");
+  printf("Robot right of table: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+	 the_matrix[1][0], the_matrix[1][1], the_matrix[1][2],
+	 the_matrix[1][3], the_matrix[1][4], the_matrix[1][5],
+	 the_matrix[1][6], the_matrix[1][7], the_matrix[1][8]);
   printf("Robot left of chair:  %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
 	 the_matrix[4][0], the_matrix[4][1], the_matrix[4][2],
 	 the_matrix[4][3], the_matrix[4][4], the_matrix[4][5],
 	 the_matrix[4][6], the_matrix[4][7], the_matrix[4][8]);
-  printf("Robot right of chair: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 the_matrix[5][0], the_matrix[5][1], the_matrix[5][2],
-	 the_matrix[5][3], the_matrix[5][4], the_matrix[5][5],
-	 the_matrix[5][6], the_matrix[5][7], the_matrix[5][8]);
+ 
   printf("Robot front of chair: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
 	 the_matrix[6][0], the_matrix[6][1], the_matrix[6][2],
 	 the_matrix[6][3], the_matrix[6][4], the_matrix[6][5],
@@ -146,11 +206,6 @@ int main(int /*argc*/, char** /*argv*/)
 	 the_matrix[7][0], the_matrix[7][1], the_matrix[7][2],
 	 the_matrix[7][3], the_matrix[7][4], the_matrix[7][5],
 	 the_matrix[7][6], the_matrix[7][7], the_matrix[7][8]);
-  printf("Robot between\n"
-	 "table and chair:      %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 the_matrix[8][0], the_matrix[8][1], the_matrix[8][2],
-	 the_matrix[8][3], the_matrix[8][4], the_matrix[8][5],
-	 the_matrix[8][6], the_matrix[8][7], the_matrix[8][8]);
 
   return 0;
 }

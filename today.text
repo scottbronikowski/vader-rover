@@ -592,7 +592,42 @@ table and chair:      -2.81 -2.68 -2.94 -1.82 -2.16 -2.01 -3.11 -0.23 -0.02
 
 5 Aug 14
 Goal: Work on data analysis from runs.  Study for MA511 final.
+--Got better output data from analysis:
+k_left_edge = -3.11, k_right_edge = 3.02, k_top_edge = 5.09
+chair at 1.26, 2.54; table at -1.26, 2.55
+endpoints[0]: x = -2.555732, y = 1.807984, trial001
+endpoints[1]: x = -2.280982, y = 1.722887, trial002
+endpoints[2]: x = 1.813391, y = 2.395511, trial004
+endpoints[3]: x = -1.150317, y = 1.603818, trial005
+endpoints[4]: x = -1.443748, y = 1.183032, trial006
+endpoints[5]: x = -1.274785, y = 3.699404, trial007
+endpoints[6]: x = -2.434441, y = 2.507411, trial008
+endpoints[7]: x = -0.011552, y = 2.692232, trial009
+endpoints[8]: x = -0.052447, y = 2.557936, trial010
 
+Angle    1     2     4     5     6     7     8     9     10
+Table: -2.62 -2.46 -0.05 -1.45 -1.70  1.58 -3.10  0.11  0.01
+Chair: -2.95 -2.92 -0.26 -2.77 -2.68  2.71 -3.13  3.02  3.13
+
+                      1.L-T 2.L-T 4.R-C 5.F-T 6.F-T 7.B-T 8.B-T 9.BTC 10.BTC
+Robot left of table:  -0.52 -0.68 -3.09 -1.69 -1.44 -1.56 -0.04 -3.03 -3.14
+Robot right of chair: -2.95 -2.92 -0.26 -2.77 -2.68 -2.71 -3.13 -3.02 -3.13
+Robot front of table: -1.05 -0.89 -1.52 -0.12 -0.13 -3.15 -1.53 -1.68 -1.58
+Robot behind table:   -4.19 -4.03 -1.62 -3.02 -3.27 -0.01 -4.67 -1.46 -1.57
+Robot between
+table and chair:      -2.81 -2.68 -2.94 -1.82 -2.16 -2.01 -3.11 -0.23 -0.02
+DIDN'T DO THE COMBINATIONS BELOW
+Robot right of table: -2.62 -2.46 -0.05 -1.45 -1.70 -1.58 -3.10 -0.11 -0.01
+Robot left of chair:  -0.19 -0.23 -2.89 -0.37 -0.46 -0.43 -0.01 -0.12 -0.01
+Robot front of chair: -1.38 -1.34 -1.31 -1.20 -1.11 -4.28 -1.56 -4.59 -4.70
+Robot behind chair:   -4.52 -4.49 -1.83 -4.34 -4.25 -1.14 -4.70 -1.45 -1.56
+(scores are the difference between the observed angle and the desired angle--higher is better, best possible value is 0)
+
+--Realized that trial008 gave a bad track--the endpoint given by the track is to the left of the table, when it should be behind the table. ***From this, I figured out that for the next data collection run, we should measure the ground-truth of the endpoints of each run, so that we can compare the generated track to the ground-truth and disregard tracks that aren't close enough.
+--Aside from trial008 being a bad run, the matrix is giving good results for the runs we did matching the mathematical analysis.
+--Wondering if I need to generalize this more so that the scores are on the range of (0,1)--which will make for easier comparisons to prepositions that are not based on angle, such as 'near' and 'far'.  Thought about using sin and cos to at least get to the range of (-1,1), but was reminded that those are not linear transformations and might not be best to use.
+--Jeff mentioned 'angle normalizing' code in C and Scheme--need to find this to see what it does.
+--Found some code in hmm-def.c and toollib-hog-c.c for a sigmoid function and normalizing angles to a given range (+/- pi in my case).  Started working with the sigmoid as the final output of my preposition score functions, but not sure if I've got the right settings for a (threshold) and b (slope).  Also not sure that I'm using the normalize function(s) correctly--need to look at this some more.
 
 6 Aug 14
 Goal: Finish up data analysis.  Study for MA511 final.
@@ -607,6 +642,7 @@ Goal: Evaluate results for data analysis.  Start considering larger grammar for 
 
 
 ***********************TO DO*******************************
+***ON NEXT DATA COLLECTION, MEASURE GROUND-TRUTH OF ENDPOINTS!!!!
 
 *ONCE first data analysis is finished
  --Change odometers back to individual ticks/cm
