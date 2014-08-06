@@ -631,7 +631,8 @@ Robot behind chair:   -4.52 -4.49 -1.83 -4.34 -4.25 -1.14 -4.70 -1.45 -1.56
 
 6 Aug 14
 Goal: Finish up data analysis.  Study for MA511 final.
-
+--Studied for MA511 final most of the day.
+--Worked a little bit on the angle orientations.  I understand how angle differences can always be express on the range of [0,pi] or [-pi/2, pi/2], but I'm working on how to apply it in my particular case.  I think I have Left and Right working correctly now, but Front is still giving me problems.
 
 7 Aug 14
 Goal: Study for MA511 final (final is at 3:30)

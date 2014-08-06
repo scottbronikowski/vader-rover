@@ -43,10 +43,20 @@ double sigmoid(double x, double a, double b){ //a is threshold, b is steepness
   return 1.0 / (1 + my_exp(- b * (x - a)));
 }
 
-double normalize_angle(double angle){
-  if (angle > PI) return normalize_angle(angle - (2*PI));
-  else if (angle < -PI) return normalize_angle(angle + (2*PI));
+double normalize_orientation(double angle){
+  if (angle > PI) return normalize_orientation(angle - PI);
+  else if (angle < 0) return normalize_orientation(angle + PI);
+  // if (angle > PI/2) return normalize_orientation(angle - PI);
+  // else if (angle < -PI/2) return normalize_orientation(angle + PI);
   else return angle;
+}
+
+double orientation_plus(double x, double y){
+  return normalize_orientation(x+y);
+}
+
+double orientation_minus(double x, double y){
+  return normalize_orientation(x-y);
 }
 
 //gives the angle from p2 back to p1
@@ -57,32 +67,44 @@ double AngleBetween(Point2d p1, Point2d p2){
 //possible value is 0
 double Left(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
+  if (angle < 0)
+    return orientation_minus(angle, PI);
+  else 
+    return orientation_minus(PI, angle);
   //return -fabs(fabs(angle) - PI);
-  return -fabs(normalize_angle(angle - PI));
+  //return -fabs(normalize_angle(angle - PI));
   // double left_angle = normalize_angle(fabs(angle) - PI);
   // return sigmoid(left_angle, sig_a, sig_b);
 }
 
 double Right(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(angle); //no need to normalize here b/c atan2 is always between +/-pi
+  //return -fabs(angle); //no need to normalize here b/c atan2 is always between +/-pi
+  if (angle > 0)
+    return orientation_minus(angle, 0);
+  else 
+    return orientation_minus(0, angle);
 }
 
 double Front(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(normalize_angle(angle - (-PI/2)));
+  //return -fabs(angle - (-PI/2));
+  // if (angle > 0)
+  //   return orientation_minus(angle, (-PI/2));
+  // else
+    return orientation_minus((-PI/2), angle);
 }
 
 double Behind(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(normalize_angle(angle - PI/2));
+  return -fabs(angle - PI/2);
 }
 
 double Between(Point2d robot, Point2d obstacle1, Point2d obstacle2){
   double angle1 = AngleBetween(robot,obstacle1);
   double angle2 = AngleBetween(robot,obstacle2);
   //return -fabs(PI - fabs(angle1 - angle2));
-  return -fabs(PI - normalize_angle(angle1 - angle2));
+  return -fabs(PI - fabs(angle1 - angle2));
 }
 
 Point2d ReadTrack(char* filename){
