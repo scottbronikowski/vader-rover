@@ -61,16 +61,20 @@ double orientation_minus(double x, double y){
 
 //gives the angle from p2 back to p1
 double AngleBetween(Point2d p1, Point2d p2){ 
-  return atan2(p1.y - p2.y, p1.x - p2.x);}
-//all prepositional functions return a value based on the difference between
-//the observed angle and the desired angle-->higher value is better, best
-//possible value is 0
+  return atan2(p1.y - p2.y, p1.x - p2.x);} //always returns [-pi, pi)
+
+//these first prepositional functions return the value of the difference
+//between the observed angle between the robot and the obstacle and the 
+//desired angle.  All angles are on the range [0, pi], so the best possible
+//value is 0.
 double Left(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  if (angle < 0)
-    return orientation_minus(angle, PI);
-  else 
-    return orientation_minus(PI, angle);
+  //using fabs here because I don't care about the direction of the angle, just the magnitude
+  return orientation_minus(PI, fabs(angle)); 
+  // if (angle < 0)
+  //   return orientation_minus(angle, PI);
+  // else 
+  //   return orientation_minus(PI, angle);
   //return -fabs(fabs(angle) - PI);
   //return -fabs(normalize_angle(angle - PI));
   // double left_angle = normalize_angle(fabs(angle) - PI);
@@ -95,6 +99,9 @@ double Front(Point2d robot, Point2d obstacle){
     return orientation_minus((-PI/2), angle);
 }
 
+//the prepositional functions below return a value based on the difference between
+//the observed angle and the desired angle-->higher value is better, best
+//possible value is 0
 double Behind(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
   return -fabs(angle - PI/2);
@@ -103,6 +110,8 @@ double Behind(Point2d robot, Point2d obstacle){
 double Between(Point2d robot, Point2d obstacle1, Point2d obstacle2){
   double angle1 = AngleBetween(robot,obstacle1);
   double angle2 = AngleBetween(robot,obstacle2);
+  //is it necessary to compute the angle between the two obstacles?
+  //or will the difference between the angles always be compared to pi?
   //return -fabs(PI - fabs(angle1 - angle2));
   return -fabs(PI - fabs(angle1 - angle2));
 }
@@ -175,15 +184,16 @@ int main(int /*argc*/, char** /*argv*/)
                          //+ 1x double-obstacle preposition
   double the_matrix[num_sentences][num_tracks];
   for (int i = 0; i < num_tracks; i++){
-    the_matrix[0][i] = Left(endpoints[i],table);
-    the_matrix[1][i] = Right(endpoints[i],table);
-    the_matrix[2][i] = Front(endpoints[i],table);
-    the_matrix[3][i] = Behind(endpoints[i],table);
-    the_matrix[4][i] = Left(endpoints[i],chair);
-    the_matrix[5][i] = Right(endpoints[i],chair);
-    the_matrix[6][i] = Front(endpoints[i],chair);
-    the_matrix[7][i] = Behind(endpoints[i],chair);
-    the_matrix[8][i] = Between(endpoints[i],table, chair);
+    //dividing everything by pi here in order to see which values fall out of range [0,pi]
+    the_matrix[0][i] = Left(endpoints[i],table)/PI;
+    the_matrix[1][i] = Right(endpoints[i],table)/PI;
+    the_matrix[2][i] = Front(endpoints[i],table)/PI;
+    the_matrix[3][i] = Behind(endpoints[i],table)/PI;
+    the_matrix[4][i] = Left(endpoints[i],chair)/PI;
+    the_matrix[5][i] = Right(endpoints[i],chair)/PI;
+    the_matrix[6][i] = Front(endpoints[i],chair)/PI;
+    the_matrix[7][i] = Behind(endpoints[i],chair)/PI;
+    the_matrix[8][i] = Between(endpoints[i],table, chair)/PI;
   }
   //print the matrix
   printf("\n");

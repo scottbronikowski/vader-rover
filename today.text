@@ -41,32 +41,33 @@ from ~/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64$ darpa-wrap make dsc
 
 Buffers
 ---------------------------------------
-.   today.text           56728  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
-  * *shell*              31093  Shell:run	  ~/vader-rover/
-  * *scheme*            489465  Inferior Scheme:
+.   today.text           78421  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
+    data-analysis.cpp     9060  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/data/test-2014-07-31/data-analysis.cpp
+    toollib-hog-c.c      32464  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/toollib-hog-c.c
+    hmm-def.c            11705  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/hmm-def.c
+    hmm-def.h             4523  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/hmm-def.h
+    fields.sc             1278  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/fields.sc
+    toollib-hog-c.h       5335  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/toollib-hog-c.h
+    log_to_track.cpp     13554  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/from_dan/log_to_track.cpp
+  * *shell*<3>         1017394  Shell:run	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/data/test-2014-07-31/
+  * *shell*              57906  Shell:run	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/
+  * *shell*<2>          214552  Shell:run	  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64/
+    toollib-rover-cpp.h   5227  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover-cpp.h
+
+---old---
     toollib-rover-cpp.c: 40230  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover-cpp.cpp
     toollib-rover-cpp.h   4874  C++/l		  ~/vader-rover/toollib-rover-cpp.h
     driver-gui.sc         2323  Scheme		  ~/vader-rover/driver-gui.sc
-  * *shell*<2>           28642  Shell:run	  ~/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64/
     toollib-rover.sc      2148  Scheme		  ~/vader-rover/toollib-rover.sc
 
 ----old----
-    toollib-rover-cpp.c: 35630  C++/l		  ~/vader-rover/toollib-rover-cpp.cpp
-. * *shell*<2>           69526  Shell:run	  ~/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64/
-    toollib-rover-cpp.h   4815  C++/l		  ~/vader-rover/toollib-rover-cpp.h
-    today.text           46261  Text		  ~/vader-rover/today.text
-  * *shell*             327034  Shell:run	  ~/vader-rover/
     deadReckoning.c       6423  C/l		  ~/Downloads/MatrixPilot_4_0/libDCM/deadReckoning.c
     imu-calibration-17-ju: 548  Text		  ~/vader-rover/imu-calibration-17-jun-14.txt
     toollib-gamepad.sc     833  Scheme		  ~/vader-rover/toollib-gamepad.sc
-    driver-gui.sc         2158  Scheme		  ~/vader-rover/driver-gui.sc
     toollib-gamepad-c.c  11221  C/l		  ~/vader-rover/toollib-gamepad-c.c
     toollib-rover.sc      2148  Scheme		  ~/vader-rover/toollib-rover.sc
     commander-gui.sc      2321  Scheme		  ~/vader-rover/commander-gui.sc
-
-  * *Open Recent*         3988  recentf-dialog
     toollib-gamepad-c.h   1954  C++/l		  ~/vader-rover/toollib-gamepad-c.h
-
 .   simple-gui.sc         5686  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/simple-gui.sc
     vlad.sc              12997  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vlad.sc
     vladlib-c.c          90308  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/george/vlad/vladlib-c.c
@@ -636,11 +637,12 @@ Goal: Finish up data analysis.  Study for MA511 final.
 
 7 Aug 14
 Goal: Study for MA511 final (final is at 3:30)
-
+--Studied for and took the final.  I think it went well.
 
 8 Aug 14
 Goal: Evaluate results for data analysis.  Start considering larger grammar for next data collection effort.
-
+--Thinking about how to do Near and Far from an obstacle...since there's no 'max' distance from an obstacle, maybe take linear distance from obstacle to edge of field (along line from robot to obstacle) and use that as the max.  But what to do when another obstacle lies along that line (and how do we detect that)?
+--Still working on angle orientations, picking up where I left off Wednesday.  I think my best course is to have all my differences on the range of [0, pi] and then use n inverted  sigmoid to have the difference values closer to 0 output numbers closer to 1.  I also thought about just dividing my difference values by pi, so the values will be on the range of [0,1], but still with better values closer to 0.  Don't know if this gives me any benefit, but I can use it for troubleshooting to quickly find values that come back higher than pi.
 
 ***********************TO DO*******************************
 ***ON NEXT DATA COLLECTION, MEASURE GROUND-TRUTH OF ENDPOINTS!!!!
@@ -719,13 +721,12 @@ Critical tasks
 -bump sensors-->COMPLETE
 -crossing bump sensors-->COMPLETE
 -shaft encoders-->COMPLETE, giving consistent & reliable readings
--IMU-->working, but inconsistent
+-IMU-->working, but not consistently enough to use with Kalman filter that produces tracks
   --logging data back to imu-log.txt on seykhl (actually file is for IMU/ENC and GPS)
   --have output of accelerometer sending data in cm/s^2 based on 1g reference--seem to have noticed a slight DC shift in Ax data
   --magnetometer output in degrees (the default).  Magnetic interference seems to be plaguing the magnetometer (and thus the YPR from the DCM algorithm)--going to try driving in a less-magnetic environment
   --gyros output in deg/s--noticing output that is a bit wonky (hitting max of 2000deg/s when turning--no way the robot can actually turn that quickly)
--GPS-->nearly complete
-  --Currently reading raw NMEA messages and logging them on seykhl.  Need to use mNMEAParser to read raw sentence into usable variables.
+-GPS-->COMPLETE, sending parsed sentences to log on seykhl
 
 Non-critical tasks
 ------------------
