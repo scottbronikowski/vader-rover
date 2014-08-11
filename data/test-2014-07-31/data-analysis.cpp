@@ -44,8 +44,8 @@ double sigmoid(double x, double a, double b){ //a is threshold, b is steepness
 }
 
 double normalize_orientation(double angle){
-  if (angle > PI) return normalize_orientation(angle - PI);
-  else if (angle < 0) return normalize_orientation(angle + PI);
+  if (angle > PI) return normalize_orientation(angle - 2*PI);
+  else if (angle < -PI) return normalize_orientation(angle + 2*PI);
   // if (angle > PI/2) return normalize_orientation(angle - PI);
   // else if (angle < -PI/2) return normalize_orientation(angle + PI);
   else return angle;
@@ -63,48 +63,27 @@ double orientation_minus(double x, double y){
 double AngleBetween(Point2d p1, Point2d p2){ 
   return atan2(p1.y - p2.y, p1.x - p2.x);} //always returns [-pi, pi)
 
-//these first prepositional functions return the value of the difference
-//between the observed angle between the robot and the obstacle and the 
-//desired angle.  All angles are on the range [0, pi], so the best possible
-//value is 0.
+//the prepositional functions below return a value based on the difference between
+//the observed angle and the desired angle-->higher value is better, best
+//possible value is 0
 double Left(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  //using fabs here because I don't care about the direction of the angle, just the magnitude
-  return orientation_minus(PI, fabs(angle)); 
-  // if (angle < 0)
-  //   return orientation_minus(angle, PI);
-  // else 
-  //   return orientation_minus(PI, angle);
-  //return -fabs(fabs(angle) - PI);
-  //return -fabs(normalize_angle(angle - PI));
-  // double left_angle = normalize_angle(fabs(angle) - PI);
-  // return sigmoid(left_angle, sig_a, sig_b);
+  return -fabs(fabs(angle) - PI);
 }
 
 double Right(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  //return -fabs(angle); //no need to normalize here b/c atan2 is always between +/-pi
-  if (angle > 0)
-    return orientation_minus(angle, 0);
-  else 
-    return orientation_minus(0, angle);
+  return -fabs(angle); //no need to normalize here b/c atan2 is always between +/-pi
 }
 
 double Front(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  //return -fabs(angle - (-PI/2));
-  // if (angle > 0)
-  //   return orientation_minus(angle, (-PI/2));
-  // else
-    return orientation_minus((-PI/2), angle);
+  return -fabs(normalize_orientation(angle - (-PI/2)));
 }
 
-//the prepositional functions below return a value based on the difference between
-//the observed angle and the desired angle-->higher value is better, best
-//possible value is 0
 double Behind(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(angle - PI/2);
+  return -fabs(normalize_orientation(angle - PI/2));
 }
 
 double Between(Point2d robot, Point2d obstacle1, Point2d obstacle2){

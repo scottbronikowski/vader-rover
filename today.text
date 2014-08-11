@@ -644,6 +644,29 @@ Goal: Evaluate results for data analysis.  Start considering larger grammar for 
 --Thinking about how to do Near and Far from an obstacle...since there's no 'max' distance from an obstacle, maybe take linear distance from obstacle to edge of field (along line from robot to obstacle) and use that as the max.  But what to do when another obstacle lies along that line (and how do we detect that)?
 --Still working on angle orientations, picking up where I left off Wednesday.  I think my best course is to have all my differences on the range of [0, pi] and then use n inverted  sigmoid to have the difference values closer to 0 output numbers closer to 1.  I also thought about just dividing my difference values by pi, so the values will be on the range of [0,1], but still with better values closer to 0.  Don't know if this gives me any benefit, but I can use it for troubleshooting to quickly find values that come back higher than pi.
 
+11 Aug 14
+Goal: Continue working on the formulations for Front and Back (and possibly Between).
+--Starting to work on how to automate the scoring/accuracy process to get a score of correct/total by rows and columns
+--Abandoned work on using normalize_orientation() to get positive angle differences (as well as sigmoid() to scale 0 to 1) and instead went back to using negative values with fabs() since that seemed to be working well.  Still dividing everything by PI so will have values [-1,0].  
+--Still observing values less than -1 for front and behind--need to look at the math of those functions to see what I'm doing wrong--fixed this by using a normalize_orientation() inside the fabs(angle - (+/- PI)) I had been using.
+---
+
+
+12 Aug 14
+Goal: Finish up Front and Back, work on Between, Near, and Far.
+
+
+13 Aug 14
+Goal: Finish all preposition function formulations.
+
+
+14 Aug 14
+Goal: Start building larger grammar for 100-run test.  Initial thought is using 7 prepositions (Right, Left, Front, Back, Between, Near, Far) with 5 obstacles (Table, Chair, Box, Cone, Ball), but that only gives me ~40 sentences with a single preposition.  Would it be better to do multiple runs of the same sentence (either with the same or different obstacle arrangement), or to create sentences with multiple prepositions, or to add more prepositions/obstacles?
+
+
+15 Aug 14
+Goal: Continue working on expanded grammar.
+
 ***********************TO DO*******************************
 ***ON NEXT DATA COLLECTION, MEASURE GROUND-TRUTH OF ENDPOINTS!!!!
 
