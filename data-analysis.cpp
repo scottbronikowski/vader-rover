@@ -15,6 +15,7 @@
 #include <cstring>
 #include <sys/types.h>
 
+
 using namespace cv;
 
 #define PI (3.14159265359)
@@ -111,6 +112,7 @@ Point2d ReadTrack(char* filename){
 
 int main(int /*argc*/, char** /*argv*/)
 {
+  const char* datapath = "./data/test-2014-07-31";
   //initialize obstacle locations
   Point2d table;
   table.x = k_left_edge + (6.05 * METERS_PER_FOOT);
@@ -134,7 +136,7 @@ int main(int /*argc*/, char** /*argv*/)
       offset = 2; //doing this to skip trial003 (bad data file)
     else 
       offset = 1;
-    sprintf(namebuf, "./trial0%02d/track.txt", i+offset);
+    sprintf(namebuf, "%s/trial0%02d/track.txt", datapath, i+offset);
     endpoints[i] = ReadTrack(namebuf);//}
     printf("endpoints[%d]: x = %f, y = %f, trial0%02d\n",
     	   i, endpoints[i].x, endpoints[i].y, i+offset);

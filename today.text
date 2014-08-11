@@ -650,6 +650,9 @@ Goal: Continue working on the formulations for Front and Back (and possibly Betw
 --Abandoned work on using normalize_orientation() to get positive angle differences (as well as sigmoid() to scale 0 to 1) and instead went back to using negative values with fabs() since that seemed to be working well.  Still dividing everything by PI so will have values [-1,0].  
 --Still observing values less than -1 for front and behind--need to look at the math of those functions to see what I'm doing wrong--fixed this by using a normalize_orientation() inside the fabs(angle - (+/- PI)) I had been using.
 ---
+--Made minor tweaks to Dan's log_to_track.cpp to add an fclose() after done writing to outfile, and to print a single line of X, Y, and Theta all 0 when an imu-log.txt file has 0 measurements (like trial003).
+--Cleaned up main vader-rover directory and moved data-analysis.cpp there.
+---
 
 
 12 Aug 14

@@ -369,34 +369,44 @@ int main(int args, char** argv)
   KF.statePost.at<float>(2) = pi/2;
 
   int timestep=0;
-  for(timestep=0;timestep<nmeasurements;timestep++)
+  if (nmeasurements == 0)
     {
       fprintf(outfile,
 	      "X:%f,Y:%f,Theta:%f\n",
-	      KF.statePost.at<float>(0),
-	      KF.statePost.at<float>(1),
-	      KF.statePost.at<float>(2));
-      float dt = 1.0/50.0; // needs work: hard coded
-
-      TransitionModel = ComputeTransitionMatrix(KF.statePost,dt);
-      
-      float CL = 0;// needs work: hard coded and ignores input to rover motors
-      float CR = 0;//
-      control = *(Mat_<float>(2,1) << CL,CR);
-      
-      measurement = measurements[timestep];
-
-      float mtheta = measurement.at<float>(2);
-      float stheta = KF.statePost.at<float>(2);
-      if (0)
-	{
-	  while (mtheta<=stheta-pi)
-	    mtheta+=2*pi;
-	  while (mtheta>=stheta+pi)
-	    mtheta-=2*pi;
-	}
-      // needs work: we always ignore GPS
-      KF = execute_time_step(KF, TransitionModel,MeasurementModel_noGPS, KF.controlMatrix, measurement,control);
+	      (float) 0.0,
+	      (float) 0.0,
+	      (float) 0.0);
     }
-    return 0;
+  else
+    for(timestep=0;timestep<nmeasurements;timestep++)
+      {
+	fprintf(outfile,
+		"X:%f,Y:%f,Theta:%f\n",
+		KF.statePost.at<float>(0),
+		KF.statePost.at<float>(1),
+		KF.statePost.at<float>(2));
+	float dt = 1.0/50.0; // needs work: hard coded
+	
+	TransitionModel = ComputeTransitionMatrix(KF.statePost,dt);
+	
+	float CL = 0;// needs work: hard coded and ignores input to rover motors
+	float CR = 0;//
+	control = *(Mat_<float>(2,1) << CL,CR);
+	
+	measurement = measurements[timestep];
+	
+	float mtheta = measurement.at<float>(2);
+	float stheta = KF.statePost.at<float>(2);
+	if (0)
+	  {
+	    while (mtheta<=stheta-pi)
+	      mtheta+=2*pi;
+	    while (mtheta>=stheta+pi)
+	      mtheta-=2*pi;
+	  }
+	// needs work: we always ignore GPS
+	KF = execute_time_step(KF, TransitionModel,MeasurementModel_noGPS, KF.controlMatrix, measurement,control);
+      }
+  fclose(outfile);
+  return 0;
 }
