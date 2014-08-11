@@ -1,0 +1,5 @@
+Width (feet): 20.1
+Height (feet): 16.7
+Robot start (feet, from left): 10.2
+Obstacle from left: table, 6.08, 8.37
+Obstacle from right: chair, 5.75, 8.33

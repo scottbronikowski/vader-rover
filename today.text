@@ -653,7 +653,7 @@ Goal: Continue working on the formulations for Front and Back (and possibly Betw
 --Made minor tweaks to Dan's log_to_track.cpp to add an fclose() after done writing to outfile, and to print a single line of X, Y, and Theta all 0 when an imu-log.txt file has 0 measurements (like trial003).
 --Cleaned up main vader-rover directory and moved data-analysis.cpp there.
 ---
-
+--Continuing with automating the data analysis.  Have the data-analysis program taking 2 arguments: datapath and num_trials.  Also have the program reading in a setup.txt file (located in datapath/) that describes the dimensions of the field and the locations/names of the obstacles.  Also changing the obstacles from being just a Point2d variable to a struct that joins a name with a Point2d location.
 
 12 Aug 14
 Goal: Finish up Front and Back, work on Between, Near, and Far.

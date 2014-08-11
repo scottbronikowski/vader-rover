@@ -1,30 +1,12 @@
-#include <vector>
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <stdio.h>
-#include <time.h>
-#include <unistd.h>
-#include <math.h>
-#include <string>
-#include <memory>
-#include <tr1/functional>
-#include <stdexcept>
-#include <sstream>
-#include <errno.h>
-#include <sys/time.h>
-#include <cstring>
-#include <sys/types.h>
-
+/*
+  Implementation for data analysis program
+  Author: Scott Bronikowski
+  Date: 4 August 2014
+*/
+#include "data-analysis.h"
 
 using namespace cv;
 
-#define PI (3.14159265359)
-#define NEGATIVE_INFINITY (-1.0/0.0)
-#define METERS_PER_FOOT (0.3048)
-//measurements of the area
-#define FIELD_WIDTH (20.1) //in feet
-#define FIELD_HEIGHT (16.7) //in feet
-#define ORIGIN_OFFSET (10.2) //in feet, distance from left edge to robot start point
 const float k_width = FIELD_WIDTH * METERS_PER_FOOT; //in meters
 const float k_height = FIELD_HEIGHT * METERS_PER_FOOT;
 const float k_left_edge = -ORIGIN_OFFSET * METERS_PER_FOOT;
@@ -34,85 +16,51 @@ const float k_top_edge = k_height;
 const double sig_a = PI/8;
 const double sig_b = 2.0;
 
-double my_exp(double x){ 
-  if (x == NEGATIVE_INFINITY)
-    return 0.0;
-  return exp(x);
-}
 
-double sigmoid(double x, double a, double b){ //a is threshold, b is steepness
-  return 1.0 / (1 + my_exp(- b * (x - a)));
-}
 
-double normalize_orientation(double angle){
-  if (angle > PI) return normalize_orientation(angle - 2*PI);
-  else if (angle < -PI) return normalize_orientation(angle + 2*PI);
-  // if (angle > PI/2) return normalize_orientation(angle - PI);
-  // else if (angle < -PI/2) return normalize_orientation(angle + PI);
-  else return angle;
-}
-
-double orientation_plus(double x, double y){
-  return normalize_orientation(x+y);
-}
-
-double orientation_minus(double x, double y){
-  return normalize_orientation(x-y);
-}
-
-//gives the angle from p2 back to p1
-double AngleBetween(Point2d p1, Point2d p2){ 
-  return atan2(p1.y - p2.y, p1.x - p2.x);} //always returns [-pi, pi)
-
-//the prepositional functions below return a value based on the difference between
-//the observed angle and the desired angle-->higher value is better, best
-//possible value is 0
-double Left(Point2d robot, Point2d obstacle){
-  double angle = AngleBetween(robot,obstacle);
-  return -fabs(fabs(angle) - PI);
-}
-
-double Right(Point2d robot, Point2d obstacle){
-  double angle = AngleBetween(robot,obstacle);
-  return -fabs(angle); //no need to normalize here b/c atan2 is always between +/-pi
-}
-
-double Front(Point2d robot, Point2d obstacle){
-  double angle = AngleBetween(robot,obstacle);
-  return -fabs(normalize_orientation(angle - (-PI/2)));
-}
-
-double Behind(Point2d robot, Point2d obstacle){
-  double angle = AngleBetween(robot,obstacle);
-  return -fabs(normalize_orientation(angle - PI/2));
-}
-
-double Between(Point2d robot, Point2d obstacle1, Point2d obstacle2){
-  double angle1 = AngleBetween(robot,obstacle1);
-  double angle2 = AngleBetween(robot,obstacle2);
-  //is it necessary to compute the angle between the two obstacles?
-  //or will the difference between the angles always be compared to pi?
-  //return -fabs(PI - fabs(angle1 - angle2));
-  return -fabs(PI - fabs(angle1 - angle2));
-}
-
-Point2d ReadTrack(char* filename){
-  FILE* fp = fopen(filename,"r");
-  char linebuf[1000];
-  float X, Y, Theta;
-  Point2d retval;
-  while (fgets(linebuf,1000,fp)!=NULL){
-    int track_items = sscanf(linebuf,"X:%f,Y:%f,Theta:%f",&X,&Y,&Theta);
-    if (track_items != 3)
-      printf("ERROR in sscanf");}
-  retval.x = X;
-  retval.y = Y;
-  return retval;
-}
-
-int main(int /*argc*/, char** /*argv*/)
+int main(int argc, char** argv)
 {
-  const char* datapath = "./data/test-2014-07-31";
+  if (argc != 3)
+    {
+      printf("Not enough arguments! Need 2: datapath num_trials\n");
+      exit(1);
+    }
+  char* datapath = argv[1];
+  int num_tracks = atoi(argv[2]);
+  //initialize field
+  char filename[100];
+  sprintf(filename, "%ssetup.txt", datapath);
+  FILE* fp = fopen(filename, "r");
+  if (fp == NULL)
+    {
+      printf("ERROR! Setup file '%s' does not exist\n", filename);
+      exit(1);
+    }
+  char linebuf[1000];
+  float width_ft, width, height_ft, height, offset_ft, offset;
+  int lines = LineCount(filename);
+  int num_obstacles = lines - 3; //each obstacle has a line, and there are 3 lines for the width, height, and origin offset
+  //printf("There are %d lines in %s\n", lines, filename);
+  if (fgets(linebuf, 1000, fp) == NULL)
+    {
+      printf("Error reading line 1 of %s\n", filename);
+      exit(1);
+    }
+  int retval1 = sscanf(linebuf, "Width (feet): %f", &width_ft);
+  if (fgets(linebuf, 1000, fp) == NULL)
+    {
+      printf("Error reading line 2 of %s\n", filename);
+      exit(1);
+    }
+  int retval2 = sscanf(linebuf, "Height (feet): %f", &height_ft);
+  if (fgets(linebuf, 1000, fp) == NULL)
+    {
+      printf("Error reading line 3 of %s\n", filename);
+      exit(1);
+    }
+  int retval3 = sscanf(linebuf, "Robot start (feet, from left): %f", &offset_ft);
+  printf("read: width_ft = %f, height_ft = %f, offset_ft = %f, num_obstacles = %d\n",
+	 width_ft, height_ft, offset_ft, num_obstacles);
   //initialize obstacle locations
   Point2d table;
   table.x = k_left_edge + (6.05 * METERS_PER_FOOT);
@@ -125,25 +73,22 @@ int main(int /*argc*/, char** /*argv*/)
   printf("chair at %.2f, %.2f; table at %.2f, %.2f\n",
   	 chair.x, chair.y, table.x, table.y);
   
+  //create track.txt files from imu-log.txt files
+
   //read endpoints in from files
-  int num_tracks = 9;
+  //int num_tracks = 9;
   Point2d endpoints[num_tracks];
-  int offset;
   char namebuf[100];
   for (int i = 0; i < num_tracks; i++){
     memset(namebuf, 0, 100);
-    if (i > 1)
-      offset = 2; //doing this to skip trial003 (bad data file)
-    else 
-      offset = 1;
-    sprintf(namebuf, "%s/trial0%02d/track.txt", datapath, i+offset);
+    sprintf(namebuf, "%strial0%02d/track.txt", datapath, i+1);
     endpoints[i] = ReadTrack(namebuf);//}
     printf("endpoints[%d]: x = %f, y = %f, trial0%02d\n",
-    	   i, endpoints[i].x, endpoints[i].y, i+offset);
+    	   i, endpoints[i].x, endpoints[i].y, i+1);
     }
 
   //make matrix of angles to obstacles
-  int num_obstacles = 2;
+  //int num_obstacles = 2;
   double angle_matrix[num_obstacles][num_tracks];
   for (int i = 0; i < num_tracks; i++){
     angle_matrix[0][i] = AngleBetween(endpoints[i], table);
@@ -223,3 +168,89 @@ int main(int /*argc*/, char** /*argv*/)
   return 0;
 }
 
+double my_exp(double x){ 
+  if (x == NEGATIVE_INFINITY)
+    return 0.0;
+  return exp(x);
+}
+
+double sigmoid(double x, double a, double b){ //a is threshold, b is steepness
+  return 1.0 / (1 + my_exp(- b * (x - a)));
+}
+
+double normalize_orientation(double angle){
+  if (angle > PI) return normalize_orientation(angle - 2*PI);
+  else if (angle < -PI) return normalize_orientation(angle + 2*PI);
+  // if (angle > PI/2) return normalize_orientation(angle - PI);
+  // else if (angle < -PI/2) return normalize_orientation(angle + PI);
+  else return angle;
+}
+
+double orientation_plus(double x, double y){
+  return normalize_orientation(x+y);
+}
+
+double orientation_minus(double x, double y){
+  return normalize_orientation(x-y);
+}
+
+//gives the angle from p2 back to p1
+double AngleBetween(Point2d p1, Point2d p2){ 
+  return atan2(p1.y - p2.y, p1.x - p2.x);} //always returns [-pi, pi)
+
+//the prepositional functions below return a value based on the difference between
+//the observed angle and the desired angle-->higher value is better, best
+//possible value is 0
+double Left(Point2d robot, Point2d obstacle){
+  double angle = AngleBetween(robot,obstacle);
+  return -fabs(fabs(angle) - PI);
+}
+
+double Right(Point2d robot, Point2d obstacle){
+  double angle = AngleBetween(robot,obstacle);
+  return -fabs(angle); //no need to normalize here b/c atan2 is always between +/-pi
+}
+
+double Front(Point2d robot, Point2d obstacle){
+  double angle = AngleBetween(robot,obstacle);
+  return -fabs(normalize_orientation(angle - (-PI/2)));
+}
+
+double Behind(Point2d robot, Point2d obstacle){
+  double angle = AngleBetween(robot,obstacle);
+  return -fabs(normalize_orientation(angle - PI/2));
+}
+
+double Between(Point2d robot, Point2d obstacle1, Point2d obstacle2){
+  double angle1 = AngleBetween(robot,obstacle1);
+  double angle2 = AngleBetween(robot,obstacle2);
+  //is it necessary to compute the angle between the two obstacles?
+  //or will the difference between the angles always be compared to pi?
+  //return -fabs(PI - fabs(angle1 - angle2));
+  return -fabs(PI - fabs(angle1 - angle2));
+}
+
+Point2d ReadTrack(char* filename){
+  FILE* fp = fopen(filename,"r");
+  char linebuf[1000];
+  float X, Y, Theta;
+  Point2d retval;
+  while (fgets(linebuf,1000,fp)!=NULL){
+    int track_items = sscanf(linebuf,"X:%f,Y:%f,Theta:%f",&X,&Y,&Theta);
+    if (track_items != 3)
+      printf("ERROR in sscanf");}
+  retval.x = X;
+  retval.y = Y;
+  return retval;
+}
+int LineCount(char* filename){
+  int count = 0;
+  int ch;
+  FILE* fp = fopen(filename, "r");
+  while (ch != EOF){
+    ch = fgetc(fp);
+    if (ch == '\n')
+      count++;}
+  fclose(fp);
+  return count;
+}
