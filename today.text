@@ -657,7 +657,7 @@ Goal: Continue working on the formulations for Front and Back (and possibly Betw
 
 12 Aug 14
 Goal: Finish up Front and Back, work on Between, Near, and Far.
-
+--Continued work on automating data analysis.  Have field setup (boundaries and obstacle locations/names) and the creation of track.txt files from imu-log.txt files fully automated.  Working on automating the creation of Track_t's, which is just a struct joining 1) a string representing the ground truth of that run (stored as truth.txt), 2) the number of points in the track, 3) an array of the point values (x, y), and 4) an array of the theta values at each point.
 
 13 Aug 14
 Goal: Finish all preposition function formulations.

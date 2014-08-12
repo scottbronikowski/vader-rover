@@ -7,12 +7,12 @@
 
 using namespace cv;
 
-const float k_width = FIELD_WIDTH * METERS_PER_FOOT; //in meters
-const float k_height = FIELD_HEIGHT * METERS_PER_FOOT;
-const float k_left_edge = -ORIGIN_OFFSET * METERS_PER_FOOT;
-const float k_right_edge = (FIELD_WIDTH - ORIGIN_OFFSET) * METERS_PER_FOOT;
-const float k_bottom_edge = 0.0;
-const float k_top_edge = k_height;
+// const float k_width = FIELD_WIDTH * METERS_PER_FOOT; //in meters
+// const float k_height = FIELD_HEIGHT * METERS_PER_FOOT;
+// const float k_left_edge = -ORIGIN_OFFSET * METERS_PER_FOOT;
+// const float k_right_edge = (FIELD_WIDTH - ORIGIN_OFFSET) * METERS_PER_FOOT;
+// const float k_bottom_edge = 0.0;
+// const float k_top_edge = k_height;
 const double sig_a = PI/8;
 const double sig_b = 2.0;
 
@@ -47,64 +47,156 @@ int main(int argc, char** argv)
       exit(1);
     }
   int retval1 = sscanf(linebuf, "Width (feet): %f", &width_ft);
+  if (retval1 != 1)
+    {
+      printf("Error getting width\n");
+      exit(1);
+    }
   if (fgets(linebuf, 1000, fp) == NULL)
     {
       printf("Error reading line 2 of %s\n", filename);
       exit(1);
     }
   int retval2 = sscanf(linebuf, "Height (feet): %f", &height_ft);
+  if (retval2 != 1)
+    {
+      printf("Error getting height\n");
+      exit(1);
+    }
   if (fgets(linebuf, 1000, fp) == NULL)
     {
       printf("Error reading line 3 of %s\n", filename);
       exit(1);
     }
   int retval3 = sscanf(linebuf, "Robot start (feet, from left): %f", &offset_ft);
-  printf("read: width_ft = %f, height_ft = %f, offset_ft = %f, num_obstacles = %d\n",
-	 width_ft, height_ft, offset_ft, num_obstacles);
+  if (retval3 != 1)
+    {
+      printf("Error getting offset\n");
+      exit(1);
+    }
+  // printf("read: width_ft = %f, height_ft = %f, offset_ft = %f, num_obstacles = %d\n",
+  // 	 width_ft, height_ft, offset_ft, num_obstacles);
+  width = width_ft * METERS_PER_FOOT;
+  height = height_ft * METERS_PER_FOOT;
+  offset = offset_ft * METERS_PER_FOOT;
+  float left_edge, right_edge, bottom_edge, top_edge;
+  bottom_edge = 0.0;
+  top_edge = height;
+  left_edge = -offset;
+  right_edge = width - offset;
+
   //initialize obstacle locations
-  Point2d table;
-  table.x = k_left_edge + (6.05 * METERS_PER_FOOT);
-  table.y = 8.37 * METERS_PER_FOOT;
-  Point2d chair;
-  chair.x = k_right_edge - (5.75 * METERS_PER_FOOT);
-  chair.y = 8.33 * METERS_PER_FOOT;
-  printf("k_left_edge = %.2f, k_right_edge = %.2f, k_top_edge = %.2f\n",
-  	 k_left_edge, k_right_edge, k_top_edge);
-  printf("chair at %.2f, %.2f; table at %.2f, %.2f\n",
-  	 chair.x, chair.y, table.x, table.y);
+  Obstacle_t obstacles[num_obstacles];
+  char temp_name[100];
+  float temp_x, temp_y;
+  for (int i = 0; i < num_obstacles; i++)
+    {
+      if (fgets(linebuf, 1000, fp) == NULL)
+	{
+	  printf("Error reading line for obstacle %d\n", i+1);
+	  exit(1);
+	}
+      //printf("linebuf: %s", linebuf);
+      int left_obstacle = sscanf(linebuf, "Obstacle from left: %f;%f;%s",
+				 &temp_x, &temp_y, temp_name);
+      int right_obstacle = sscanf(linebuf, "Obstacle from right: %f;%f;%s",
+				  &temp_x, &temp_y, temp_name);
+      // printf("temp_name = %s, temp_x = %f, temp_y = %f\n",
+      // 	     temp_name, temp_x, temp_y);
+      if (left_obstacle == 3)
+	{
+	  strncpy(obstacles[i].name, temp_name, 100);
+	  obstacles[i].loc.x = left_edge + (temp_x * METERS_PER_FOOT);
+	  obstacles[i].loc.y = bottom_edge + (temp_y * METERS_PER_FOOT);
+	}
+      if (right_obstacle == 3)
+	{
+	  strncpy(obstacles[i].name, temp_name, 100);
+	  obstacles[i].loc.x = right_edge - (temp_x * METERS_PER_FOOT);
+	  obstacles[i].loc.y = bottom_edge + (temp_y * METERS_PER_FOOT);
+	}
+    }
+  printf("left_edge = %.2f, right_edge = %.2f, top_edge = %.2f\n",
+  	 left_edge, right_edge, top_edge);
+  for (int i = 0; i < num_obstacles; i++)
+    printf("Obstacle: %s at x = %.2f, y = %.2f\n",
+	   obstacles[i].name, obstacles[i].loc.x, obstacles[i].loc.y);
   
+  //temporary to get rest of program to work
+  Point2d table = obstacles[0].loc;
+  Point2d chair = obstacles[1].loc;
+
   //create track.txt files from imu-log.txt files
+  char logbuf[100];
+  char outbuf[100];
+  char cmdbuf[400];
+  for (int i = 0; i < num_tracks; i++){
+    memset(logbuf, 0, 100);
+    sprintf(logbuf, "%strial%03d/imu-log.txt", datapath, i+1);
+    memset(outbuf, 0, 100);
+    sprintf(outbuf, "%strial%03d/track.txt", datapath, i+1);
+    memset(cmdbuf, 0, 400);
+    sprintf(cmdbuf, "./log-to-track.out ./config.txt %s %s", logbuf, outbuf);
+    system(cmdbuf);
+  }
+
+  //read track data in from tracks.txt/truth.txt files files
+  char namebuf[100];
+  Track_t tracks[num_tracks];
+  int retval;
+  for (int i = 0; i < num_tracks; i++) {
+    memset(namebuf, 0, 100);
+    sprintf(namebuf, "%strial%03d/", datapath, i+1);
+    retval = ReadTrack(namebuf, &tracks[i]);
+    if (retval != 0){
+      printf("Error in ReadTrack(%s, &tracks[%d])\n", namebuf, i);
+      exit(1);
+    }
+    //printf("from main: %s\n", tracks[i].truth);
+    //printf("for %s, num_points = %d\n", namebuf, tracks[i].num_points);
+  }
+
+  //grab endpoints from tracks
+  // Point2d endpoints[num_tracks];
+  // for (int i = 0; i < num_tracks; i++) {
+  //   endpoints[i] = tracks[i].points[(tracks[i].num_points - 1)];
+  //   printf("endpoints[%d]: x = %f, y = %f, trial0%02d\n",
+  //   	   i, endpoints[i].x, endpoints[i].y, i+1);
+  // }
 
   //read endpoints in from files
-  //int num_tracks = 9;
+  //char namebuf[100];
   Point2d endpoints[num_tracks];
-  char namebuf[100];
   for (int i = 0; i < num_tracks; i++){
     memset(namebuf, 0, 100);
-    sprintf(namebuf, "%strial0%02d/track.txt", datapath, i+1);
-    endpoints[i] = ReadTrack(namebuf);//}
+    sprintf(namebuf, "%strial%03d/track.txt", datapath, i+1);
+    endpoints[i] = ReadEndpoint(namebuf);
     printf("endpoints[%d]: x = %f, y = %f, trial0%02d\n",
     	   i, endpoints[i].x, endpoints[i].y, i+1);
-    }
+  }
 
   //make matrix of angles to obstacles
-  //int num_obstacles = 2;
   double angle_matrix[num_obstacles][num_tracks];
-  for (int i = 0; i < num_tracks; i++){
-    angle_matrix[0][i] = AngleBetween(endpoints[i], table);
-    angle_matrix[1][i] = AngleBetween(endpoints[i], chair);
-  }
+  for (int j = 0; j < num_obstacles; j++){
+      for (int i = 0; i < num_tracks; i++){
+	angle_matrix[j][i] = AngleBetween(endpoints[i], obstacles[j].loc);
+      }
+    }
   //print the matrix
+  printf("\nAngle ");
+  for (int i = 0; i < num_tracks; i++){
+    printf("%6d", i+1);
+  }
   printf("\n");
-  printf("Angle    1     2     4     5     6     7     8     9     10\n");
-  printf("Table: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 angle_matrix[0][0], angle_matrix[0][1], angle_matrix[0][2],
-	 angle_matrix[0][3], angle_matrix[0][4], angle_matrix[0][5],
-	 angle_matrix[0][6], angle_matrix[0][7], angle_matrix[0][8]);
-  printf("Chair: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 angle_matrix[1][0], angle_matrix[1][1], angle_matrix[1][2],
-	 angle_matrix[1][3], angle_matrix[1][4], angle_matrix[1][5],
-	 angle_matrix[1][6], angle_matrix[1][7], angle_matrix[1][8]);
+  for (int j = 0; j < num_obstacles; j++){
+    printf("%s:", obstacles[j].name);
+    for (int i = 0; i < num_tracks; i++){
+      printf(" %5.2f", angle_matrix[j][i]);
+      if (i == (num_tracks - 1))
+	printf("\n");
+    }
+  }
+
   //make matrix of scores
   int num_sentences = 9; //4x single-obstacle prepositions * 2 obstacles
                          //+ 1x double-obstacle preposition
@@ -230,7 +322,7 @@ double Between(Point2d robot, Point2d obstacle1, Point2d obstacle2){
   return -fabs(PI - fabs(angle1 - angle2));
 }
 
-Point2d ReadTrack(char* filename){
+Point2d ReadEndpoint(char* filename){
   FILE* fp = fopen(filename,"r");
   char linebuf[1000];
   float X, Y, Theta;
@@ -243,14 +335,58 @@ Point2d ReadTrack(char* filename){
   retval.y = Y;
   return retval;
 }
+
 int LineCount(char* filename){
   int count = 0;
   int ch;
   FILE* fp = fopen(filename, "r");
+  if (fp == NULL) {
+    printf("Error in LineCount: file %s does not exist\n", filename);
+    return 0;
+  }
   while (ch != EOF){
     ch = fgetc(fp);
     if (ch == '\n')
       count++;}
   fclose(fp);
   return count;
+}
+
+int ReadTrack(char* path, Track_t* track){
+  char truthbuf[100];
+  char trackbuf[100];
+  char linebuf[1000];
+  sprintf(truthbuf, "%struth.txt", path);
+  sprintf(trackbuf, "%strack.txt", path);
+  //first get truth string
+  FILE* truth_fp = fopen(truthbuf, "r");
+  if (truth_fp == NULL) {
+      printf("ERROR! Truth file '%s' does not exist\n", truthbuf);
+      return 1;
+  }
+  char truth_value[100];
+  if (fgets(linebuf, 1000, truth_fp) != NULL) { //successful read
+    int truth_items = sscanf(linebuf,"%s", truth_value);
+    if (truth_items != 1) { //bad sscanf
+      printf("ReadTrack error in sscanf\n");
+      fclose(truth_fp);
+      return 1;
+    }
+    else { //good sscanf
+      strcpy(track->truth, truth_value);
+      //printf("truth_value = %s, track->truth = %s\n", truth_value, track->truth);
+      fclose(truth_fp);
+    }
+  }
+  else { //read failed
+    printf("ReadTrack fgets returned NULL\n");
+    fclose(truth_fp);
+    return 1;
+  }
+  //now read track file
+  track->num_points = LineCount(trackbuf);
+  track->points = new Point2d[track->num_points];
+  
+  //success if we get here
+  return 0;
 }
