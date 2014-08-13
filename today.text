@@ -661,7 +661,7 @@ Goal: Finish up Front and Back, work on Between, Near, and Far.
 
 13 Aug 14
 Goal: Finish all preposition function formulations.
-
+--Have automated file reading and matrix generation finished.  Need to compare new matrix with old one to see if math is right.  Also need to do automated scoring.
 
 14 Aug 14
 Goal: Start building larger grammar for 100-run test.  Initial thought is using 7 prepositions (Right, Left, Front, Back, Between, Near, Far) with 5 obstacles (Table, Chair, Box, Cone, Ball), but that only gives me ~40 sentences with a single preposition.  Would it be better to do multiple runs of the same sentence (either with the same or different obstacle arrangement), or to create sentences with multiple prepositions, or to add more prepositions/obstacles?

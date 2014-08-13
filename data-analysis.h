@@ -43,6 +43,9 @@ struct Track_t {
   float* thetas;
 };
 
+const int k_num_prepositions = 5;
+const char* k_prepositions[k_num_prepositions] = {"left","right","front","behind","between"};
+
 double AngleBetween(Point2d p1, Point2d p2);
 double Left(Point2d robot, Point2d obstacle);
 double Right(Point2d robot, Point2d obstacle);

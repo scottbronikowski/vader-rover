@@ -1,0 +1,5 @@
+left-of-table
+right-of-chair
+front-of-table
+behind-table
+between-table-and-chair

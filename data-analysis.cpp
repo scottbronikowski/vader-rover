@@ -89,42 +89,40 @@ int main(int argc, char** argv)
   Obstacle_t obstacles[num_obstacles];
   char temp_name[100];
   float temp_x, temp_y;
-  for (int i = 0; i < num_obstacles; i++)
-    {
-      if (fgets(linebuf, 1000, fp) == NULL)
-	{
-	  printf("Error reading line for obstacle %d\n", i+1);
-	  exit(1);
-	}
-      //printf("linebuf: %s", linebuf);
-      int left_obstacle = sscanf(linebuf, "Obstacle from left: %f;%f;%s",
-				 &temp_x, &temp_y, temp_name);
-      int right_obstacle = sscanf(linebuf, "Obstacle from right: %f;%f;%s",
-				  &temp_x, &temp_y, temp_name);
-      // printf("temp_name = %s, temp_x = %f, temp_y = %f\n",
-      // 	     temp_name, temp_x, temp_y);
-      if (left_obstacle == 3)
-	{
-	  strncpy(obstacles[i].name, temp_name, 100);
-	  obstacles[i].loc.x = left_edge + (temp_x * METERS_PER_FOOT);
-	  obstacles[i].loc.y = bottom_edge + (temp_y * METERS_PER_FOOT);
-	}
-      if (right_obstacle == 3)
-	{
-	  strncpy(obstacles[i].name, temp_name, 100);
-	  obstacles[i].loc.x = right_edge - (temp_x * METERS_PER_FOOT);
-	  obstacles[i].loc.y = bottom_edge + (temp_y * METERS_PER_FOOT);
-	}
+  for (int i = 0; i < num_obstacles; i++) {
+    if (fgets(linebuf, 1000, fp) == NULL){
+      printf("Error reading line for obstacle %d\n", i+1);
+      exit(1);
     }
+      //printf("linebuf: %s", linebuf);
+    int left_obstacle = sscanf(linebuf, "Obstacle from left: %f;%f;%s",
+			       &temp_x, &temp_y, temp_name);
+    int right_obstacle = sscanf(linebuf, "Obstacle from right: %f;%f;%s",
+				&temp_x, &temp_y, temp_name);
+    // printf("temp_name = %s, temp_x = %f, temp_y = %f\n",
+    // 	     temp_name, temp_x, temp_y);
+    if (left_obstacle == 3) {
+      strncpy(obstacles[i].name, temp_name, 100);
+      obstacles[i].loc.x = left_edge + (temp_x * METERS_PER_FOOT);
+      obstacles[i].loc.y = bottom_edge + (temp_y * METERS_PER_FOOT);
+    }
+      if (right_obstacle == 3) {
+	strncpy(obstacles[i].name, temp_name, 100);
+	obstacles[i].loc.x = right_edge - (temp_x * METERS_PER_FOOT);
+	obstacles[i].loc.y = bottom_edge + (temp_y * METERS_PER_FOOT);
+      }
+  }
   printf("left_edge = %.2f, right_edge = %.2f, top_edge = %.2f\n",
   	 left_edge, right_edge, top_edge);
   for (int i = 0; i < num_obstacles; i++)
     printf("Obstacle: %s at x = %.2f, y = %.2f\n",
 	   obstacles[i].name, obstacles[i].loc.x, obstacles[i].loc.y);
+  //done with setup file
+  fclose(fp);
   
-  //temporary to get rest of program to work
-  Point2d table = obstacles[0].loc;
-  Point2d chair = obstacles[1].loc;
+  // //temporary to get rest of program to work
+  // Point2d table = obstacles[0].loc;
+  // Point2d chair = obstacles[1].loc;
 
   //create track.txt files from imu-log.txt files
   char logbuf[100];
@@ -157,23 +155,23 @@ int main(int argc, char** argv)
   }
 
   //grab endpoints from tracks
-  // Point2d endpoints[num_tracks];
-  // for (int i = 0; i < num_tracks; i++) {
-  //   endpoints[i] = tracks[i].points[(tracks[i].num_points - 1)];
-  //   printf("endpoints[%d]: x = %f, y = %f, trial0%02d\n",
-  //   	   i, endpoints[i].x, endpoints[i].y, i+1);
-  // }
-
-  //read endpoints in from files
-  //char namebuf[100];
   Point2d endpoints[num_tracks];
-  for (int i = 0; i < num_tracks; i++){
-    memset(namebuf, 0, 100);
-    sprintf(namebuf, "%strial%03d/track.txt", datapath, i+1);
-    endpoints[i] = ReadEndpoint(namebuf);
-    printf("endpoints[%d]: x = %f, y = %f, trial0%02d\n",
+  for (int i = 0; i < num_tracks; i++) {
+    endpoints[i] = tracks[i].points[(tracks[i].num_points - 1)];
+    printf("endpoints[%d]: x = %f, y = %f, trial%03d\n",
     	   i, endpoints[i].x, endpoints[i].y, i+1);
   }
+
+  // //read endpoints in from files
+  // //char namebuf[100];
+  // Point2d endpoints[num_tracks];
+  // for (int i = 0; i < num_tracks; i++){
+  //   memset(namebuf, 0, 100);
+  //   sprintf(namebuf, "%strial%03d/track.txt", datapath, i+1);
+  //   endpoints[i] = ReadEndpoint(namebuf);
+  //   printf("endpoints[%d]: x = %f, y = %f, trial0%02d\n",
+  //   	   i, endpoints[i].x, endpoints[i].y, i+1);
+  //}
 
   //make matrix of angles to obstacles
   double angle_matrix[num_obstacles][num_tracks];
@@ -197,65 +195,152 @@ int main(int argc, char** argv)
     }
   }
 
+  //read in sentences
+  memset(filename, 0, 100);
+  sprintf(filename, "%ssentences.txt", datapath);
+  int num_sentences = LineCount(filename);
+  FILE* sentence_fp = fopen(filename, "r");
+  if (sentence_fp == NULL)
+    {
+      printf("ERROR! Sentence file '%s' does not exist\n", filename);
+      exit(1);
+    }
+  //needs work: hard limit of 100 chars for sentence length
+  char sentences[num_sentences][100];
+  char sentence_value[100]; 
+  for (int i = 0; i < num_sentences; i++) {
+    if (fgets(linebuf, 1000, sentence_fp) == NULL) {
+      printf("Error reading line in %s\n", filename);
+      exit(1);
+    }
+    int sentence_items = sscanf(linebuf, "%s", sentence_value);
+    if (sentence_items != 1) {
+      printf("**error in sscanf for sentences**\n");
+      continue;
+    }
+    strcpy(sentences[i], sentence_value);
+    //printf("sentences[%d] = %s\n", i, sentences[i]);
+  }
+  fclose(sentence_fp);
+
+
   //make matrix of scores
-  int num_sentences = 9; //4x single-obstacle prepositions * 2 obstacles
+  //int num_sentences = 9; //4x single-obstacle prepositions * 2 obstacles
                          //+ 1x double-obstacle preposition
   double the_matrix[num_sentences][num_tracks];
-  for (int i = 0; i < num_tracks; i++){
-    //dividing everything by pi here in order to see which values fall out of range [0,pi]
-    the_matrix[0][i] = Left(endpoints[i],table)/PI;
-    the_matrix[1][i] = Right(endpoints[i],table)/PI;
-    the_matrix[2][i] = Front(endpoints[i],table)/PI;
-    the_matrix[3][i] = Behind(endpoints[i],table)/PI;
-    the_matrix[4][i] = Left(endpoints[i],chair)/PI;
-    the_matrix[5][i] = Right(endpoints[i],chair)/PI;
-    the_matrix[6][i] = Front(endpoints[i],chair)/PI;
-    the_matrix[7][i] = Behind(endpoints[i],chair)/PI;
-    the_matrix[8][i] = Between(endpoints[i],table, chair)/PI;
+  for (int j = 0; j < num_sentences; j++){
+    //first need to figure out how many and which obstacle(s) are in the sentence
+    int obs_count = 0;
+    int obs_numbers[num_obstacles];
+    for (int k = 0; k < num_obstacles; k++){
+      if (strstr(sentences[j], obstacles[k].name) != NULL) {//found a match
+	obs_numbers[obs_count] = k;   
+	obs_count++;
+      } //now obs_count has the number of obstacles, and obs_numbers has the indexes into obstacles[] for the obstacle that matches
+    }
+    if (obs_count == 2) {  //between is our only 2-obstacle preposition so far
+      for (int i = 0; i < num_tracks; i++){
+	the_matrix[j][i] = Between(endpoints[i], obstacles[obs_numbers[0]].loc,
+				   obstacles[obs_numbers[1]].loc)/PI;
+      }
+    }
+    else { //we have a single-obstacle preposition, so need to figure out which one it is.
+      int winner;
+      for (int k = 0; k < k_num_prepositions; k++) {
+	if (strstr(sentences[j], k_prepositions[k]) != NULL)  //matched
+	  winner = k;
+      }
+      for (int i = 0; i < num_tracks; i++){
+	if (winner == 0) { //matched "left"
+	  the_matrix[j][i] = Left(endpoints[i], obstacles[obs_numbers[0]].loc)/PI;
+	}
+      	else if (winner == 1) { //matched "right"
+	   the_matrix[j][i] = Right(endpoints[i], obstacles[obs_numbers[0]].loc)/PI;
+	}
+	else if (winner == 2) { //matched "front"
+	   the_matrix[j][i] = Front(endpoints[i], obstacles[obs_numbers[0]].loc)/PI;
+	}
+	else if (winner == 3) { //matched "behind"
+	  the_matrix[j][i] = Behind(endpoints[i], obstacles[obs_numbers[0]].loc)/PI;
+	}
+	else { //winner==4 matches "between", which shouldn't have happened
+	  printf("ERROR IN MAKING THE MATRIX, j = %d\n", j);
+	}
+      }
+    }
   }
-  //print the matrix
-  printf("\n");
-  printf("                      1.L-T 2.L-T 4.R-C 5.F-T 6.F-T 7.B-T 8.B-T 9.BTC 10.BTC\n");
-  printf("Robot left of table:  %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 the_matrix[0][0], the_matrix[0][1], the_matrix[0][2],
-	 the_matrix[0][3], the_matrix[0][4], the_matrix[0][5],
-	 the_matrix[0][6], the_matrix[0][7], the_matrix[0][8]);
- printf("Robot right of chair: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 the_matrix[5][0], the_matrix[5][1], the_matrix[5][2],
-	 the_matrix[5][3], the_matrix[5][4], the_matrix[5][5],
-	 the_matrix[5][6], the_matrix[5][7], the_matrix[5][8]);
-  printf("Robot front of table: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 the_matrix[2][0], the_matrix[2][1], the_matrix[2][2],
-	 the_matrix[2][3], the_matrix[2][4], the_matrix[2][5],
-	 the_matrix[2][6], the_matrix[2][7], the_matrix[2][8]);
-  printf("Robot behind table:   %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 the_matrix[3][0], the_matrix[3][1], the_matrix[3][2],
-	 the_matrix[3][3], the_matrix[3][4], the_matrix[3][5],
-	 the_matrix[3][6], the_matrix[3][7], the_matrix[3][8]);
-  printf("Robot between\n"
-	 "table and chair:      %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 the_matrix[8][0], the_matrix[8][1], the_matrix[8][2],
-	 the_matrix[8][3], the_matrix[8][4], the_matrix[8][5],
-	 the_matrix[8][6], the_matrix[8][7], the_matrix[8][8]);
+  // for (int i = 0; i < num_tracks; i++){
+  //   //dividing everything by pi here in order to see which values fall out of range [0,pi]
+  //   the_matrix[0][i] = Left(endpoints[i],table)/PI;
+  //   the_matrix[1][i] = Right(endpoints[i],table)/PI;
+  //   the_matrix[2][i] = Front(endpoints[i],table)/PI;
+  //   the_matrix[3][i] = Behind(endpoints[i],table)/PI;
+  //   the_matrix[4][i] = Left(endpoints[i],chair)/PI;
+  //   the_matrix[5][i] = Right(endpoints[i],chair)/PI;
+  //   the_matrix[6][i] = Front(endpoints[i],chair)/PI;
+  //   the_matrix[7][i] = Behind(endpoints[i],chair)/PI;
+  //   the_matrix[8][i] = Between(endpoints[i],table, chair)/PI;
+  // }
 
-  printf("DIDN'T DO THE COMBINATIONS BELOW\n");
-  printf("Robot right of table: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 the_matrix[1][0], the_matrix[1][1], the_matrix[1][2],
-	 the_matrix[1][3], the_matrix[1][4], the_matrix[1][5],
-	 the_matrix[1][6], the_matrix[1][7], the_matrix[1][8]);
-  printf("Robot left of chair:  %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 the_matrix[4][0], the_matrix[4][1], the_matrix[4][2],
-	 the_matrix[4][3], the_matrix[4][4], the_matrix[4][5],
-	 the_matrix[4][6], the_matrix[4][7], the_matrix[4][8]);
- 
-  printf("Robot front of chair: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 the_matrix[6][0], the_matrix[6][1], the_matrix[6][2],
-	 the_matrix[6][3], the_matrix[6][4], the_matrix[6][5],
-	 the_matrix[6][6], the_matrix[6][7], the_matrix[6][8]);
-  printf("Robot behind chair:   %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
-	 the_matrix[7][0], the_matrix[7][1], the_matrix[7][2],
-	 the_matrix[7][3], the_matrix[7][4], the_matrix[7][5],
-	 the_matrix[7][6], the_matrix[7][7], the_matrix[7][8]);
+  //print the matrix
+  printf("\nSentence\\Run");
+  for (int i = 0; i < num_tracks; i++){
+    printf(",%s", tracks[i].truth);
+  }
+  printf("\n");
+  for (int j = 0; j < num_sentences; j++){
+    printf("%s", sentences[j]);
+    for (int i = 0; i < num_tracks; i++) {
+      printf(",%5.2f", the_matrix[j][i]);
+      if (i == (num_tracks - 1))
+	printf("\n");
+    }
+  }
+
+  //  printf("\n");
+  //  printf("                      1.L-T 2.L-T 4.R-C 5.F-T 6.F-T 7.B-T 8.B-T 9.BTC 10.BTC\n");
+  //  printf("Robot left of table:  %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+  // 	 the_matrix[0][0], the_matrix[0][1], the_matrix[0][2],
+  // 	 the_matrix[0][3], the_matrix[0][4], the_matrix[0][5],
+  // 	 the_matrix[0][6], the_matrix[0][7], the_matrix[0][8]);
+  // printf("Robot right of chair: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+  // 	 the_matrix[5][0], the_matrix[5][1], the_matrix[5][2],
+  // 	 the_matrix[5][3], the_matrix[5][4], the_matrix[5][5],
+  // 	 the_matrix[5][6], the_matrix[5][7], the_matrix[5][8]);
+  //  printf("Robot front of table: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+  // 	 the_matrix[2][0], the_matrix[2][1], the_matrix[2][2],
+  // 	 the_matrix[2][3], the_matrix[2][4], the_matrix[2][5],
+  // 	 the_matrix[2][6], the_matrix[2][7], the_matrix[2][8]);
+  //  printf("Robot behind table:   %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+  // 	 the_matrix[3][0], the_matrix[3][1], the_matrix[3][2],
+  // 	 the_matrix[3][3], the_matrix[3][4], the_matrix[3][5],
+  // 	 the_matrix[3][6], the_matrix[3][7], the_matrix[3][8]);
+  //  printf("Robot between\n"
+  // 	 "table and chair:      %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+  // 	 the_matrix[8][0], the_matrix[8][1], the_matrix[8][2],
+  // 	 the_matrix[8][3], the_matrix[8][4], the_matrix[8][5],
+  // 	 the_matrix[8][6], the_matrix[8][7], the_matrix[8][8]);
+  
+  //  printf("DIDN'T DO THE COMBINATIONS BELOW\n");
+  //  printf("Robot right of table: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+  // 	 the_matrix[1][0], the_matrix[1][1], the_matrix[1][2],
+  // 	 the_matrix[1][3], the_matrix[1][4], the_matrix[1][5],
+  // 	 the_matrix[1][6], the_matrix[1][7], the_matrix[1][8]);
+  //  printf("Robot left of chair:  %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+  // 	 the_matrix[4][0], the_matrix[4][1], the_matrix[4][2],
+  // 	 the_matrix[4][3], the_matrix[4][4], the_matrix[4][5],
+  // 	 the_matrix[4][6], the_matrix[4][7], the_matrix[4][8]);
+  
+  //  printf("Robot front of chair: %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+  // 	 the_matrix[6][0], the_matrix[6][1], the_matrix[6][2],
+  // 	 the_matrix[6][3], the_matrix[6][4], the_matrix[6][5],
+  // 	 the_matrix[6][6], the_matrix[6][7], the_matrix[6][8]);
+  //  printf("Robot behind chair:   %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f %5.2f\n",
+  // 	 the_matrix[7][0], the_matrix[7][1], the_matrix[7][2],
+  // 	 the_matrix[7][3], the_matrix[7][4], the_matrix[7][5],
+  // 	 the_matrix[7][6], the_matrix[7][7], the_matrix[7][8]);
+  
+  //do evaluation on the matrix to find best by row and column, and keep tally of right/wrong
 
   return 0;
 }
@@ -385,8 +470,29 @@ int ReadTrack(char* path, Track_t* track){
   }
   //now read track file
   track->num_points = LineCount(trackbuf);
-  track->points = new Point2d[track->num_points];
-  
+  FILE* track_fp = fopen(trackbuf, "r");
+  if (track_fp == NULL) {
+    printf("ERROR! Track file '%s' does not exist\n", trackbuf);
+    return 1;
+  }
+  track->points = new Point2d[track->num_points]; //where to delete these?
+  track->thetas = new float[track->num_points];
+  float X, Y, Theta;
+  for (int i = 0; i < track->num_points; i++) {
+    if (fgets(linebuf, 1000, track_fp) == NULL) {
+      printf("Error reading line in %s\n", trackbuf);
+      return 1;
+    }
+    int track_items = sscanf(linebuf,"X:%f,Y:%f,Theta:%f",&X,&Y,&Theta);
+    if (track_items != 3){
+      printf("******************ERROR in sscanf****************\n");
+      continue;
+    }
+    track->points[i].x = X;
+    track->points[i].y = Y;
+    track->thetas[i] = Theta;
+  }
   //success if we get here
+  fclose(track_fp);
   return 0;
 }
