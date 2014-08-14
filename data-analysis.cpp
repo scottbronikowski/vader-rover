@@ -220,7 +220,7 @@ int main(int argc, char** argv)
     if (obs_count == 2) {  //between is our only 2-obstacle preposition so far
       for (int i = 0; i < num_tracks; i++){
 	the_matrix[j][i] = Between(endpoints[i], obstacles[obs_numbers[0]].loc,
-				   obstacles[obs_numbers[1]].loc)/PI;
+				   obstacles[obs_numbers[1]].loc);
       }
     }
     else { //we have a single-obstacle preposition, so need to figure out which one it is.
@@ -231,16 +231,16 @@ int main(int argc, char** argv)
       }
       for (int i = 0; i < num_tracks; i++){
 	if (winner == 0) { //matched "left"
-	  the_matrix[j][i] = Left(endpoints[i], obstacles[obs_numbers[0]].loc)/PI;
+	  the_matrix[j][i] = Left(endpoints[i], obstacles[obs_numbers[0]].loc);
 	}
       	else if (winner == 1) { //matched "right"
-	   the_matrix[j][i] = Right(endpoints[i], obstacles[obs_numbers[0]].loc)/PI;
+	   the_matrix[j][i] = Right(endpoints[i], obstacles[obs_numbers[0]].loc);
 	}
 	else if (winner == 2) { //matched "front"
-	   the_matrix[j][i] = Front(endpoints[i], obstacles[obs_numbers[0]].loc)/PI;
+	   the_matrix[j][i] = Front(endpoints[i], obstacles[obs_numbers[0]].loc);
 	}
 	else if (winner == 3) { //matched "behind"
-	  the_matrix[j][i] = Behind(endpoints[i], obstacles[obs_numbers[0]].loc)/PI;
+	  the_matrix[j][i] = Behind(endpoints[i], obstacles[obs_numbers[0]].loc);
 	}
 	else { //winner==4 matches "between", which shouldn't have happened
 	  printf("ERROR IN MAKING THE MATRIX, j = %d\n", j);
@@ -254,7 +254,7 @@ int main(int argc, char** argv)
   sprintf(outfile, "%sanalysis-matrix.csv", datapath);
   FILE* out_fp = fopen(outfile, "w");
   //printf("\nSentence\\Truth");
-  fprintf(out_fp,"Sentence\\Truth");
+  fprintf(out_fp,"Sentence\\Run(Truth)");
   for (int i = 0; i < num_tracks; i++){
     //printf(",%s", tracks[i].truth);
     fprintf(out_fp,",%s", tracks[i].truth);
@@ -274,9 +274,80 @@ int main(int argc, char** argv)
     }
   }
   fclose(out_fp);
-  printf("\nResults matrix written to %s\n", outfile);
+  printf("\nResults matrix written to %s\n\n", outfile);
   
   //do evaluation on the matrix to find best by row and column, and keep tally of right/wrong
+  char outfile2[100];
+  sprintf(outfile2,"%sresults.txt",datapath);
+  FILE* out_fp2 = fopen(outfile2, "w");
+  printf("Sentence-to-run and run-to-sentence results below written to %s\n\n", outfile2);
+  //first do rows
+  double maxval;
+  int row_winner[num_sentences];
+  bool row_correct[num_sentences];
+  int correct_count = 0;
+  int total = 0;
+  for (int j = 0; j < num_sentences; j++) {
+    maxval = -1.0;
+    for (int i = 0; i < num_tracks; i++) {
+      if (the_matrix[j][i] > maxval) {
+	maxval = the_matrix[j][i];
+	row_winner[j] = i;
+      }
+    }
+    if ((strcmp(sentences[j], tracks[row_winner[j]].truth)) == 0){
+      row_correct[j] = true;
+      correct_count++;
+    }
+    else {
+      row_correct[j] = false;
+    }
+    total++;
+    printf("Sentence %d '%s' matches run %d '%s' which is %s\n",
+	   j+1, sentences[j], row_winner[j]+1, tracks[row_winner[j]].truth,
+	   row_correct[j]? "correct" : "INCORRECT");
+    fprintf(out_fp2, "Sentence %d '%s' matches run %d '%s' which is %s\n",
+	    j+1, sentences[j], row_winner[j]+1, tracks[row_winner[j]].truth,
+	    row_correct[j]? "correct" : "INCORRECT");
+  }
+  printf("\nSentence-to-run accuracy: %f\n\n", (double)correct_count/total);
+  fprintf(out_fp2,"\nSentence-to-run accuracy: %f\n\n", 
+	  (double)correct_count/total);
+
+  //now do columns
+  int col_winner[num_tracks];
+  bool col_correct[num_tracks];
+  correct_count = 0;
+  total = 0;
+  for (int i = 0; i < num_tracks; i++) {
+    maxval = -1.0;
+    for (int j = 0; j < num_sentences; j++) {
+      if (the_matrix[j][i] > maxval) {
+	maxval = the_matrix[j][i];
+	col_winner[i] = j;
+      }
+    }
+    if ((strcmp(tracks[i].truth, sentences[col_winner[i]])) == 0) {
+      col_correct[i] = true;
+      correct_count++;
+    }
+    else {
+      col_correct[i] = false;
+    }
+    total++;
+    printf("Run %d '%s' matches sentence %d '%s' which is %s\n",
+	   i+1, tracks[i].truth, col_winner[i]+1, sentences[col_winner[i]],
+	   col_correct[i]? "correct" : "INCORRECT");
+    fprintf(out_fp2,"Run %d '%s' matches sentence %d '%s' which is %s\n",
+	    i+1, tracks[i].truth, col_winner[i]+1, sentences[col_winner[i]],
+	    col_correct[i]? "correct" : "INCORRECT");
+  }
+  printf("\nRun-to-sentence accuracy: %f\n\n", (double)correct_count/total);
+  fprintf(out_fp2,"\nRun-to-sentence accuracy: %f\n\n", 
+	  (double)correct_count/total);
+
+  //done with outfile2
+  fclose(out_fp2);
 
   return 0;
 }
@@ -312,26 +383,26 @@ double AngleBetween(Point2d p1, Point2d p2){
   return atan2(p1.y - p2.y, p1.x - p2.x);} //always returns [-pi, pi)
 
 //the prepositional functions below return a value based on the difference between
-//the observed angle and the desired angle-->higher value is better, best
-//possible value is 0
+//the observed angle and the desired angle (divided by PI)-->higher value is better, best
+//possible value is 0, worst is -1
 double Left(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(fabs(angle) - PI);
+  return -fabs(fabs(angle) - PI)/PI;
 }
 
 double Right(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(angle); //no need to normalize here b/c atan2 is always between +/-pi
+  return -fabs(angle)/PI; //no need to normalize here b/c atan2 is always between +/-pi
 }
 
 double Front(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(normalize_orientation(angle - (-PI/2)));
+  return -fabs(normalize_orientation(angle - (-PI/2)))/PI;
 }
 
 double Behind(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(normalize_orientation(angle - PI/2));
+  return -fabs(normalize_orientation(angle - PI/2))/PI;
 }
 
 double Between(Point2d robot, Point2d obstacle1, Point2d obstacle2){
@@ -340,7 +411,7 @@ double Between(Point2d robot, Point2d obstacle1, Point2d obstacle2){
   //is it necessary to compute the angle between the two obstacles?
   //or will the difference between the angles always be compared to pi?
   //return -fabs(PI - fabs(angle1 - angle2));
-  return -fabs(PI - fabs(angle1 - angle2));
+  return -fabs(PI - fabs(angle1 - angle2))/PI;
 }
 
 Point2d ReadEndpoint(char* filename){

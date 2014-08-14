@@ -1,0 +1,21 @@
+Sentence 1 'left-of-table' matches run 8 'behind-table' which is INCORRECT
+Sentence 2 'right-of-chair' matches run 4 'right-of-chair' which is correct
+Sentence 3 'front-of-table' matches run 5 'front-of-table' which is correct
+Sentence 4 'behind-table' matches run 7 'behind-table' which is correct
+Sentence 5 'between-table-and-chair' matches run 10 'between-table-and-chair' which is correct
+
+Sentence-to-run accuracy: 0.800000
+
+Run 1 'left-of-table' matches sentence 1 'left-of-table' which is correct
+Run 2 'left-of-table' matches sentence 1 'left-of-table' which is correct
+Run 3 'right-of-chair' matches sentence 3 'front-of-table' which is INCORRECT
+Run 4 'right-of-chair' matches sentence 2 'right-of-chair' which is correct
+Run 5 'front-of-table' matches sentence 3 'front-of-table' which is correct
+Run 6 'front-of-table' matches sentence 3 'front-of-table' which is correct
+Run 7 'behind-table' matches sentence 4 'behind-table' which is correct
+Run 8 'behind-table' matches sentence 1 'left-of-table' which is INCORRECT
+Run 9 'between-table-and-chair' matches sentence 5 'between-table-and-chair' which is correct
+Run 10 'between-table-and-chair' matches sentence 5 'between-table-and-chair' which is correct
+
+Run-to-sentence accuracy: 0.800000
+

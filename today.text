@@ -668,6 +668,8 @@ Goal: Start building larger grammar for 100-run test.  Initial thought is using 
 --Cleaned up output of log_to_track.cpp by commenting out printfs.
 --Deleted old/commented-out code in data-analysis.cpp
 --Shortened output of data-analysis.cpp.  Still a few printfs to stdout, but matrix data now written to analysis-matrix.csv-->can open easily as spreadsheet to inspect matrix (which will come in handy when matrix is bigger than 5x10).
+------
+--Have automated scoring/accuracy complete and working.  Results currently both printed to stdout and to results.txt.  Results show which combinations are correct/incorrect as well as a percentage correct for both sentence-to-run (best column for a row) and run-to-sentence (best row for a column)
 
 15 Aug 14
 Goal: Continue working on expanded grammar.
