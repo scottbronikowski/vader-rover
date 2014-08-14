@@ -665,7 +665,9 @@ Goal: Finish all preposition function formulations.
 
 14 Aug 14
 Goal: Start building larger grammar for 100-run test.  Initial thought is using 7 prepositions (Right, Left, Front, Back, Between, Near, Far) with 5 obstacles (Table, Chair, Box, Cone, Ball), but that only gives me ~40 sentences with a single preposition.  Would it be better to do multiple runs of the same sentence (either with the same or different obstacle arrangement), or to create sentences with multiple prepositions, or to add more prepositions/obstacles?
-
+--Cleaned up output of log_to_track.cpp by commenting out printfs.
+--Deleted old/commented-out code in data-analysis.cpp
+--Shortened output of data-analysis.cpp.  Still a few printfs to stdout, but matrix data now written to analysis-matrix.csv-->can open easily as spreadsheet to inspect matrix (which will come in handy when matrix is bigger than 5x10).
 
 15 Aug 14
 Goal: Continue working on expanded grammar.

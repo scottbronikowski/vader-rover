@@ -177,7 +177,7 @@ int read_log_file(char* filename, Mat measurements[])
 	}
 
     }
-  printf("n_measurements:%d\n",n_measurements);
+  //printf("n_measurements:%d\n",n_measurements);
   return n_measurements;
 }
 
@@ -289,15 +289,15 @@ int main(int args, char** argv)
   char* logpath = argv[2];
   char* outpath = argv[3];
 
-  printf("configpath:%s\n",configpath);
-  printf("logpath:%s\n",logpath);
-  printf("outpath:%s\n",outpath);
+  // printf("configpath:%s\n",configpath);
+  // printf("logpath:%s\n",logpath);
+  // printf("outpath:%s\n",outpath);
 
 
 
   read_config_file(configpath);
   Mat measurements[80000];
-  printf("I was lazy, so there is a needless hard limit of 80000 measurements\n");
+  //printf("I was lazy, so there is a needless hard limit of 80000 measurements\n");
   int nmeasurements = read_log_file(logpath, measurements);
   FILE* outfile = fopen(outpath,"w");
   
