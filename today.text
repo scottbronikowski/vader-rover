@@ -670,6 +670,46 @@ Goal: Start building larger grammar for 100-run test.  Initial thought is using 
 --Shortened output of data-analysis.cpp.  Still a few printfs to stdout, but matrix data now written to analysis-matrix.csv-->can open easily as spreadsheet to inspect matrix (which will come in handy when matrix is bigger than 5x10).
 ------
 --Have automated scoring/accuracy complete and working.  Results currently both printed to stdout and to results.txt.  Results show which combinations are correct/incorrect as well as a percentage correct for both sentence-to-run (best column for a row) and run-to-sentence (best row for a column)
+------
+--Changed prepositional functions to scale from 0 to 1 by taking 1 - (prev output / pi).  Higher scores still best.  Output looks like:
+sbroniko@seykhl:/amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover$ ./data-analysis ./data/test-2014-07-31/ 10
+./data/test-2014-07-31/setup.txt processed:
+	left_edge = -3.11, right_edge = 3.02, top_edge = 5.09
+	Obstacle: table at x = -1.26, y = 2.55
+	Obstacle: chair at x = 1.26, y = 2.54
+10 track.txt files created
+10 tracks read in from tracks.txt files
+
+Matrix of angle (radians) between robot endpoint and obstacle, by run
+           1     2     3     4     5     6     7     8     9    10
+table: -2.62 -2.46 -1.11 -0.05 -1.46 -1.71  1.59 -3.10  0.11  0.01
+chair: -2.95 -2.92 -2.03 -0.26 -2.77 -2.68  2.71 -3.13  3.02  3.13
+
+Results matrix written to ./data/test-2014-07-31/analysis-matrix.csv
+
+Sentence-to-run and run-to-sentence results below written to ./data/test-2014-07-31/results.txt
+
+Sentence 1 'left-of-table' matches run 8 'behind-table' which is INCORRECT
+Sentence 2 'right-of-chair' matches run 4 'right-of-chair' which is correct
+Sentence 3 'front-of-table' matches run 5 'front-of-table' which is correct
+Sentence 4 'behind-table' matches run 7 'behind-table' which is correct
+Sentence 5 'between-table-and-chair' matches run 10 'between-table-and-chair' which is correct
+
+Sentence-to-run accuracy: 0.800000
+
+Run 1 'left-of-table' matches sentence 1 'left-of-table' which is correct
+Run 2 'left-of-table' matches sentence 1 'left-of-table' which is correct
+Run 3 'right-of-chair' matches sentence 3 'front-of-table' which is INCORRECT
+Run 4 'right-of-chair' matches sentence 2 'right-of-chair' which is correct
+Run 5 'front-of-table' matches sentence 3 'front-of-table' which is correct
+Run 6 'front-of-table' matches sentence 3 'front-of-table' which is correct
+Run 7 'behind-table' matches sentence 4 'behind-table' which is correct
+Run 8 'behind-table' matches sentence 1 'left-of-table' which is INCORRECT
+Run 9 'between-table-and-chair' matches sentence 5 'between-table-and-chair' which is correct
+Run 10 'between-table-and-chair' matches sentence 5 'between-table-and-chair' which is correct
+
+Run-to-sentence accuracy: 0.800000
+
 
 15 Aug 14
 Goal: Continue working on expanded grammar.

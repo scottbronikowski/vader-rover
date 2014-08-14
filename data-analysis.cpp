@@ -383,26 +383,27 @@ double AngleBetween(Point2d p1, Point2d p2){
   return atan2(p1.y - p2.y, p1.x - p2.x);} //always returns [-pi, pi)
 
 //the prepositional functions below return a value based on the difference between
-//the observed angle and the desired angle (divided by PI)-->higher value is better, best
-//possible value is 0, worst is -1
+//the observed angle and the desired angle (divided by PI)
+//this gives a value x between 0 (best) and -1 (worst), so taking 1 - x
+//scales to [0,1) with higher still better
 double Left(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(fabs(angle) - PI)/PI;
+  return 1 - (fabs(fabs(angle) - PI)/PI);
 }
 
 double Right(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(angle)/PI; //no need to normalize here b/c atan2 is always between +/-pi
+  return 1 - (fabs(angle)/PI); //no need to normalize here b/c atan2 is always between +/-pi
 }
 
 double Front(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(normalize_orientation(angle - (-PI/2)))/PI;
+  return 1-fabs(normalize_orientation(angle - (-PI/2)))/PI;
 }
 
 double Behind(Point2d robot, Point2d obstacle){
   double angle = AngleBetween(robot,obstacle);
-  return -fabs(normalize_orientation(angle - PI/2))/PI;
+  return 1 - (fabs(normalize_orientation(angle - PI/2))/PI);
 }
 
 double Between(Point2d robot, Point2d obstacle1, Point2d obstacle2){
@@ -411,7 +412,7 @@ double Between(Point2d robot, Point2d obstacle1, Point2d obstacle2){
   //is it necessary to compute the angle between the two obstacles?
   //or will the difference between the angles always be compared to pi?
   //return -fabs(PI - fabs(angle1 - angle2));
-  return -fabs(PI - fabs(angle1 - angle2))/PI;
+  return 1 - (fabs(PI - fabs(angle1 - angle2))/PI);
 }
 
 Point2d ReadEndpoint(char* filename){
