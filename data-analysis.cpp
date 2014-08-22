@@ -114,6 +114,7 @@ int main(int argc, char** argv)
   //create track.txt files from imu-log.txt files
   char logbuf[100];
   char outbuf[100];
+  char outbuf2[100];
   char cmdbuf[400];
   int counter = 0;
   for (int i = 0; i < num_tracks; i++){
@@ -121,12 +122,15 @@ int main(int argc, char** argv)
     sprintf(logbuf, "%strial%03d/imu-log.txt", datapath, i+1);
     memset(outbuf, 0, 100);
     sprintf(outbuf, "%strial%03d/track.txt", datapath, i+1);
+    memset(outbuf2, 0, 100);
+    sprintf(outbuf2, "%strial%03d/trace.txt", datapath, i+1);
     memset(cmdbuf, 0, 400);
-    sprintf(cmdbuf, "./log-to-track.out ./config.txt %s %s", logbuf, outbuf);
+    sprintf(cmdbuf, "./log-to-track.out ./config.txt %s %s %s", logbuf, outbuf, outbuf2);
     system(cmdbuf);
     counter++;
   }
   printf("%d track.txt files created\n", counter);
+  printf("%d trace.txt files created\n", counter);
   //read track data in from tracks.txt/truth.txt files files
   char namebuf[100];
   Track_t tracks[num_tracks];

@@ -279,15 +279,16 @@ int main(int args, char** argv)
 {
   
 
-  if (args!=4)
+  if (args!=5)
     {
-      printf("requires 3 arguments: configpath logpath outpath\n");
+      printf("requires 4 arguments: configpath logpath outpath(C) outpath(Scheme)\n");
       exit(1);
     }
 
   char* configpath = argv[1];
   char* logpath = argv[2];
   char* outpath = argv[3];
+  char* outpath2 = argv[4];
 
   // printf("configpath:%s\n",configpath);
   // printf("logpath:%s\n",logpath);
@@ -300,7 +301,8 @@ int main(int args, char** argv)
   //printf("I was lazy, so there is a needless hard limit of 80000 measurements\n");
   int nmeasurements = read_log_file(logpath, measurements);
   FILE* outfile = fopen(outpath,"w");
-  
+  FILE* outfile2 = fopen(outpath2, "w");
+  fprintf(outfile2, "(");
 
   Mat measurement = Mat::zeros(7,1,CV_32F);
   Mat control = Mat::zeros(2,1,CV_32F);
@@ -376,12 +378,22 @@ int main(int args, char** argv)
 	      (float) 0.0,
 	      (float) 0.0,
 	      (float) 0.0);
+      fprintf(outfile2,
+	      "(%f %f %f)\n",
+	      (float) 0.0,
+	      (float) 0.0,
+	      (float) 0.0);	      
     }
   else
     for(timestep=0;timestep<nmeasurements;timestep++)
       {
 	fprintf(outfile,
 		"X:%f,Y:%f,Theta:%f\n",
+		KF.statePost.at<float>(0),
+		KF.statePost.at<float>(1),
+		KF.statePost.at<float>(2));
+	fprintf(outfile2,
+		"(%f %f %f)\n",
 		KF.statePost.at<float>(0),
 		KF.statePost.at<float>(1),
 		KF.statePost.at<float>(2));
@@ -408,5 +420,7 @@ int main(int args, char** argv)
 	KF = execute_time_step(KF, TransitionModel,MeasurementModel_noGPS, KF.controlMatrix, measurement,control);
       }
   fclose(outfile);
+  fprintf(outfile2, ")");
+  fclose(outfile2);
   return 0;
 }

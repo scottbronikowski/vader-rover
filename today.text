@@ -710,9 +710,11 @@ Run 10 'between-table-and-chair' matches sentence 5 'between-table-and-chair' wh
 
 Run-to-sentence accuracy: 0.800000
 
-
 15 Aug 14
 Goal: Continue working on expanded grammar.
+--Started reading The Little Schemer.
+
+
 
 ***********************TO DO*******************************
 ***ON NEXT DATA COLLECTION, MEASURE GROUND-TRUTH OF ENDPOINTS!!!!
