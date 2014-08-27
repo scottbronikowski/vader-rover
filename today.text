@@ -714,7 +714,52 @@ Run-to-sentence accuracy: 0.800000
 Goal: Continue working on expanded grammar.
 --Started reading The Little Schemer.
 
+18 Aug 14
+Goal: Finish Little Schemer and start on Seasoned Schemer
+--Continued working through Little Schemer.
 
+19 Aug 14
+Goal: Finish Seasoned Schemer and start on HTDP
+--Continued working through Little Schemer.
+
+20 Aug 14
+Goal: Work on HTDP
+--Created generator.sc, recognizer.sc, and parser.sc in ~/vader-rover/scheme as initial generator, recognizer, and parser for my grammar.
+--Finished working through Little Schemer and started on Seasoned Schemer.  Also reading HTDP.
+
+21 Aug 14
+Goal: Work on HTDP
+--Continued working through Seasoned Schemer and reading HTDP.
+
+22 Aug 14
+Goal: Work on HTDP
+--Combined generator.sc, recognizer.sc, and parser.sc into toollib-analysis.sc in ~/vader-rover.  Also plan to use the same file as one consolidated location for Scheme code for data analysis
+--modified log_to_track.cpp and data-analysis.cpp in order to produce a new position file ('trace.txt') for each trial that has the (x y theta) triples in a format easily readable by Scheme.
+--Implemented read-trace and get-endpoint in toollib-analysis.sc.  They appear to work correctly.  Have obstacles (the-table, the-chair) hardcoded for now. 
+--Implemented my five preposition functions (left-of, right-of, in-front-of, behind, between), along with necessary helper functions, in Scheme in toollib-analysis.sc.  Did a quick comparison against C results and got the same answers, so I think I implemented them correctly.
+--Continued working through Seasoned Schemer and reading HTDP.
+
+25 Aug 14
+Goal: Finish last 4 chapters of Seasoned Schemer.
+--First class of CS/MA514
+--Finished 3 of the last 4 chapters.
+
+26 Aug 14
+Goal: Keep reading HTDP and thinking about how to build score-parse, score-sentence, produce-score-matrix, highest-scoring-sentence-for-trace, and highest-scoring-trace-for-sentence.
+--First class of EE661
+--Finished last chapter of Seasoned Schemer
+--Started changing the generator/recognizer/parser in toollib-analysis.sc to have the different types of words (subjects, verbs, one-object-prepositions, two-object-prepositions, objects, and conjunctions) defined in a single location, instead of individually listed in each section of the code.
+
+27 Aug 14
+Goal: Keep reading HTDP and thinking about how to build score-parse, score-sentence, produce-score-matrix, highest-scoring-sentence-for-trace, and highest-scoring-trace-for-sentence.
+--Finished modifications to generator/recognizer/parser to use unified definitions of word types.  Since the word groups are now defined as a single list--i.e., (define objects '(the-table the-chair))--instead of individual single-word lists, I couldn't use (either a b) in the generator.  I first tried (list (a-member-of objects)), but that didn't work with the parser because the parser expected a pair.  I instead used (cons (a-member-of objects) '()), which seems to work fine with the parser and recognizer.
+
+28 Aug 14
+Goal: Keep reading HTDP and thinking about how to build score-parse, score-sentence, produce-score-matrix, highest-scoring-sentence-for-trace, and highest-scoring-trace-for-sentence.
+
+
+29 Aug 14
+Goal: Keep reading HTDP and thinking about how to build score-parse, score-sentence, produce-score-matrix, highest-scoring-sentence-for-trace, and highest-scoring-trace-for-sentence.
 
 ***********************TO DO*******************************
 ***ON NEXT DATA COLLECTION, MEASURE GROUND-TRUTH OF ENDPOINTS!!!!

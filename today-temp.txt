@@ -1,8 +1,0 @@
-20 Aug 14
---Created generator.sc, recognizer.sc, and parser.sc in ~/vader-rover/scheme as initial generator, recognizer, and parser for my grammar.
-
-22 Aug 14
---Combined generator.sc, recognizer.sc, and parser.sc into toollib-analysis.sc in ~/vader-rover.  Also plan to use the same file as one consolidated location for Scheme code for data analysis
---modified log_to_track.cpp and data-analysis.cpp in order to produce a new position file ('trace.txt') for each trial that has the (x y theta) triples in a format easily readable by Scheme.
---Implemented read-trace and get-endpoint in toollib-analysis.sc.  They appear to work correctly.  Have obstacles (the-table, the-chair) hardcoded for now. 
---Implemented my five preposition functions (left-of, right-of, in-front-of, behind, between), along with necessary helper functions, in Scheme in toollib-analysis.sc.  Did a quick comparison against C results and got the same answers, so I think I implemented them correctly.

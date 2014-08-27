@@ -1,23 +1,41 @@
+;;definitions of word types
+(define subjects '(the-robot))
+(define verbs '(went))
+(define one-object-prepositions '(left-of right-of behind in-front-of))
+(define two-object-prepositions '(between))
+(define objects '(the-table the-chair))
+(define conjunctions '(and))
+
 ;; Generator for robot speech control grammar (adapted from EE570 mad-libs.sc)
 ;; Author: Scott Bronikowski
 ;; Date: 20 August 2014
 
 
-(define (a-subject) (either '(the-robot)))
+(define (a-subject) (cons (a-member-of subjects) '()))
+;;(list (a-member-of subjects)))
+;;(either '(the-robot)))
 
-(define (a-verb) (either '(went)))
+(define (a-verb) (cons (a-member-of verbs) '()))
+;;(list (a-member-of verbs)))
+ ;;(either '(went)))
 
-(define (a-one-object-preposition)
- (either '(left-of) '(right-of) '(behind) '(in-front-of)))
+(define (a-one-object-preposition) (cons (a-member-of one-object-prepositions) '()))
+;; (list (a-member-of one-object-prepositions)))
+;; (either '(left-of) '(right-of) '(behind) '(in-front-of)))
 
-(define (a-two-object-preposition)
- (either '(between)))
+(define (a-two-object-preposition) (cons (a-member-of two-object-prepositions) '()))
+;; (list (a-member-of two-object-prepositions)))
+;; (either '(between)))
 
 ;;(define (an-article) (either '(the)))
 
-(define (an-object) (either '(the-table) '(the-chair)))
+(define (an-object) (cons (a-member-of objects) '()))
+;;(list (a-member-of objects)))
+;;(either '(the-table) '(the-chair)))
 
-(define (a-conjunction) (either '(and)))
+(define (a-conjunction) (cons (a-member-of conjunctions) '()))
+;;(list (a-member-of conjunctions)))
+;;(either '(and)))
 
 (define (a-predicate)
  (either (append (a-verb) (a-one-object-preposition) (an-object))
@@ -42,26 +60,28 @@
  (rest words))
 
 (define (strip-a-subject words)
- (strip-a-word words '(the-robot)))
+ (strip-a-word words subjects));;'(the-robot)))
 
 (define (strip-a-verb words)
- (strip-a-word words '(went)))
+ (strip-a-word words verbs));;'(went)))
 
 (define (strip-a-one-object-preposition words)
- (strip-a-word words '(left-of right-of behind in-front-of)))
+ (strip-a-word words one-object-prepositions));;'(left-of right-of behind in-front-of)))
 
 (define (strip-a-two-object-preposition words)
- (strip-a-word words '(between)))
+ (strip-a-word words two-object-prepositions));;'(between)))
 
 (define (strip-an-object words)
- (strip-a-word words '(the-table the-chair)))
+ (strip-a-word words objects));;'(the-table the-chair)))
 
 (define (strip-a-conjunction words)
- (strip-a-word words '(and)))
+ (strip-a-word words conjunctions));;'(and)))
 
 (define (strip-a-predicate words)
  (either (strip-an-object (strip-a-one-object-preposition (strip-a-verb words)))
-	 (strip-an-object (strip-a-conjunction (strip-an-object (strip-a-two-object-preposition (strip-a-verb words)))))))
+	 (strip-an-object
+	  (strip-a-conjunction
+	   (strip-an-object (strip-a-two-object-preposition (strip-a-verb words)))))))
 
 (define (strip-a-sentence words)
  (strip-a-predicate (strip-a-subject words)))
@@ -121,22 +141,28 @@
 	      (state-words state))))
 
 (define (parse-a-subject state)
- (parse-a-word state 'subj '(the-robot)))
+ (parse-a-word state 'subj subjects))
+                           ;;'(the-robot)))
 
 (define (parse-a-verb state)
- (parse-a-word state 'v '(went)))
+ (parse-a-word state 'v verbs))
+                        ;;'(went)))
 
 (define (parse-a-one-object-preposition state)
- (parse-a-word state 'prep-1 '(left-of right-of behind in-front-of)))
+ (parse-a-word state 'prep-1 one-object-prepositions))
+                             ;;'(left-of right-of behind in-front-of)))
 
 (define (parse-a-two-object-preposition state)
- (parse-a-word state 'prep-2 '(between)))
+ (parse-a-word state 'prep-2 two-object-prepositions))
+	                     ;;'(between)))
 
 (define (parse-an-object state)
- (parse-a-word state 'obj '(the-table the-chair)))
+ (parse-a-word state 'obj objects))
+                          ;;'(the-table the-chair)))
 
 (define (parse-a-conjunction state)
- (parse-a-word state 'conj '(and)))
+ (parse-a-word state 'conj conjunctions))
+                           ;;'(and)))
 
 (define (parse-a-predicate state)
  (either (pop-three 'pred (parse-an-object (parse-a-one-object-preposition (parse-a-verb state))))
@@ -166,7 +192,6 @@
 (define (location-of obstacle)
  (last obstacle))
 
-
 (define (normalize-angle angle)
  (cond
   ((> angle pi) (normalize-angle (- angle two-pi)))
@@ -192,4 +217,86 @@
  (let ((angle1 (angle-between robot (location-of obstacle1)))
        (angle2 (angle-between robot (location-of obstacle2))))
   (- 1 (/ (abs (- pi (abs (- angle1 angle2)))) pi))))
+
+
+;;email1 from Jeff 22Aug14
+;; A reasonable next step would be to figure out how you can take the parse tree
+;; produced by your parser, along with a lexicon and a trace, and produce a score.
+
+;; You would like to produce a function
+
+;;   (score-parse parse-tree lexicon trace) ==> score
+
+;;   lexicon would be a list of pairs ((word1 meaning1) (word2 meaning2) ...)
+;;   trace would be a list of x-y coordinates ((x1 y1) (x2 y2) ...)
+
+;; With this you could easily produce a function
+
+;;   (score-sentence sentence lexicon trace)
+;;   = (score-parse (parse-sentence sentence) lexicon trace)
+
+;; And with this you can easily write
+
+;;   (produce-score-matrix lexicon traces)
+
+;; that takes a list of traces, and calls your generator to generate all possible
+;; sentences, and produces the score matrix.
+
+;; And with this you can easily write
+
+;;   (highest-scoring-sentence-for-trace lexicon trace)
+
+;; that takes a trace and produces the highest scoring sentence (among all of
+;; those produced by your generator).
+
+;; And you can also easily write
+
+;;   (highest-scoring-trace-for-sentence lexicon sentence traces)
+;;-----------------------------
+
+;;email2 from Jeff 22Aug14
+;;    lexicon would be a list of pairs ((word1 meaning1) (word2 meaning2) ...)
+
+;;    I'm envisioning that the (word meaning) pairs would only apply to my
+;;    prepositions and objects, since my subject and verb are fixed values.  For
+;;    an object, the meaning would simply be the x-y location of the
+;;    object--i.e., (the-table (2.5 1.25)).  For a preposition, the meaning would
+;;    be a function, similar to the ones I wrote in C last week, that take an
+;;    object x-y position and a robot x-y position and return a score that
+;;    reflects how well or poorly that preposition describes the robot's
+;;    relationship to the object.  Am I on the right track with this?
+
+;; Yes.
+
+;; The only nontrivial part of this exercise is to figure out how to combine the
+;; meaning of a preposition and a noun to yield a meaning of a prepositional
+;; phrase. Everything else literally would take someone with Dan or Haonan's
+;; level of familiarity with Scheme (which is not much) a few minutes. That is
+;; why it is important to learn Scheme.
+
+;; Here is the nontrival part. Suppose a trace is a list of x-y-theta triples.
+;; And suppose I have coded a Scheme function (in-front-of coordinate1 coordinate2)
+;; which takes two x-y coordinates and returns a score for the first being in
+;; front of the second. You take the meaning of the word "in front of" to be
+
+;; (lambda (object)
+;;  (lambda (trace)
+;;   (in-front-of (but-last (last trace)) object)))
+
+;; and you take the meaning of "the table" to be something like
+
+;; '(42 915)
+
+;; and then you call the meaning of "in front of" on the meaning of "the table"
+;; and get
+
+;; (lambda (trace)
+;;  (in-front-of (but-last (last trace)) '(42 915)))
+
+;; Then (score-parse parse-tree lexicon trace) works by looking up "in front of"
+;; and "the table" in the lexicon, computing the above, and then calling
+;; (lambda (trace) ...) on trace to get the score.
+
+;; This all can be done in less than a page of Scheme code.
+;;----------------------
 
