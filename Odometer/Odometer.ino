@@ -40,7 +40,7 @@ unsigned long timestamp_old;
 unsigned long dt;
 long positionLeft;
 long positionRight;
-float avg_ticks_per_cm = (right_ticks_per_cm + left_ticks_per_cm) / 2;
+//float avg_ticks_per_cm = (right_ticks_per_cm + left_ticks_per_cm) / 2;
 
 
 Encoder encoderRight(4,3);
@@ -49,10 +49,10 @@ Encoder encoderLeft(1,2);
 void output()
 {
   float cm[2]; //left is 0, right is 1
-  //cm[0] = positionLeft / left_ticks_per_cm;
-  cm[0] = positionLeft / avg_ticks_per_cm;
-  //cm[1] = positionRight / right_ticks_per_cm;
-  cm[1] = positionRight / avg_ticks_per_cm;
+  cm[0] = positionLeft / left_ticks_per_cm;
+  //cm[0] = positionLeft / avg_ticks_per_cm;
+  cm[1] = positionRight / right_ticks_per_cm;
+  //cm[1] = positionRight / avg_ticks_per_cm;
   if (output_format == OUTPUT_FORMAT_BINARY)
   {
     unsigned char buf1[4]; //for timestamp (4-byte unsigned long)

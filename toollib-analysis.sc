@@ -5,6 +5,12 @@
 (define two-object-prepositions '(between))
 (define objects '(the-table the-chair))
 (define conjunctions '(and))
+(define word-lexicon (cons subjects
+			   (cons verbs
+				 (cons one-object-prepositions
+				       (cons two-object-prepositions
+					     (cons objects
+						   (cons conjunctions '())))))))
 
 ;; Generator for robot speech control grammar (adapted from EE570 mad-libs.sc)
 ;; Author: Scott Bronikowski
@@ -191,6 +197,7 @@
 (define the-chair '(the-chair (1.26 2.54)))
 (define (location-of obstacle)
  (last obstacle))
+(define obstacle-lexicon (cons the-table (cons the-chair '())))
 
 (define (normalize-angle angle)
  (cond
@@ -218,6 +225,39 @@
        (angle2 (angle-between robot (location-of obstacle2))))
   (- 1 (/ (abs (- pi (abs (- angle1 angle2)))) pi))))
 
+(define all-sentences (all-values (a-sentence)))
+
+(define (parse-sentence sentence) (a-parse sentence))
+
+(define (sentence-from-string string)
+ (map string->symbol (fields (string-upcase string))))
+
+(define (score-parse parse-tree lexicon trace)
+ ;; (let*
+ ;;   ((preposition (last (third (last parse-tree))))
+ ;;   (foo (if (some (lambda (x) (equal? x preposition)) two-object-prepositions)
+ ;; 	'found-two-object
+ ;; 	'found-one-object)))
+ ;;  foo
+ ;;  )
+ (let* ((preposition (last (third (last parse-tree))))
+	(endpoint (get-endpoint trace)) ;;using just endpoints for now
+	(obj1 (last (fourth (last parse-tree)))) ;;always at least one object
+	(obstacle1
+	 (list-ref lexicon (position obj1 (map first lexicon))))) 
+  (if (some (lambda (x) (equal? x preposition)) two-object-prepositions)
+      (let* ;;two-object preposition, need to get second object
+	((obj2 (last (sixth (last parse-tree))))
+	 (obstacle2
+	  (list-ref lexicon (position obj2 (map first lexicon))))) 
+       ((eval preposition) endpoint obstacle1 obstacle2))
+      ((eval preposition) endpoint obstacle1) ;;one-object preposition
+      )
+  )
+ )
+
+(define (score-sentence sentence lexicon trace)
+ (score-parse (parse-sentence sentence) lexicon trace))
 
 ;;email1 from Jeff 22Aug14
 ;; A reasonable next step would be to figure out how you can take the parse tree

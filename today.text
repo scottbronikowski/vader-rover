@@ -753,9 +753,16 @@ Goal: Keep reading HTDP and thinking about how to build score-parse, score-sente
 27 Aug 14
 Goal: Keep reading HTDP and thinking about how to build score-parse, score-sentence, produce-score-matrix, highest-scoring-sentence-for-trace, and highest-scoring-trace-for-sentence.
 --Finished modifications to generator/recognizer/parser to use unified definitions of word types.  Since the word groups are now defined as a single list--i.e., (define objects '(the-table the-chair))--instead of individual single-word lists, I couldn't use (either a b) in the generator.  I first tried (list (a-member-of objects)), but that didn't work with the parser because the parser expected a pair.  I instead used (cons (a-member-of objects) '()), which seems to work fine with the parser and recognizer.
+--Fixed problem with SSH key on github (new key is ~/.ssh/id_rsa_github)
+--Tried rebooting rover to fix SSH key issue and found that the USB Wifi adapter is not connecting to PAL3.0 anymore. Trying to troubleshoot the issue. Problem seems to be something with PAL3.0 and authentication, since I can get the USB Wifi to connect to qobi-office and qobi-cccp (open wifi) with no problems.  I have submitted a trouble ticket to ECN and am awaiting a response.   
 
 28 Aug 14
 Goal: Keep reading HTDP and thinking about how to build score-parse, score-sentence, produce-score-matrix, highest-scoring-sentence-for-trace, and highest-scoring-trace-for-sentence.
+--Finished score-parse and score-sentence.  Started working on a helper function to read all trace.txt files into one list of multiple traces, for use with produce-score-matrix
+
+***FOR ME ONLY***
+--(length (last (a-parse (list sentence)))) = 4 for one object, 6 for two object
+--(third (last (a-parse (list sentence)))) gives preposition (PREP-N X)--can I use the prep-n part to determine what to do?
 
 
 29 Aug 14

@@ -1,0 +1,9 @@
+# interfaces(5) file used by ifup(8) and ifdown(8)
+
+### USB Wifi adapter
+allow-hotplug wlan1
+auto wlan1
+iface wlan1 inet dhcp
+       pre-up wpa_supplicant -iwlan1 -c/etc/wpa_supplicant.conf -B		
+       down killall wpa_supplicant
+
