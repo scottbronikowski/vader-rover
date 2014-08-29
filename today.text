@@ -759,14 +759,16 @@ Goal: Keep reading HTDP and thinking about how to build score-parse, score-sente
 28 Aug 14
 Goal: Keep reading HTDP and thinking about how to build score-parse, score-sentence, produce-score-matrix, highest-scoring-sentence-for-trace, and highest-scoring-trace-for-sentence.
 --Finished score-parse and score-sentence.  Started working on a helper function to read all trace.txt files into one list of multiple traces, for use with produce-score-matrix
-
-***FOR ME ONLY***
---(length (last (a-parse (list sentence)))) = 4 for one object, 6 for two object
---(third (last (a-parse (list sentence)))) gives preposition (PREP-N X)--can I use the prep-n part to determine what to do?
-
+--Emailed ITaP reference PAL3.0 issue.  Also found on the purduelug.org wiki a new PAL3.0 page from about 10 days ago that had a link to a new certificate file.  Tried to put it onto the rover from home, but the ssh tunnel to seykhl had died, so I will try it from the office tomorrow.
 
 29 Aug 14
 Goal: Keep reading HTDP and thinking about how to build score-parse, score-sentence, produce-score-matrix, highest-scoring-sentence-for-trace, and highest-scoring-trace-for-sentence.
+--Got a non-automated reply from ITaP that they were sending my issue over to their networking team.  I had also asked about a separate logon account for the robot, but their reply told me that this account would be subject to the same periodic password changes that my personal account is subject to, so I'm not sure that I would gain anything from having another account with a different password.
+--Tried the new certificate file I found on purduelug.org, but it didn't seem to work.  Still no luck connecting to PAL.
+--Got an email reply from Ralph McCallister at ECN saying that he's working with ITaP on my issue, and that ITaP has been having problems with credentials reaching the main PAL server.  He requested my MAC address and room number, so I sent those back to him.  Waiting to hear back from him.
+--Changed my /etc/network/interfaces to drop the 'pre-up' and 'down' lines and replaced them with 'wpa-conf /etc/wpa_supplicant.conf' and now it works--I'm connected to PAL3.0.  Not sure why that made a difference.
+--Have produce-score-matrix, highest-scoring-trace-for-sentence, and highest-scoring-sentence-for-trace working.  Also created pretty-hstft and pretty-hssft that produce pretty text output for highest-scoring-trace-for-sentence and highest-scoring-sentence-for-trace, respectively.
+--Currently I make the big score matrix in produce-score-matrix, but I don't use it in the highest-scoring-* functions, instead just looking at one sentence or one trace in those functions.  Would it be better to just compute this matrix once (perhaps when I first load toollib-analysis.sc) and then have the highest-scoring-* functions just reference into this matrix?  This seems to be more complex, but it might be more efficient.
 
 ***********************TO DO*******************************
 ***ON NEXT DATA COLLECTION, MEASURE GROUND-TRUTH OF ENDPOINTS!!!!

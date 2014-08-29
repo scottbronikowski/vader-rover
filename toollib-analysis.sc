@@ -12,6 +12,10 @@
 					     (cons objects
 						   (cons conjunctions '())))))))
 
+;;hardcoding these variables for testing
+(define datapath "./data/test-2014-07-31/")
+(define numtraces 10)
+
 ;; Generator for robot speech control grammar (adapted from EE570 mad-libs.sc)
 ;; Author: Scott Bronikowski
 ;; Date: 20 August 2014
@@ -191,6 +195,11 @@
  (read-object-from-file filename))
 (define (get-endpoint trace)
  (but-last (last trace)))
+(define (get-traces datapath numtraces)
+ (let ((filelist
+	(map-n (lambda (i) (format #f "~atrial~a/trace.txt" datapath (number->padded-string-of-length (+ i 1) 3))) numtraces)))
+  (map read-trace filelist)))
+
 
 ;;need to have lexicon for objects and prepositions
 (define the-table '(the-table (-1.26 2.55))) ;;hardcoded for now
@@ -233,13 +242,6 @@
  (map string->symbol (fields (string-upcase string))))
 
 (define (score-parse parse-tree lexicon trace)
- ;; (let*
- ;;   ((preposition (last (third (last parse-tree))))
- ;;   (foo (if (some (lambda (x) (equal? x preposition)) two-object-prepositions)
- ;; 	'found-two-object
- ;; 	'found-one-object)))
- ;;  foo
- ;;  )
  (let* ((preposition (last (third (last parse-tree))))
 	(endpoint (get-endpoint trace)) ;;using just endpoints for now
 	(obj1 (last (fourth (last parse-tree)))) ;;always at least one object
@@ -258,6 +260,44 @@
 
 (define (score-sentence sentence lexicon trace)
  (score-parse (parse-sentence sentence) lexicon trace))
+
+(define all-traces (get-traces datapath numtraces))
+
+(define (produce-score-matrix lexicon traces)
+ (map (lambda (sentence)
+       (list sentence (map (lambda (trace)
+			    (score-sentence sentence lexicon trace))
+			   traces)))
+      all-sentences))
+
+(define (highest-scoring-trace-for-sentence lexicon sentence traces)
+ (let*
+   ((scores
+     (map (lambda (trace)
+	   (score-sentence sentence lexicon trace))
+	  traces))
+    (max (maximum scores)))
+  (+ (position max scores) 1)))
+
+(define (pretty-hstfs lexicon sentence traces)
+ (let
+   ((num (highest-scoring-trace-for-sentence lexicon sentence traces)))
+  (format #t "The highest scoring trace for ~a is trace ~a~%" sentence num)))
+
+(define (highest-scoring-sentence-for-trace lexicon trace)
+ (let*
+   ((scores
+     (map (lambda (sentence)
+	   (score-sentence sentence lexicon trace))
+	  all-sentences))
+    (max (maximum scores)))
+  (list-ref all-sentences (position max scores))))
+
+(define (pretty-hssft lexicon trace)
+ (let
+   ((sentence (highest-scoring-sentence-for-trace lexicon trace))
+    (num (+ 1 (position trace all-traces))))
+  (format #t "The highest scoring sentence for trace ~a is ~a~%" num sentence)))
 
 ;;email1 from Jeff 22Aug14
 ;; A reasonable next step would be to figure out how you can take the parse tree
