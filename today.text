@@ -770,6 +770,28 @@ Goal: Keep reading HTDP and thinking about how to build score-parse, score-sente
 --Have produce-score-matrix, highest-scoring-trace-for-sentence, and highest-scoring-sentence-for-trace working.  Also created pretty-hstft and pretty-hssft that produce pretty text output for highest-scoring-trace-for-sentence and highest-scoring-sentence-for-trace, respectively.
 --Currently I make the big score matrix in produce-score-matrix, but I don't use it in the highest-scoring-* functions, instead just looking at one sentence or one trace in those functions.  Would it be better to just compute this matrix once (perhaps when I first load toollib-analysis.sc) and then have the highest-scoring-* functions just reference into this matrix?  This seems to be more complex, but it might be more efficient.
 
+1 Sep 14
+Goal:  Work on HW1 for CS514 and ECE661.
+--Finished CS514 HW1.  Started on ECE661 HW1.
+
+2 Sep 14
+Goal:  Finish ECE661 HW1 (due Thursday).  Start work on adding a notion of proximity to my prepositional functions.  I noticed last week that in certain situations the best-scoring sentence for a run had the right preposition but the wrong object because the further-away object had a smaller angle.  The fix could be as simple as dividing the current angle-based score by the distance to the object, but not sure how to make this work with "between".
+--Finished ECE661 HW1.
+
+3 Sep 14
+Goal:  Work on and test proximity.
+--Have (distance-between p1 p2) working and incorporated into the four single-object preposition functions.  Because I'm now dividing the old angle-based score by the distance between the robot and the obstacle, my score matrix now ends up with some numbers > 1 (when the distance is < 1m).  Not sure if this is a problem...I'm now getting the right answers when I look for the best sentence to describe a run, but I don't know if the exact score value will matter later when I try to build a more complex model.
+--Convinced myself of the need for incorporating distance by producing matrix-with-distance-output.txt with two score matrices: using actual distance and using a distance of 1 (to recreate old way of scoring).  The new way with (old angle score)/distance got 8/10 columns correct (2 runs had bad data) and 4/5 rows correct (bad data again).  The old way only got 3/10 on columns--it scored the further-away object higher because its angle was smaller.  Today's change seems to fix this problem.
+--I didn't make any changes to (between robot obstacle1 obstacle2) to incorporate distance.  Not sure if I need to--will need to take more data and look at how "between" compares to "left-of" and "right-of".  I think I could simply incorporate a distance factor of (/ (distance-between robot obj1) (distance-between robot obj2)) or its inverse (want the resulting factor to be > 1 so that when I divide the old angle score by it, the new score is smaller...I think).
+
+4 Sep 14
+Goal:  Think about how to incorporate a more complex model for traces (i.e., not just looking at endpoints) so that I can have more complex prepositions, such as "around" and "past".  Gather a few more obstacles and start sketching out layout for new data gathering runs.
+
+
+5 Sep 14
+Goal:  Start gathering data with ~4-5 total obstacles and using new prepositions (around, past, etc.) that I may or may not yet have a mathematical formulation for.
+
+
 ***********************TO DO*******************************
 ***ON NEXT DATA COLLECTION, MEASURE GROUND-TRUTH OF ENDPOINTS!!!!
 

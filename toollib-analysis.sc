@@ -208,6 +208,11 @@
  (last obstacle))
 (define obstacle-lexicon (cons the-table (cons the-chair '())))
 
+;;distance stuff
+(define (distance-between p1 p2)
+ (sqrt (+ (expt (- (first p1) (first p2)) 2) (expt (- (second p1) (second p2)) 2))))
+
+;;angle and preposition stuff converted from C++
 (define (normalize-angle angle)
  (cond
   ((> angle pi) (normalize-angle (- angle two-pi)))
@@ -215,19 +220,28 @@
   (else angle)))
 
 (define (angle-between p1 p2)
- (atan (- (second p1) (second p2)) (- (first p1) (first p2))))
+ (atan (- (second p1) (second p2))
+       (- (first p1) (first p2))))
 
 (define (left-of robot obstacle)
- (- 1 (/ (abs (- (abs (angle-between robot (location-of obstacle))) PI)) PI)))
+ (let ((distance (distance-between robot (location-of obstacle)))
+       (angle (angle-between robot (location-of obstacle))))
+  (/ (- 1 (/ (abs (- (abs angle) PI)) PI)) distance)))
 
 (define (right-of robot obstacle)
- (- 1 (/ (abs (angle-between robot (location-of obstacle))) PI)))
+  (let ((distance (distance-between robot (location-of obstacle)))
+       (angle (angle-between robot (location-of obstacle))))
+   (/ (- 1 (/ (abs angle) PI)) distance)))
 
 (define (in-front-of robot obstacle)
- (- 1 (/ (abs (normalize-angle (- (angle-between robot (location-of obstacle)) (- half-pi)))) pi)))
+ (let ((distance (distance-between robot (location-of obstacle)))
+       (angle (angle-between robot (location-of obstacle))))
+  (/ (- 1 (/ (abs (normalize-angle (- angle (- half-pi)))) pi)) distance)))
 
 (define (behind robot obstacle)
- (- 1 (/ (abs (normalize-angle (- (angle-between robot (location-of obstacle)) half-pi))) pi)))
+ (let ((distance (distance-between robot (location-of obstacle)))
+       (angle (angle-between robot (location-of obstacle))))
+  (/ (- 1 (/ (abs (normalize-angle (- angle half-pi))) pi)) distance)))
 
 (define (between robot obstacle1 obstacle2)
  (let ((angle1 (angle-between robot (location-of obstacle1)))
