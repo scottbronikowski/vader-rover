@@ -1,9 +1,9 @@
 ;;definitions of word types
 (define subjects '(the-robot))
 (define verbs '(went))
-(define one-object-prepositions '(left-of right-of behind in-front-of))
+(define one-object-prepositions '(left-of right-of behind in-front-of around towards away-from past))
 (define two-object-prepositions '(between))
-(define objects '(the-table the-chair))
+(define objects '(the-table the-chair the-box the-ball the-bucket the-cone))
 (define conjunctions '(and))
 (define word-lexicon (cons subjects
 			   (cons verbs
@@ -244,9 +244,15 @@
   (/ (- 1 (/ (abs (normalize-angle (- angle half-pi))) pi)) distance)))
 
 (define (between robot obstacle1 obstacle2)
- (let ((angle1 (angle-between robot (location-of obstacle1)))
-       (angle2 (angle-between robot (location-of obstacle2))))
-  (- 1 (/ (abs (- pi (abs (- angle1 angle2)))) pi))))
+ (let* ((angle1 (angle-between robot (location-of obstacle1)))
+	(angle2 (angle-between robot (location-of obstacle2)))
+	(distance1 (distance-between robot (location-of obstacle1)))
+	(distance2 (distance-between robot (location-of obstacle2)))
+	(average-distance (/ (+ distance1 distance2) 2)))
+  ;; (/ (- 1 (/ (abs (- pi (abs (- angle1 angle2)))) pi)) average-distance)
+  ;;using average distance didn't seem to work well
+  (- 1 (/ (abs (- pi (abs (- angle1 angle2)))) pi))
+  ))
 
 (define all-sentences (all-values (a-sentence)))
 

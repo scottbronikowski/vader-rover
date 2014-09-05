@@ -792,10 +792,21 @@ Since my thought on using a distance factor with between (i.e., the ratio of the
 I'm having a hard time thinking of ways to do this though--the first thing that comes to mind is to divide the distance by the corner-to-corner distance of the field (i.e., the longest possible distance between two points), but I think this would require a priori information that would be hard or impossible to gather in a less-constrained environment.
 For example, given our bounded rectangular field, the robot could use sensor data to determine the corner points and their locations by simply putting special objects at the corners and then finding those objects during the initial scan it would have to do to determine obstacle locations.
 However, I don't think there would be a way to scale that kind of a measurement to any type of unbounded environment, which is a long-term goal.
---For between, try using average distance so that it is in units of 1/m like the others.
 
 5 Sep 14
 Goal:  Start gathering data with ~4-5 total obstacles and using new prepositions (around, past, etc.) that I may or may not yet have a mathematical formulation for.
+--Finished CS514 HW2.
+--Modified the between function to use the average distance between the robot and the two obstacles as a divisor to get everything in the 1/m units.
+It didn't seem to work too well--for the sample runs that were actually between runs, got scores for between that were worse than left-of or right-of.
+Need to think some more on how to do this better.  
+Could also use the ratio of the two distances as a unit-less multiplier/divisor, or could take the ratio of each robot-obstacle distance to the obstacle-obstacle distance.
+Also thinking about somehow using the third leg of the right triangle formed with the robot-object line, object-object line, and a line from the robot perpendicular to the object-object line.
+--With original lexicon, there had been 12 sentences produced (2 of them meaningless).
+Expanded the list of objects from (the-table the-chair) to (the-table the-chair the-box the-ball the-bucket the-cone) to get 60 sentences (6 meaningless).
+Will need to collect these obstacles for next data-gathering session--can define them with dummy locations for now.
+Expanded the list of one-object prepositions from (left-of right-of behind in-front-of) to (left-of right-of behind in-front-of around towards away-from past) to bring the sentence count to 84 (still 6 meaningless sentences).
+I haven't been able to think of any additional two-object prepositions.
+I still need to implement longer sentences, and probably a way to join them with temporal conjunctions like (first second ... finally stopped(??) then next), etc.
 
 
 

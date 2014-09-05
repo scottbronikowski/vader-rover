@@ -27,6 +27,13 @@ Matrix with distance defined as (distance-between robot (location-of obstacle)) 
 ((THE-ROBOT WENT BETWEEN THE-CHAIR AND THE-CHAIR)
  (0. 0. 0. 0. 0. 0. 0. 0. 0. 0.))
 
+
+****AFTER CHANGING BETWEEN****
+((THE-ROBOT WENT BETWEEN THE-TABLE AND THE-CHAIR)
+ (0.03912378865751567     0.05842396272288737      0.1030560764878758       0.03579296149039395        0.2367322337807948       0.1404971540331871       0.1825591554528465        0.003585411663431544     0.7299224132070236         0.7884918532400308))
+((THE-ROBOT WENT BETWEEN THE-CHAIR AND THE-TABLE)
+ (0.03912378865751567     0.05842396272288737      0.1030560764878758       0.03579296149039395        0.2367322337807948       0.1404971540331871       0.1825591554528465        0.003585411663431544     0.7299224132070236         0.7884918532400308))
+
 TRUTH:
   left-of-table		  left-of-table		   right-of-chair(bad)	    right-of-chair	       front-of-table	        front-of-table	         behind-table	           behind-table(bad)	     between-table-and-chair    between-table-and-chair
 Matrix with distance defined as 1 (3/10 columns, 4/5 rows (actually driven))
