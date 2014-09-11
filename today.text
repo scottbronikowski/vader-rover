@@ -10,6 +10,10 @@ ICRA-15: May 26-30, 2015 at the Washington State Convention Center in Seattle, W
 	 1 October 2014: Paper Submission deadline
       	 30 January 2015: Paper acceptance notification
       	 27 February 2015: Final contribution deadline
+TePRA-15: 11-12 May 2015 in Boston
+	  15 November 2014: Paper submission deadline
+	  15 January 2015: Paper acceptance notification
+	  1 March 2015: Final submission deadline
 IJCAI-15: 25 July-1 August 2015, Buenos Aires, Argentina 
     	  Feb 1, 2015 (11:59PM, UTC-12): Abstract submission
     	  Feb 5, 2015 (11:59PM, UTC-12): Paper submission
@@ -20,6 +24,9 @@ IROS-15: September 28 - October 02, 2015, Hamburg, Germany
 	 Mar. 6, 2015: Submission of full-length papers 
       	 Jun. 17, 2015: Notiﬁcation of acceptance for papers 
       	 Jul. 24, 2015: Submission of ﬁnal papers 
+
+**Keep an eye on Journal of Intelligent and Robotic Systems (JINT) http://www.springer.com/engineering/robotics/journal/10846  **when are its deadlines??
+
 
 Random notes:
 ------------------
@@ -41,6 +48,30 @@ from ~/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64$ darpa-wrap make dsc
 
 Buffers
 ---------------------------------------
+.   today.text           97252  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
+  * *shell*              50101  Shell:run	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/
+  * *scheme*            753892  Inferior Scheme:
+    toollib-analysis.sc  13984  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-analysis.sc
+    matrix-with-distance: 7641  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/matrix-with-distance-output.txt
+    hw2.tex                901  LaTeX		  ~/Dropbox/grad school stuff/Purdue/2014-2015-1-fall/ECE661/hw2/hw2.tex
+  * *shell*<2>          704216  Shell:run	  ~/Dropbox/grad school stuff/Purdue/2014-2015-1-fall/ECE661/hw2/
+    sentence-generation: 12777  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/sentence-generation.sc
+    idealib-tracks.sc   222794  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/idealib-tracks.sc
+  * *shell*<3>           25691  Shell:run	  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64/
+    seasoned-schemer.sc  32124  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/scheme_stuff/seasoned-schemer.sc
+    data-analysis.cpp    16283  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/data-analysis.cpp
+    data-analysis.h       1640  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/data-analysis.h
+    log_to_track.cpp     13674  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/from_dan/log_to_track.cpp
+    sentences.txt           81  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/data/test-2014-07-31/sentences.txt
+    setup.txt              148  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/data/test-2014-07-31/setup.txt
+    hmm-def.h             4523  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/hmm-def.h
+    hmm-def.c            11705  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/hmm-def.c
+    fields.sc             1278  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/fields.sc
+    toollib-hog-c.c      32464  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/toollib-hog-c.c
+    toollib-hog-c.h       5335  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/toollib-hog-c.h
+    toollib-rover-cpp.h   5227  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover-cpp.h
+
+---old---
 .   today.text           78421  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
     data-analysis.cpp     9060  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/data/test-2014-07-31/data-analysis.cpp
     toollib-hog-c.c      32464  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/toollib-hog-c.c
@@ -805,18 +836,45 @@ Also thinking about somehow using the third leg of the right triangle formed wit
 Expanded the list of objects from (the-table the-chair) to (the-table the-chair the-box the-ball the-bucket the-cone) to get 60 sentences (6 meaningless).
 Will need to collect these obstacles for next data-gathering session--can define them with dummy locations for now.
 Expanded the list of one-object prepositions from (left-of right-of behind in-front-of) to (left-of right-of behind in-front-of around towards away-from past) to bring the sentence count to 84 (still 6 meaningless sentences).
+I still need to think about how to implement the semantics of these new prepositions, since they will require a more complex model than the endpoint model I'm currently using--will define dummy functions for now.
 I haven't been able to think of any additional two-object prepositions.
 I still need to implement longer sentences, and probably a way to join them with temporal conjunctions like (first second ... finally stopped(??) then next), etc.
 
+8 Sep 14
+Goal: Work on CS514 HW3 (only 1 problem assigned so far).  Finish ECE661 HW2 (due Thursday). Keep thinking about ways to solve semantics problems with currently defined prepositions.
+--Finished CS514 HW3 problem.
+--Worked on ECE661 HW2.
 
+
+9 Sep 14
+Goal: Work on fixing semantics issues with right-of, left-of, behind, and in-front-of. Since using the average distance from the robot to the obstacles with between didn't work (and the original method without distances gave good results), I need to rethink how I'm incorporating distance into the other prepositions.  I think that I can build a function (nearest-obstacle robot lexicon) that takes a robot location and the list of obstacles and returns which obstacle is the closest to that point.  Then I can use that function within the single-object preposition functions to determine if the obstacle under consideration is the closest.  If it is, I multiply the original angle score by 1, and if not I multiply by 0.  That way I'm back to having my scores being dimensionless values on the range (0,1], and it should eliminate better scores for more distant obstacles.
+--Continued working on ECE661 HW2.  This is proving more time-consuming than I thought.
+
+10 Sep 14
+Goal: Keep working on semantics.  Think about how to define new prepositions (around, towards, etc.)--probably will need some sort of state model for the traces.
+--Continued working on ECE661 HW2.  Finished shortly after midnight (11Sep).
+
+11 Sep 14
+Goal: Work on getting generator and parser to produce and parse sentences with multiple prepositional phrases.  Keep working on state model and new prepositions.
+--Wrote (nearest-obstacle point lexicon) that returns the name of the nearest obstacle to the given point and (distance-factor point obstacle lexicon) that returns 1 if the obstacle is closest, else 0.5--just guessed at this factor for now, might need to change it later.
+--Modified my one-object preposition functions to accept the lexicon as an additional argument in order to call (distance-factor ...) inside their lets.  Also modified the call to the one-object preposition evaluator from within (score-parse ...).
+--Put in dummy definitions for new obstacles and prepositions as placeholders.
+--Tested (produce-score-matrix ...) with changed preposition functions and output looks reasonable.  Need to examine a little more closely to ensure the right sentences are winning for the runs we have.
+
+12 Sep 14
+Goal: Work on adapting score-parse to deal with sentences that have multiple prepositional phrases.  Keep working on state model and new prepositions.
 
 
 
 ***********************TO DO*******************************
+**Keep an eye on Journal of Intelligent and Robotic Systems (JINT) http://www.springer.com/engineering/robotics/journal/10846  **when are its deadlines??
+
 3 goals from Jeff 4Sep14
 1. Expand lexicon--more prepositions/objects, as well as longer sentences (multiple prepositional phrases).
 2. Beam search (CVPR2014E Siddharth paper, sentence-generation.sc--generate-best-sentence) for track-to-sentence
 3. AD on cubic spline waypoints for sentence-to-track
+
+**look at cvpr2014e paper from Andrei and Siddharth
 
 ***ON NEXT DATA COLLECTION, MEASURE GROUND-TRUTH OF ENDPOINTS!!!!
 

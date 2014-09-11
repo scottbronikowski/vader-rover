@@ -204,13 +204,34 @@
 ;;need to have lexicon for objects and prepositions
 (define the-table '(the-table (-1.26 2.55))) ;;hardcoded for now
 (define the-chair '(the-chair (1.26 2.54)))
+;;need dummy obstacle locations for the-box the-ball the-bucket the-cone
+(define the-box '(the-box (99 99)))
+(define the-ball '(the-ball (99 99)))
+(define the-bucket '(the-bucket (99 99)))
+(define the-cone '(the-cone (99 99)))
+
 (define (location-of obstacle)
  (last obstacle))
-(define obstacle-lexicon (cons the-table (cons the-chair '())))
+(define obstacle-lexicon (map (lambda (x) (eval x)) objects))
+ ;;(cons the-table (cons the-chair '())))
 
 ;;distance stuff
 (define (distance-between p1 p2)
  (sqrt (+ (expt (- (first p1) (first p2)) 2) (expt (- (second p1) (second p2)) 2))))
+
+(define (nearest-obstacle point lexicon)
+ (let ((distances
+	(map (lambda (x) (distance-between point x))
+	     (map location-of lexicon))))
+  (first (list-ref lexicon
+		   (position (minimum distances)
+			     distances)))))
+
+(define (distance-factor point obstacle lexicon)
+ (let ((nearest (nearest-obstacle point lexicon)))
+  (if (equal? nearest (first obstacle))
+      1 ;;return 1 if obstacle is closest, else 0.5 (may need tweaking)
+      0.5)))
 
 ;;angle and preposition stuff converted from C++
 (define (normalize-angle angle)
@@ -223,36 +244,47 @@
  (atan (- (second p1) (second p2))
        (- (first p1) (first p2))))
 
-(define (left-of robot obstacle)
- (let ((distance (distance-between robot (location-of obstacle)))
+(define (left-of robot obstacle lexicon)
+ (let ((distance-multiplier (distance-factor robot obstacle lexicon))
+       ;;(distance (distance-between robot (location-of obstacle)))
        (angle (angle-between robot (location-of obstacle))))
-  (/ (- 1 (/ (abs (- (abs angle) PI)) PI)) distance)))
+  (* (- 1 (/ (abs (- (abs angle) PI)) PI)) distance-multiplier)))
 
-(define (right-of robot obstacle)
-  (let ((distance (distance-between robot (location-of obstacle)))
+(define (right-of robot obstacle lexicon)
+ (let ((distance-multiplier (distance-factor robot obstacle lexicon))
+       ;;(distance (distance-between robot (location-of obstacle)))
        (angle (angle-between robot (location-of obstacle))))
-   (/ (- 1 (/ (abs angle) PI)) distance)))
+  (* (- 1 (/ (abs angle) PI)) distance-multiplier)))
 
-(define (in-front-of robot obstacle)
- (let ((distance (distance-between robot (location-of obstacle)))
+(define (in-front-of robot obstacle lexicon)
+ (let ((distance-multiplier (distance-factor robot obstacle lexicon))
+       ;;(distance (distance-between robot (location-of obstacle)))
        (angle (angle-between robot (location-of obstacle))))
-  (/ (- 1 (/ (abs (normalize-angle (- angle (- half-pi)))) pi)) distance)))
+  (* (- 1 (/ (abs (normalize-angle (- angle (- half-pi)))) pi))
+     distance-multiplier)))
 
-(define (behind robot obstacle)
- (let ((distance (distance-between robot (location-of obstacle)))
+(define (behind robot obstacle lexicon)
+ (let ((distance-multiplier (distance-factor robot obstacle lexicon))
+       ;;(distance (distance-between robot (location-of obstacle)))
        (angle (angle-between robot (location-of obstacle))))
-  (/ (- 1 (/ (abs (normalize-angle (- angle half-pi))) pi)) distance)))
+  (* (- 1 (/ (abs (normalize-angle (- angle half-pi))) pi)) distance-multiplier)))
 
 (define (between robot obstacle1 obstacle2)
  (let* ((angle1 (angle-between robot (location-of obstacle1)))
 	(angle2 (angle-between robot (location-of obstacle2)))
-	(distance1 (distance-between robot (location-of obstacle1)))
-	(distance2 (distance-between robot (location-of obstacle2)))
-	(average-distance (/ (+ distance1 distance2) 2)))
+	;; (distance1 (distance-between robot (location-of obstacle1)))
+	;;(distance2 (distance-between robot (location-of obstacle2)))
+	;;(average-distance (/ (+ distance1 distance2) 2))
+	)
   ;; (/ (- 1 (/ (abs (- pi (abs (- angle1 angle2)))) pi)) average-distance)
   ;;using average distance didn't seem to work well
-  (- 1 (/ (abs (- pi (abs (- angle1 angle2)))) pi))
-  ))
+  (- 1 (/ (abs (- pi (abs (- angle1 angle2)))) pi))))
+
+;;dummy functions for around towards away-from past
+(define (around robot obstacle lexicon) 0)
+(define (towards robot obstacle lexicon) 0)
+(define (away-from robot obstacle lexicon) 0)
+(define (past robot obstacle lexicon) 0)
 
 (define all-sentences (all-values (a-sentence)))
 
@@ -273,7 +305,7 @@
 	 (obstacle2
 	  (list-ref lexicon (position obj2 (map first lexicon))))) 
        ((eval preposition) endpoint obstacle1 obstacle2))
-      ((eval preposition) endpoint obstacle1) ;;one-object preposition
+      ((eval preposition) endpoint obstacle1 lexicon) ;;one-object preposition
       )
   )
  )
