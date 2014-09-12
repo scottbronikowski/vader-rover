@@ -863,7 +863,12 @@ Goal: Work on getting generator and parser to produce and parse sentences with m
 
 12 Sep 14
 Goal: Work on adapting score-parse to deal with sentences that have multiple prepositional phrases.  Keep working on state model and new prepositions.
+--Completed CS514 HW3.
+--Started on ECE661 HW3 (due Thursday).  Will try to complete this one earlier than the last one.
+--Started modifying my generator/recognizer/parser to use multiple prepositional phrases (i.e., "the robot went left of the table then right of the box").  For now just using a single temporal preposition ("then") to join multiple prepositional phrases at the end of the sentence.  It seems easy to have my generator produce sentences of up to a certain number of prepositional phrases, but is there a way to extend this to an arbitrary number of prepositional phrases without hardcoding the number into the generator (and thus the parser/recognizer)?
 
+***START ON EXTENDING SENTENCES TO MORE THAN ONE PREPOSITIONAL PHRASE***
+***START ON MAKING STATE MODEL FOR NEW PREPOSITIONS AND FOR TRACE AS A WHOLE***              
 
 
 ***********************TO DO*******************************

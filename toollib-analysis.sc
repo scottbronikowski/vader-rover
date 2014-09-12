@@ -50,6 +50,7 @@
 (define (a-predicate)
  (either (append (a-verb) (a-one-object-preposition) (an-object))
 	 (append (a-verb) (a-two-object-preposition) (an-object) (a-conjunction) (an-object))))
+;;;**FIXME** need to change this to separate the prepositional phrase from the verb, and then link multiple prepositional phrases
 
  (define (a-sentence) (append (a-subject) (a-predicate)))
 
