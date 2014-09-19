@@ -1,15 +1,4 @@
 Paper deadlines:
-AAAI-15: January 25–29, 2015   Austin, Texas
-         May 1, 2014 - September 10, 2014: Authors register on the AAAI web site
-	 September 10, 2014: Electronic abstracts due
-         September 15, 2014: Electronic papers due
-      	 October 22 - 24, 2014: Author feedback about initial reviews
-	 November 7, 2014: Notification of acceptance or rejection
-	 November 20, 2014: Camera-ready copy due at AAAI office
-ICRA-15: May 26-30, 2015 at the Washington State Convention Center in Seattle, WA
-	 1 October 2014: Paper Submission deadline
-      	 30 January 2015: Paper acceptance notification
-      	 27 February 2015: Final contribution deadline
 TePRA-15: 11-12 May 2015 in Boston
 	  15 November 2014: Paper submission deadline
 	  15 January 2015: Paper acceptance notification
@@ -48,6 +37,13 @@ from ~/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64$ darpa-wrap make dsc
 
 Buffers
 ---------------------------------------
+. * *shell*<2>            6969  Shell:run	  ~/vader-rover/
+    today.text          103769  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
+    toollib-analysis.sc  15442  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-analysis.sc
+  * *scheme*            186091  Inferior Scheme:
+    matrix-scores-using: 12605  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/matrix-scores-using-distance-factor-11sep14.txt
+
+---old---
 .   today.text           97252  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
   * *shell*              50101  Shell:run	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/
   * *scheme*            753892  Inferior Scheme:
@@ -867,8 +863,44 @@ Goal: Work on adapting score-parse to deal with sentences that have multiple pre
 --Started on ECE661 HW3 (due Thursday).  Will try to complete this one earlier than the last one.
 --Started modifying my generator/recognizer/parser to use multiple prepositional phrases (i.e., "the robot went left of the table then right of the box").  For now just using a single temporal preposition ("then") to join multiple prepositional phrases at the end of the sentence.  It seems easy to have my generator produce sentences of up to a certain number of prepositional phrases, but is there a way to extend this to an arbitrary number of prepositional phrases without hardcoding the number into the generator (and thus the parser/recognizer)?
 
+15 Sep 14
+Goal: Work on CS514 HW4 problems (3 assigned so far).  Finish ECE661 HW3 (due Thursday).
+--Finished CS514 HW problems.
+--Finished code for first half of ECE661 HW3.  Still need to code up second half and write report.
+
+16 Sep 14
+Goal: Continue working on generator/recognizer/parser to use multiple prepositional phrases.
+--Worked more on ECE611 HW3.  Got results for first half, have second half coded, still need to get results for second half and write report.
+
+
+17 Sep 14
+Goal: Finish modifications to generator/recognizer/parser.
+--Finished getting results and started writing report for ECE611 HW3.
+
+18 Sep 14
+Goal: Work on defining a state model for the traces, both for sentences with multiple simple prepositions (i.e., 'left-of x then right-of y') and for the more complex new prepositions that have to be defined by more than one state (i.e., 'towards z' or 'around w').
+--Finished ECE611 HW3.
+--Caught up on CS514 HW4
+
+19 Sep 14
+Goal: Keep working on state model and adapting score-parse to use the state model.
+--Talked with Dan for about an hour about the Viterbi algorithm and how to use it as a state model for my traces.  I think I have a better understanding of now.  Need to think on it some more before I can implement it.
+--Modified generator to produce sentences with multiple prepositional phrases.  Currently have it hard-coded to do up to 4 prepositional phrases (connected by 'then') in a sentence.  This expands my sentence space exponentially.  I believe the correct formula for the number of sentences produced is: sum(from i=1 to p) of (nr + n^2s)^i, where p is the max number of prepositional phrases, n is the number of objects, r is the number of one-object prepositions, and s is the number of 2-object prepositions.  For my current setup of r=8, s=1, and n=6, for p=1 I get 84 sentences, for p=2: 7140, for p=3: 599844, and for p=4: 5x10^7 (although this I computed rather than having Scheme generate all these sentences).  Still need to modify the recognizer and parser to deal with this new structure.
+--Will be spending some extra time on this over the weekend since Kara and Emma are going up to WI to go to a craft fair, and I think craft fairs are about as exciting as root canals.
+
 ***START ON EXTENDING SENTENCES TO MORE THAN ONE PREPOSITIONAL PHRASE***
-***START ON MAKING STATE MODEL FOR NEW PREPOSITIONS AND FOR TRACE AS A WHOLE***              
+***START ON MAKING STATE MODEL FOR NEW PREPOSITIONS AND FOR TRACE AS A WHOLE***       OPEN THESE BUFFERS
+.   temp-grp.sc           6368  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/temp-grp.sc
+  * today.text          105364  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
+  * *scheme*             14443  Inferior Scheme:
+    toollib-analysis.sc  15442  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-analysis.sc
+  * *shell*<2>            7001  Shell:run	  ~/vader-rover/
+  * *shell*            3891707  Shell:run	  /amd/upplysingaoflun/root/aux/home/sbroniko/Dropbox/grad school stuff/Purdue/2014-2015-1-fall/ECE661/hw3/
+
+
+
+
+       
 
 
 ***********************TO DO*******************************
@@ -977,6 +1009,7 @@ Non-critical tasks
 
 Old buffers
 ----------------
+    matrix-scores-using: 12605  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/matrix-scores-using-distance-factor-11sep14.txt
     today.text            9617  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
     toollib-rover-cpp.c: 18616  C++/l		  ~/darpa-collaboration/ideas/toollib-rover-cpp.cpp
   * *scheme*           9167396  Inferior Scheme:
