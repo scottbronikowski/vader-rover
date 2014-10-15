@@ -1,115 +1,111 @@
-;;toollib-analysis.sc
-;;tools for putting sentential meanings to/from traces of rover path
-;;Scott Bronikowski
-;;20 August 2014
-
-;;Revised generator-recognizer-parser 19 September 2014
 ;;definitions of word types
-(define *subjects* '(the-robot))
-(define *verbs* '(went))
-(define *one-object-prepositions* '(left-of right-of behind in-front-of around towards away-from past))
-(define *two-object-prepositions* '(between))
-(define *objects* '(the-table the-chair the-box the-ball the-bucket the-cone))
-(define *conjunctions* '(and))
-(define *temporal-prepositions* '(then))
-(define *word-lexicon* (cons *subjects*
-			   (cons *verbs*
-				 (cons *one-object-prepositions*
-				       (cons *two-object-prepositions*
-					     (cons *objects*
-						   (cons *conjunctions*
-							 (cons *temporal-prepositions* '()))))))))
+(define subjects '(the-robot))
+(define verbs '(went))
+(define one-object-prepositions '(left-of right-of behind in-front-of around towards away-from past))
+(define two-object-prepositions '(between))
+(define objects '(the-table the-chair the-box the-ball the-bucket the-cone))
+(define conjunctions '(and))
+(define word-lexicon (cons subjects
+			   (cons verbs
+				 (cons one-object-prepositions
+				       (cons two-object-prepositions
+					     (cons objects
+						   (cons conjunctions '())))))))
 
-;;generator section
-(define (a-subject) (cons (a-member-of *subjects*) '()))
-(define (a-verb) (cons (a-member-of *verbs*) '()))
-(define (a-one-object-preposition) (cons (a-member-of *one-object-prepositions*) '()))
-(define (a-two-object-preposition) (cons (a-member-of *two-object-prepositions*) '()))
-(define (an-object) (cons (a-member-of *objects*) '()))
-(define (a-conjunction) (cons (a-member-of *conjunctions*) '()))
-(define (a-temporal-preposition) (cons (a-member-of *temporal-prepositions*) '()))
-(define (a-prepositional-phrase)
- (either (append (a-one-object-preposition) (an-object))
-	 (append (a-two-object-preposition) (an-object) (a-conjunction) (an-object))))
+;;hardcoding these variables for testing
+(define datapath "./data/test-2014-07-31/")
+(define numtraces 10)
+
+;; Generator for robot speech control grammar (adapted from EE570 mad-libs.sc)
+;; Author: Scott Bronikowski
+;; Date: 20 August 2014
+
+
+(define (a-subject) (cons (a-member-of subjects) '()))
+;;(list (a-member-of subjects)))
+;;(either '(the-robot)))
+
+(define (a-verb) (cons (a-member-of verbs) '()))
+;;(list (a-member-of verbs)))
+ ;;(either '(went)))
+
+(define (a-one-object-preposition) (cons (a-member-of one-object-prepositions) '()))
+;; (list (a-member-of one-object-prepositions)))
+;; (either '(left-of) '(right-of) '(behind) '(in-front-of)))
+
+(define (a-two-object-preposition) (cons (a-member-of two-object-prepositions) '()))
+;; (list (a-member-of two-object-prepositions)))
+;; (either '(between)))
+
+;;(define (an-article) (either '(the)))
+
+(define (an-object) (cons (a-member-of objects) '()))
+;;(list (a-member-of objects)))
+;;(either '(the-table) '(the-chair)))
+
+(define (a-conjunction) (cons (a-member-of conjunctions) '()))
+;;(list (a-member-of conjunctions)))
+;;(either '(and)))
+
 (define (a-predicate)
- (either (append (a-verb) (a-prepositional-phrase))
-	 (append (a-verb) (a-prepositional-phrase)
-		 (a-temporal-preposition) (a-prepositional-phrase))
-	 (append (a-verb) (a-prepositional-phrase)
-		 (a-temporal-preposition) (a-prepositional-phrase)
-		 (a-temporal-preposition) (a-prepositional-phrase))
-	 (append (a-verb) (a-prepositional-phrase)
-		 (a-temporal-preposition) (a-prepositional-phrase)
-		 (a-temporal-preposition) (a-prepositional-phrase)
-		 (a-temporal-preposition) (a-prepositional-phrase))
-	))
-;;could define a-predicate recursively, but then how would I put a bound on how many prepositional phrases to use when building all-sentences?
-(define (a-sentence) (append (a-subject) (a-predicate)))
+ (either (append (a-verb) (a-one-object-preposition) (an-object))
+	 (append (a-verb) (a-two-object-preposition) (an-object) (a-conjunction) (an-object))))
+;;;**FIXME** need to change this to separate the prepositional phrase from the verb, and then link multiple prepositional phrases
 
-(define (print-sentences)
- (for-effects
-  (write (a-sentence))
-  (newline)))
+ (define (a-sentence) (append (a-subject) (a-predicate)))
+
+ (define (print-sentences)
+  (for-effects
+   (write (a-sentence))
+   (newline)))
+
 ;; end generator
 
-;; recognizer section
+;; Recognizer for robot speech control grammar (adapted from EE570 recognizer.sc)
+;; Author: Scott Bronikowski
+;; Date: 20 August 2014
+
 (define (strip-a-word words lexicon)
  (when (null? words) (fail))
  (unless (memq (first words) lexicon) (fail))
  (rest words))
 
-(define (strip-a-subject words) (strip-a-word words *subjects*))
+(define (strip-a-subject words)
+ (strip-a-word words subjects));;'(the-robot)))
 
-(define (strip-a-verb words) (strip-a-word words *verbs*))
+(define (strip-a-verb words)
+ (strip-a-word words verbs));;'(went)))
 
 (define (strip-a-one-object-preposition words)
- (strip-a-word words *one-object-prepositions*))
+ (strip-a-word words one-object-prepositions));;'(left-of right-of behind in-front-of)))
 
 (define (strip-a-two-object-preposition words)
- (strip-a-word words *two-object-prepositions*))
+ (strip-a-word words two-object-prepositions));;'(between)))
 
-(define (strip-an-object words) (strip-a-word words *objects*))
+(define (strip-an-object words)
+ (strip-a-word words objects));;'(the-table the-chair)))
 
-(define (strip-a-conjunction words) (strip-a-word words *conjunctions*))
-
-(define (strip-a-temporal-preposition words)
- (strip-a-word words *temporal-prepositions*))
-
-(define (strip-a-prepositional-phrase words)
- (either (strip-an-object (strip-a-one-object-preposition words))
-	 (strip-an-object
-	  (strip-a-conjunction
-	   (strip-an-object (strip-a-two-object-preposition words))))))
+(define (strip-a-conjunction words)
+ (strip-a-word words conjunctions));;'(and)))
 
 (define (strip-a-predicate words)
- (either (strip-a-prepositional-phrase (strip-a-verb words)) ;;1-prep-phrase
-	 (strip-a-prepositional-phrase ;;2-prep-phrases
-	  (strip-a-temporal-preposition
-	   (strip-a-prepositional-phrase
-	    (strip-a-verb words))))
-	 (strip-a-prepositional-phrase ;;3-prep-phrases
-	  (strip-a-temporal-preposition
-	   (strip-a-prepositional-phrase
-	    (strip-a-temporal-preposition
-	     (strip-a-prepositional-phrase
-	      (strip-a-verb words))))))
-	 (strip-a-prepositional-phrase ;;4-prep-phrases
-	  (strip-a-temporal-preposition
-	   (strip-a-prepositional-phrase
-	    (strip-a-temporal-preposition
-	     (strip-a-prepositional-phrase
-	      (strip-a-temporal-preposition
-	       (strip-a-prepositional-phrase
-		(strip-a-verb words))))))))))
+ (either (strip-an-object (strip-a-one-object-preposition (strip-a-verb words)))
+	 (strip-an-object
+	  (strip-a-conjunction
+	   (strip-an-object (strip-a-two-object-preposition (strip-a-verb words)))))))
 
 (define (strip-a-sentence words)
  (strip-a-predicate (strip-a-subject words)))
 
 (define (sentence? words)
  (possibly? (null? (strip-a-sentence words))))
+
 ;;end recognizer
 
-;;parser section
+;; Parser for robot speech control grammar (adapted from EE570 parser.sc)
+;; Author: Scott Bronikowski
+;; Date: 20 August 2014
+
 (define-structure state stack words)
 
 (define (parse-a-word state category lexicon)
@@ -122,42 +118,26 @@
 
 (define (pop-one category state)
  (let ((stack (state-stack state)))
-  (make-state (cons (list category
-			  (first stack))
+  (make-state (cons (list category (first stack))
 		    (rest stack))
 	      (state-words state))))
 
 (define (pop-two category state)
  (let ((stack (state-stack state)))
-  (make-state (cons (list category
-			  (second stack)
-			  (first stack))
-		    (rest
-		     (rest stack)))
+  (make-state (cons (list category (second stack) (first stack))
+		    (rest (rest stack)))
 	      (state-words state))))
 
 (define (pop-three category state)
  (let ((stack (state-stack state)))
-  (make-state (cons (list category
-			  (third stack)
-			  (second stack)
-			  (first stack))
-		    (rest
-		     (rest
-		      (rest stack))))
+  (make-state (cons (list category (third stack) (second stack) (first stack))
+		    (rest (rest (rest stack))))
 	      (state-words state))))
 
 (define (pop-four category state)
  (let ((stack (state-stack state)))
-  (make-state (cons (list category
-			  (fourth stack)
-			  (third stack)
-			  (second stack)
-			  (first stack))
-		    (rest
-		     (rest
-		      (rest
-		       (rest stack)))))
+  (make-state (cons (list category (fourth stack) (third stack) (second stack) (first stack))
+		    (rest (rest (rest (rest stack)))))
 	      (state-words state))))
 
 (define (pop-five category state)
@@ -168,117 +148,36 @@
 			  (third stack)
 			  (second stack)
 			  (first stack))
-		    (rest
-		     (rest
-		      (rest
-		       (rest
-			(rest stack))))))
+		    (rest (rest (rest (rest (rest stack))))))
 	      (state-words state))))
 
-(define (pop-six category state)
- (let ((stack (state-stack state)))
-  (make-state (cons (list category
-			  (sixth stack)
-			  (fifth stack)
-			  (fourth stack)
-			  (third stack)
-			  (second stack)
-			  (first stack))
-		    (rest
-		     (rest
-		      (rest
-		       (rest
-			(rest
-			 (rest stack)))))))
-	      (state-words state))))
+(define (parse-a-subject state)
+ (parse-a-word state 'subj subjects))
+                           ;;'(the-robot)))
 
-(define (pop-seven category state)
- (let ((stack (state-stack state)))
-  (make-state (cons (list category
-			  (seventh stack)
-			  (sixth stack)
-			  (fifth stack)
-			  (fourth stack)
-			  (third stack)
-			  (second stack)
-			  (first stack))
-		    
-		    (rest
-		     (rest
-		      (rest
-		       (rest
-			(rest
-			 (rest
-			  (rest stack))))))))
-	      (state-words state))))
-
-(define (pop-eight category state)
- (let ((stack (state-stack state)))
-  (make-state (cons (list category
-			  (eighth stack)
-			  (seventh stack)
-			  (sixth stack)
-			  (fifth stack)
-			  (fourth stack)
-			  (third stack)
-			  (second stack)
-			  (first stack))
-		    
-		    (rest
-		     (rest
-		      (rest
-		       (rest
-			(rest
-			 (rest
-			  (rest
-			   (rest stack)))))))))
-	      (state-words state))))
-
-(define (parse-a-subject state) (parse-a-word state 'subj *subjects*))
-
-(define (parse-a-verb state) (parse-a-word state 'v *verbs*))
+(define (parse-a-verb state)
+ (parse-a-word state 'v verbs))
+                        ;;'(went)))
 
 (define (parse-a-one-object-preposition state)
- (parse-a-word state 'prep-1 *one-object-prepositions*))
+ (parse-a-word state 'prep-1 one-object-prepositions))
+                             ;;'(left-of right-of behind in-front-of)))
 
 (define (parse-a-two-object-preposition state)
- (parse-a-word state 'prep-2 *two-object-prepositions*))
+ (parse-a-word state 'prep-2 two-object-prepositions))
+	                     ;;'(between)))
 
-(define (parse-an-object state) (parse-a-word state 'obj *objects*))
+(define (parse-an-object state)
+ (parse-a-word state 'obj objects))
+                          ;;'(the-table the-chair)))
 
-(define (parse-a-conjunction state) (parse-a-word state 'conj *conjunctions*))
-
-(define (parse-a-temporal-preposition state)
- (parse-a-word state 'prep-t *temporal-prepositions*))
-
-(define (parse-a-prepositional-phrase state)
- (either (pop-two 'prep-ph (parse-an-object
-			    (parse-a-one-object-preposition state)))
-	 (pop-four 'prep-ph (parse-an-object
-			     (parse-a-conjunction
-			      (parse-an-object
-			       (parse-a-two-object-preposition state)))))))
+(define (parse-a-conjunction state)
+ (parse-a-word state 'conj conjunctions))
+                           ;;'(and)))
 
 (define (parse-a-predicate state)
- (either (pop-two 'pred (parse-a-prepositional-phrase (parse-a-verb state)))
-	 (pop-four 'pred (parse-a-prepositional-phrase
-			  (parse-a-temporal-preposition
-			   (parse-a-prepositional-phrase
-			    (parse-a-verb state)))))
-	 (pop-six 'pred (parse-a-prepositional-phrase
-			  (parse-a-temporal-preposition
-			   (parse-a-prepositional-phrase
-			    (parse-a-temporal-preposition
-			     (parse-a-prepositional-phrase
-			      (parse-a-verb state)))))))
-	 (pop-eight 'pred (parse-a-prepositional-phrase
-			  (parse-a-temporal-preposition
-			   (parse-a-prepositional-phrase
-			    (parse-a-temporal-preposition
-			     (parse-a-prepositional-phrase
-			      (parse-a-temporal-preposition
-			       (parse-a-prepositional-phrase
-				(parse-a-verb state)))))))))))
+ (either (pop-three 'pred (parse-an-object (parse-a-one-object-preposition (parse-a-verb state))))
+	 (pop-five 'pred (parse-an-object (parse-a-conjunction (parse-an-object (parse-a-two-object-preposition (parse-a-verb state))))))))
 
 (define (parse-a-sentence state)
  (pop-two 's (parse-a-predicate (parse-a-subject state))))
@@ -287,29 +186,21 @@
  (let ((state (parse-a-sentence (make-state '() words))))
   (unless (null? (state-words state)) (fail))
   (first (state-stack state))))
+
 ;; end parser
-;;End revised generator-recognizer-parser
 
-;;Analysis tools
-
-;;hardcoding these variables for testing
-(define *datapath* "./data/test-2014-07-31/")
-(define *numtraces* 10)
+;; new stuff
 
 ;;need to read in (x1 y1) pairs into a list from file
 (define (read-trace filename)  ;;reads trace.txt produced by log-to-track.out
  (read-object-from-file filename))
 (define (get-endpoint trace)
  (but-last (last trace)))
-(define (get-traces *datapath* *numtraces*)
+(define (get-traces datapath numtraces)
  (let ((filelist
-	(map-n (lambda (i) (format #f "~atrial~a/trace.txt" *datapath* (number->padded-string-of-length (+ i 1) 3))) *numtraces*)))
+	(map-n (lambda (i) (format #f "~atrial~a/trace.txt" datapath (number->padded-string-of-length (+ i 1) 3))) numtraces)))
   (map read-trace filelist)))
 
-;;made this a thunk so it isn't computed every time I load the file (takes a while when sentence space is big)
-(define (all-sentences) (all-values (a-sentence)))
-;;might need to redefine this as a thunk if numtraces gets very big
-(define all-traces (get-traces *datapath* *numtraces*))
 
 ;;need to have lexicon for objects and prepositions
 (define the-table '(the-table (-1.26 2.55))) ;;hardcoded for now
@@ -322,7 +213,8 @@
 
 (define (location-of obstacle)
  (last obstacle))
-(define *obstacle-lexicon* (map (lambda (x) (eval x)) objects))
+(define obstacle-lexicon (map (lambda (x) (eval x)) objects))
+ ;;(cons the-table (cons the-chair '())))
 
 ;;distance stuff
 (define (distance-between p1 p2)
@@ -395,14 +287,13 @@
 (define (away-from robot obstacle lexicon) 0)
 (define (past robot obstacle lexicon) 0)
 
-
+(define all-sentences (all-values (a-sentence)))
 
 (define (parse-sentence sentence) (a-parse sentence))
 
 (define (sentence-from-string string)
  (map string->symbol (fields (string-upcase string))))
 
-;;FIXME--this won't work with new sentence structure
 (define (score-parse parse-tree lexicon trace)
  (let* ((preposition (last (third (last parse-tree))))
 	(endpoint (get-endpoint trace)) ;;using just endpoints for now
@@ -423,7 +314,8 @@
 (define (score-sentence sentence lexicon trace)
  (score-parse (parse-sentence sentence) lexicon trace))
 
-;;FIXME--this won't work when all-sentences gets very big
+(define all-traces (get-traces datapath numtraces))
+
 (define (produce-score-matrix lexicon traces)
  (map (lambda (sentence)
        (list sentence (map (lambda (trace)
@@ -431,7 +323,6 @@
 			   traces)))
       all-sentences))
 
-;;FIXME
 (define (highest-scoring-trace-for-sentence lexicon sentence traces)
  (let*
    ((scores
@@ -446,7 +337,6 @@
    ((num (highest-scoring-trace-for-sentence lexicon sentence traces)))
   (format #t "The highest scoring trace for ~a is trace ~a~%" sentence num)))
 
-;;FIXME
 (define (highest-scoring-sentence-for-trace lexicon trace)
  (let*
    ((scores

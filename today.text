@@ -1,3 +1,10 @@
+***POSSIBLE COURSES FOR SPRING 2015***
+ECE 637 - Digital Image Processing I (CS area)
+ECE 645 - Estimation Theory (CS area)
+ECE 647 - Advanced Topics in Communication Networks (CE&CS areas)
+ECE 666 - Parallel Computer Architecture (CE area)
+
+
 Paper deadlines:
 TePRA-15: 11-12 May 2015 in Boston
 	  15 November 2014: Paper submission deadline
@@ -145,7 +152,7 @@ Old Notes
 8 Apr 14
 --Separated toollib-rover-cpp.cpp declarations/includes/etc into toollib-rover-cpp.h as much as possible.
 --Built rover-server-test, rover-server-setup, rover-server-start, rover-server-grab functions into toolib-rover*.
---Have rover-server-setup working (initializes global varaibles used by rover-server-grab)
+--Have rover-server-setup working (initializes global variables used by rover-server-grab)
 --First draft of rover-server-start complete.  Can call a single instance of rover-server-grab to listen and receive images on one port.  Put basic thread-safety guards into rover-server-grab.  Need to implement threading in rover-server-start IOT enable both ports to listen simultaneously.
 --Also need to develop functions that are the consumers to rover-server-grab's producer.  Envision two functions, one that takes the image and displays it, and one that takes the image and saves it to a video.
 
@@ -163,7 +170,7 @@ Old Notes
 11 Apr 14
 --Have live video in viewer (changed name from 'dsci' to 'rover-viewer').  Image refresh is bound to ESC key, and I send an XEvent after each image received to refresh the window.  Originally had a problem with XEvents only going to the window that the mouse was pointing to, but solved that by designating window for XSendEvent by name.
 --Enroute to live video, had several problems with crashes/hangs when the ESC key was held down (fast refresh).  Solved this issue by adding a lock around the integer that keeps track of which image is the most recent in the image receive buffer.
---Next step is to work on camera code on rover to 1) make it run in an infinite loop, 2) be callable from the command line in order to put a button into rover-viewer to start the cameras, and 3) handle a KILL/TERM/?? signal in order to exit gracefully from the infinite loop when signalled from 'stop cameras' button in rover-viewer.
+--Next step is to work on camera code on rover to 1) make it run in an infinite loop, 2) be callable from the command line in order to put a button into rover-viewer to start the cameras, and 3) handle a KILL/TERM/?? signal in order to exit gracefully from the infinite loop when signaled from 'stop cameras' button in rover-viewer.
 
 14 Apr 14
 --Cleaned up simple-gui.sc a bit.
@@ -181,7 +188,7 @@ Old Notes
 
 16 Apr 14
 --Tested remote driving of rover using 4G modem.  Framerate was reasonable (~8.5 f/s/c), but latency was a problem.  Long delay between when action happened and when image was received, which didn't seem to happen when using wifi.  Also a delay between when command was issued via GUI and when it was executed.  Not sure what can be done to fix this--might the problem go away with better 4G reception (i.e., outdoors)?  Image delay might be helped by reconfiguring image streaming code to use RTP over UDP, instead of the TCP it currently uses.  Don't have any ideas yet on how to improve commands flowing the other direction (currently using ssh to send a command to run an executable that talks to the motors).
---Attempted to test built-in wifi (802.11g only) for remote driving.  Framerate was better than 4G but not as good as USB wifi (got ~10-11 f/s/c from built-in wifi).  Latency didn't seem to be a problem, but the problem of the USB port failing happened much more quickly when USB hub was plugged into main USB host port.  This happened twice in a row, but the third time I was able to get it driving and make a successful loop of EE313.  Also tried with hub plugged into USB OTG port and found the same problem as prevously--get an error message stating (musb_host_rx 1625: Rx interrupt with no errors or packet!) and the capture program freezes until killed.  Pretty sure the USB OTG port is useless.
+--Attempted to test built-in wifi (802.11g only) for remote driving.  Framerate was better than 4G but not as good as USB wifi (got ~10-11 f/s/c from built-in wifi).  Latency didn't seem to be a problem, but the problem of the USB port failing happened much more quickly when USB hub was plugged into main USB host port.  This happened twice in a row, but the third time I was able to get it driving and make a successful loop of EE313.  Also tried with hub plugged into USB OTG port and found the same problem as previously--get an error message stating (musb_host_rx 1625: Rx interrupt with no errors or packet!) and the capture program freezes until killed.  Pretty sure the USB OTG port is useless.
 --Compressed previous backup of SD card in /aux/sbroniko/backup (from 2014-02-03) and initiated new backup prior to changing over to backup gumstix.
 
 17 Apr 14
@@ -436,7 +443,7 @@ Goal: Continue work on IMU code.
 27 Jun 14
 Goal: Continue work on IMU code.
 --Completed MA511 HW #2 (approx. 1 hour per day this week)
---Troubleshot error with the new log socket on seykhl to the fact that both the old log socket and the new IMU log socket were somehow getting the same file descriptor number, which was causing an error.  I was able to overcome this by putting some additional logic conditions around when these file descriptors got closed, ensuring that the attempts to open them were sequential rather than simultaneous.  However, once I got that fixed I started getting bad file descriptor errors when I shut down the emperor code on the rover.  I believe the issue is with the loop conditions around my select/recv loop.  Need to find and use a function that checks if a given integer is a vaild file descriptor.
+--Troubleshot error with the new log socket on seykhl to the fact that both the old log socket and the new IMU log socket were somehow getting the same file descriptor number, which was causing an error.  I was able to overcome this by putting some additional logic conditions around when these file descriptors got closed, ensuring that the attempts to open them were sequential rather than simultaneous.  However, once I got that fixed I started getting bad file descriptor errors when I shut down the emperor code on the rover.  I believe the issue is with the loop conditions around my select/recv loop.  Need to find and use a function that checks if a given integer is a valid file descriptor.
 
 30 Jun 14
 Goal: Finish debugging IMU logging and research conversion factors for IMU data to physical data.
@@ -880,6 +887,7 @@ Goal: Finish modifications to generator/recognizer/parser.
 18 Sep 14
 Goal: Work on defining a state model for the traces, both for sentences with multiple simple prepositions (i.e., 'left-of x then right-of y') and for the more complex new prepositions that have to be defined by more than one state (i.e., 'towards z' or 'around w').
 --Finished ECE611 HW3.
+--No new ECE611 homework was assigned this week, so I should have more time to work on my research next week than I've had the last 2 weeks.
 --Caught up on CS514 HW4
 
 19 Sep 14
@@ -888,8 +896,50 @@ Goal: Keep working on state model and adapting score-parse to use the state mode
 --Modified generator to produce sentences with multiple prepositional phrases.  Currently have it hard-coded to do up to 4 prepositional phrases (connected by 'then') in a sentence.  This expands my sentence space exponentially.  I believe the correct formula for the number of sentences produced is: sum(from i=1 to p) of (nr + n^2s)^i, where p is the max number of prepositional phrases, n is the number of objects, r is the number of one-object prepositions, and s is the number of 2-object prepositions.  For my current setup of r=8, s=1, and n=6, for p=1 I get 84 sentences, for p=2: 7140, for p=3: 599844, and for p=4: 5x10^7 (although this I computed rather than having Scheme generate all these sentences).  Still need to modify the recognizer and parser to deal with this new structure.
 --Will be spending some extra time on this over the weekend since Kara and Emma are going up to WI to go to a craft fair, and I think craft fairs are about as exciting as root canals.
 
+22 Sep 14
+Goal: Finish modifications to recognizer & parser.  Keep up to date with CS514 homework.
+--Finished modifying recognizer and parser to deal with up to 4 prepositional phrases.  It appears to be working properly.
+--Finished the 4 CS514 HW problems assigned so far.
+
+23 Sep 14
+Goal: Keep working on state model for simple (i.e., single-state) prepositions.
+--Thinking about not using a state model and instead treating the trace as a signal, with the prepositions being functions of that signal.
+--Got HW4 in ECE661, due next Tuesday.
+--Got Dan and Haonan up to speed with what I've done so far.  Set up shared copies of my work in ~darpa-collaboration/rover (most work is in toollib-analysis.sc).
+
+24 Sep 14
+Goal: Finish state model for simple prepositions.  Start adapting state model to use multiple states in a single sentence--not sure which I should start with: sentences with multiple prepositional phrases using simple prepositions or single prepositional phrases using complex (multi-state) prepositions.  Keep up to date with CS514 homework.
+--Good couple of hours talking over grammar and meanings of prepositions with Dan and Haonan.  I think we have a solid grammar established--I will work on getting the new grammar coded up in Scheme tomorrow.
+
+25 Sep 14
+Goal: Continue working on multiple-state model.
+
+
+26 Sep 14
+Goal: Continue working on multiple-state model. Keep up to date with CS514 homework.
+
+
+15 Oct 14
+Goal: Start working on getting robot to drive automatically
+--Started working on porting Dan's log_to_track code to the rover in order to do positions in real time, on the rover.
+
+***get committee together***
+
+**Start figuring out how to get robot to drive track automatically--want to publish with Dan & Haonan's stuff by winter break**
+
+
+
+
+
+****DISREGARD STATE MODEL***
+**multipoint derivatives
+**look at how path moves through area of interest
+**define sentence structure recursively (infinite sentence space)
+**towards--look for decreasing distance b/w robot and obj, and look at angle from robot to obj vs heading of robot
 ***START ON EXTENDING SENTENCES TO MORE THAN ONE PREPOSITIONAL PHRASE***
-***START ON MAKING STATE MODEL FOR NEW PREPOSITIONS AND FOR TRACE AS A WHOLE***       OPEN THESE BUFFERS
+
+
+ OPEN THESE BUFFERS
 .   temp-grp.sc           6368  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/temp-grp.sc
   * today.text          105364  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
   * *scheme*             14443  Inferior Scheme:
