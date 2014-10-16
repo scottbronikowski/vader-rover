@@ -166,8 +166,10 @@ int read_log_file(char* filename, Mat measurements[])
 	  Measurement.at<float>(1) = 0; //no gps for now
 	  Measurement.at<float>(2) = (-Yaw+90)*pi/180 ; //degrees north is 0 east is positive->(radians east 0 north positive)
 	  Measurement.at<float>(3) = -Gz*pi/180; // rotation around z in degrees/sec ->(radians/sec)
-	  Measurement.at<float>(4) = L/100.0/(((float)((int)encoder_dt))/1000.0)*(avg_ticks_per_cm)/(left_ticks_per_cm); // cm traveled in last time period -> (meters/sec)
-	  Measurement.at<float>(5) = R/100.0/(((float)((int)encoder_dt))/1000.0)*(avg_ticks_per_cm)/(right_ticks_per_cm); // cm traveled in last time period -> (meters/sec)
+	  Measurement.at<float>(4) = L/100.0/(((float)((int)encoder_dt))/1000.0);//*(avg_ticks_per_cm)/(left_ticks_per_cm); 
+// cm traveled in last time period -> (meters/sec)
+	  Measurement.at<float>(5) = R/100.0/(((float)((int)encoder_dt))/1000.0);//*(avg_ticks_per_cm)/(right_ticks_per_cm); 
+// cm traveled in last time period -> (meters/sec)
 
 	  Measurement.at<float>(6) = -(Ax-1)/100; // cm/s^2 -> (m/s^2)       // x forward y right
 	  measurements[n_measurements] = Measurement.clone();

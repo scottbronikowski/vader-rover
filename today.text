@@ -923,6 +923,9 @@ Goal: Continue working on multiple-state model. Keep up to date with CS514 homew
 Goal: Start working on getting robot to drive automatically
 --Started working on porting Dan's log_to_track code to the rover in order to do positions in real time, on the rover.
 
+16 Oct 14
+--Fixed original log_to_track.cpp to remove factor for averaging left/right clicks from encoder (encoders changed to report separate click numbers).
+
 ***get committee together***
 
 **Start figuring out how to get robot to drive track automatically--want to publish with Dan & Haonan's stuff by winter break**
