@@ -926,6 +926,9 @@ Goal: Start working on getting robot to drive automatically
 16 Oct 14
 --Fixed original log_to_track.cpp to remove factor for averaging left/right clicks from encoder (encoders changed to report separate click numbers).
 
+17 Oct 14
+--Added buttons for 'Start The Force' 'Stop The Force' and 'EMERGENCY STOP' to driver-gui
+
 ***get committee together***
 
 **Start figuring out how to get robot to drive track automatically--want to publish with Dan & Haonan's stuff by winter break**

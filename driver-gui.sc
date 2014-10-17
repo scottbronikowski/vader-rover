@@ -6,6 +6,8 @@
   (lambda () (format #f "CDR viewer ~a" *cdr-viewer-active*))
   #f
   (lambda () #f))
+ (define-button 2 2 "**EMERGENCY STOP**" #f
+  (lambda () (system "ssh -p 22222 root@localhost \"~/bin/motor_control stop\"")))
  (define-button 3 3 "Start Cameras" #f
   (lambda () (gamepad-start-cameras)))
  (define-button 3 4 "Stop Cameras" #f
@@ -14,6 +16,16 @@
   (lambda ()
    ;; (system "ssh -p 22222 root@localhost \"/root/bin/emperor &\" &")
    (system "ssh -p 22222 root@localhost \"/root/bin/run-emperor start\" &")
+   ))
+ (define-button 3 1 "Stop The Force" #f
+  (lambda ()
+   ;; (system "ssh -p 22222 root@localhost \"pkill emperor\" &")
+   (system "ssh -p 22222 root@localhost \"/root/bin/run-the-force stop\" &")
+   ))
+ (define-button 3 0 "Start The Force" #f
+  (lambda ()
+   ;; (system "ssh -p 22222 root@localhost \"/root/bin/emperor &\" &")
+   (system "ssh -p 22222 root@localhost \"/root/bin/run-the-force start\" &")
    ))
  (define-button 4 1 "Stop Emperor" #f
   (lambda ()
