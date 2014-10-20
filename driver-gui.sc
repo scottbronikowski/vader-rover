@@ -8,12 +8,19 @@
   (lambda () #f))
  (define-button 2 2 "**EMERGENCY STOP**" #f
   (lambda () (system "ssh -p 22222 root@localhost \"~/bin/motor_control stop\"")))
- (define-button 3 3 "Start Cameras" #f
-  (lambda () (gamepad-start-cameras)))
- (define-button 3 4 "Stop Cameras" #f
-  (lambda () (gamepad-stop-cameras)))
+ ;; (define-button 3 3 "Start Cameras" #f
+ ;;  (lambda () (gamepad-start-cameras)))
+ ;; (define-button 3 4 "Stop Cameras" #f
+ ;;  (lambda () (gamepad-stop-cameras)))
+ (define-button 4 1 "Stop Emperor" #f
+  (lambda ()
+   (gamepad-shutdown)
+   ;; (system "ssh -p 22222 root@localhost \"pkill emperor\" &")
+   (system "ssh -p 22222 root@localhost \"/root/bin/run-emperor stop\" &")
+   ))
  (define-button 4 0 "Start Emperor" #f
   (lambda ()
+   (gamepad-init)
    ;; (system "ssh -p 22222 root@localhost \"/root/bin/emperor &\" &")
    (system "ssh -p 22222 root@localhost \"/root/bin/run-emperor start\" &")
    ))
@@ -26,11 +33,6 @@
   (lambda ()
    ;; (system "ssh -p 22222 root@localhost \"/root/bin/emperor &\" &")
    (system "ssh -p 22222 root@localhost \"/root/bin/run-the-force start\" &")
-   ))
- (define-button 4 1 "Stop Emperor" #f
-  (lambda ()
-   ;; (system "ssh -p 22222 root@localhost \"pkill emperor\" &")
-   (system "ssh -p 22222 root@localhost \"/root/bin/run-emperor stop\" &")
    ))
  )
 
@@ -61,7 +63,7 @@
   (define-keys)
   (rover-server-setup)
   (rover-server-start)
-  (gamepad-init) ;;might need to move this into the "Start Emperor" button
+  ;;(gamepad-init) ;;might need to move this into the "Start Emperor" button
   (dtrace "Finished calling the god-damned pre-initialize function" "")
   
   )
@@ -73,7 +75,7 @@
  (lambda ()
   (dtrace ""  "Calling Finalize")
   (rover-server-cleanup)
-  (gamepad-shutdown) ;;might need to move into "Stop Emperor" button
+  ;;(gamepad-shutdown) ;;might need to move into "Stop Emperor" button
   (imlib-context-disconnect-display))
  ;;; Redraw procedure:
  (lambda ()

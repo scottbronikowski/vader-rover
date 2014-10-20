@@ -931,6 +931,7 @@ Goal: Start working on getting robot to drive automatically
 
 20 Oct 14
 --Starting to work on replacing old gamepad command infrastructure with infrastructure that will send a list of (x,y) points instead.  Thinking that on the seykhl side I need to replace or augment the toollib-gamepad functions to stop sending gamepad commands and instead send the traces over the same port.
+--Moved the (gamepad-init) and (gamepad-shutdown) calls in driver-gui.sc into the Start Emperor and Stop Emperor buttons so that gamepad is completely disabled when using The Force.  Need to put a function (maybe in toollib-gamepad) that can be called from the Start The Force button that opens up the command port and gets ready to send the trace.
 
 ***get committee together***
 
