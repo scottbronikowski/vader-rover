@@ -929,6 +929,9 @@ Goal: Start working on getting robot to drive automatically
 17 Oct 14
 --Added buttons for 'Start The Force' 'Stop The Force' and 'EMERGENCY STOP' to driver-gui
 
+20 Oct 14
+--Starting to work on replacing old gamepad command infrastructure with infrastructure that will send a list of (x,y) points instead.  Thinking that on the seykhl side I need to replace or augment the toollib-gamepad functions to stop sending gamepad commands and instead send the traces over the same port.
+
 ***get committee together***
 
 **Start figuring out how to get robot to drive track automatically--want to publish with Dan & Haonan's stuff by winter break**

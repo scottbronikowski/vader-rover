@@ -61,7 +61,7 @@
   (define-keys)
   (rover-server-setup)
   (rover-server-start)
-  (gamepad-init)
+  (gamepad-init) ;;might need to move this into the "Start Emperor" button
   (dtrace "Finished calling the god-damned pre-initialize function" "")
   
   )
@@ -73,7 +73,7 @@
  (lambda ()
   (dtrace ""  "Calling Finalize")
   (rover-server-cleanup)
-  (gamepad-shutdown)
+  (gamepad-shutdown) ;;might need to move into "Stop Emperor" button
   (imlib-context-disconnect-display))
  ;;; Redraw procedure:
  (lambda ()
