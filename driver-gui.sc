@@ -36,6 +36,8 @@
    (system "ssh -p 22222 root@localhost \"/root/bin/run-the-force start\" &")
    (trace-init)
    ))
+ (define-button 2 4 "trace-init" #f
+  (lambda() (trace-init)))
  )
 
 (define (define-keys)
@@ -47,7 +49,9 @@
  (define-key (control #\m) "Enter command"
   (lambda ()
    (trace-send *input*)
-   (dtrace "the string you typed:" *input*))))
+   (dtrace "the string you typed:" *input*)
+   ;;(set! *input* "")
+   )))
 
 (set! *program* "driver-viewer")
 
