@@ -1,6 +1,8 @@
 ;; Module for interfacing to Logitech F710 gamepad (used as generic Xbox controller)
 ;; Author: Scott Bronikowski
 ;; Date: 22 April 2014
+;;
+;; Added "trace-" functions to send traces over same port as gamepad 21 Oct 14
 
 (MODULE TOOLLIB-GAMEPAD)
 
@@ -28,3 +30,12 @@
 
 (define gamepad-stop-cameras
  (c-function void ("gamepad_stop_cameras")))
+
+(define trace-init
+ (c-function void ("trace_init")))
+
+(define trace-shutdown
+ (c-function void ("trace_shutdown")))
+
+(define trace-send
+ (c-function void ("trace_send" pointer)))

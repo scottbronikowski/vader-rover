@@ -8,6 +8,8 @@
 //global constants
 const char* k_CommandPort = "1999";
 const int k_maxBufSize = 50;
+//used for buffer of trace points, replaces k_maxBufSize in send/receive
+const int k_traceBufSize = 1300; //max # of bytes in trace
 //values used for pan & tilt servo calculations
 const int pan_left = 20000; //max left
 const int pan_center = 15500; //adjusted from 15000;
@@ -84,6 +86,45 @@ void gamepad_stop_cameras(void)
 {
   if (new_fd > 0)
     gamepad_send_command(cmd_stop_cameras, new_fd);
+}
+
+void trace_init(void)
+{
+  new_fd = -1;
+  sockfd = gamepad_start_server(k_CommandPort);
+  printf("Waiting for TRACE connection on port %s...\n", k_CommandPort);
+  while (new_fd < 0)
+    { //accept loop
+      new_fd = gamepad_accept_connection(sockfd);
+      if (new_fd != -1)
+	{
+	  printf("TRACE connection established with new_fd = %d, sockfd = %d\n", new_fd, sockfd);
+	  return;
+	}
+      usleep(10000);
+    }
+}
+
+void trace_shutdown(void)
+{
+  if (new_fd > 0)
+    {
+      close(new_fd);
+      //printf("new_fd closed\n");
+    }
+  close(sockfd);
+  printf("TRACE connection closed\n");
+}
+
+void trace_send(const char* command)
+{
+  if (new_fd > 0)
+    {
+      char cmd_buf[k_traceBufSize];
+      memset(cmd_buf, 0, sizeof(cmd_buf));
+      strncpy(cmd_buf, command, sizeof(cmd_buf));
+      send(new_fd, cmd_buf, sizeof(cmd_buf), 0);
+    }
 }
 
 //functions NOT called from Scheme
@@ -360,3 +401,13 @@ int gamepad_send_command(const char* command, int fd)
   strncpy(cmd_buf, command, sizeof(cmd_buf));
   return send(fd, cmd_buf, sizeof(cmd_buf), 0);
 }
+
+
+
+/* void* trace_update(void* args)  //not sure if this should be a void or void* */
+/* { */
+/*   //first thought is to run this as a thread, instead of as a stand-alone function */
+/* } */
+
+//why not have small individual functions for open, send, close
+

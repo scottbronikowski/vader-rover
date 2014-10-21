@@ -17,6 +17,8 @@
 //global constants
 extern const char* k_CommandPort;
 extern const int k_maxBufSize;
+//used for buffer of trace points, replaces k_maxBufSize in send/receive
+extern const int k_traceBufSize; 
 //values used for pan & tilt servo calculations
 extern const int pan_left;
 extern const int pan_center;
@@ -62,6 +64,9 @@ void gamepad_init(void);
 void gamepad_shutdown(void);
 void gamepad_start_cameras(void);
 void gamepad_stop_cameras(void);
+void trace_init(void);
+void trace_shutdown(void);
+void trace_send(const char* command);
 
 //functions NOT called from Scheme
 void* gamepad_update(void* args);
@@ -69,5 +74,4 @@ int gamepad_start_server(const char* PORT);
 int gamepad_accept_connection(int sockfd);
 void* gamepad_get_in_addr(struct sockaddr *sa);
 int gamepad_send_command(const char* command, int fd);
-
 #endif

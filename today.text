@@ -933,6 +933,9 @@ Goal: Start working on getting robot to drive automatically
 --Starting to work on replacing old gamepad command infrastructure with infrastructure that will send a list of (x,y) points instead.  Thinking that on the seykhl side I need to replace or augment the toollib-gamepad functions to stop sending gamepad commands and instead send the traces over the same port.
 --Moved the (gamepad-init) and (gamepad-shutdown) calls in driver-gui.sc into the Start Emperor and Stop Emperor buttons so that gamepad is completely disabled when using The Force.  Need to put a function (maybe in toollib-gamepad) that can be called from the Start The Force button that opens up the command port and gets ready to send the trace.
 
+21 Oct 14
+--created trace_init, trace_send, trace_shutdown in toollib-gamepad to open socket, send text buffer, and close socket.  Initial tests working--can send text from text box at bottom of driver window to rover.
+
 ***get committee together***
 
 **Start figuring out how to get robot to drive track automatically--want to publish with Dan & Haonan's stuff by winter break**
