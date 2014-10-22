@@ -9,7 +9,7 @@
 const char* k_CommandPort = "1999";
 const int k_maxBufSize = 50;
 //used for buffer of trace points, replaces k_maxBufSize in send/receive
-const int k_traceBufSize = 1300; //max # of bytes in trace
+const int k_traceBufSize = 5000; //max # of bytes in trace
 //values used for pan & tilt servo calculations
 const int pan_left = 20000; //max left
 const int pan_center = 15500; //adjusted from 15000;
