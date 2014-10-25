@@ -936,10 +936,17 @@ Goal: Start working on getting robot to drive automatically
 21 Oct 14
 --created trace_init, trace_send, trace_shutdown in toollib-gamepad to open socket, send text buffer, and close socket.  Initial tests working--can send text from text box at bottom of driver window to rover.
 
+24 Oct 14
+--added 'Stop The Force' calls to 'EMERGENCY STOP' button in driver-gui
+
 ***get committee together***
 
 **Start figuring out how to get robot to drive track automatically--want to publish with Dan & Haonan's stuff by winter break**
 
+
+**AFTER AUTODRIVING DONE: go to MSEE atrium; use 3-5 floorplans; manually drive 1 trace on each floorplan; take points generated from trace and turn them into an automatic route (may need to downsample somehow, since points will be at 50Hz); drive automatic route and record trace; measure chamfer distance (squared chamfer distance) to compare how automatic points match manual points
+
+**thought-->do I need to put something into the log files to differentiate between manual and automatic driving?
 
 
 

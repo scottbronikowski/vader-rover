@@ -7,7 +7,11 @@
   #f
   (lambda () #f))
  (define-button 2 2 "**EMERGENCY STOP**" #f
-  (lambda () (system "ssh -p 22222 root@localhost \"~/bin/motor_control stop\"")))
+  (lambda ()
+   (system "ssh -p 22222 root@localhost \"~/bin/motor_control stop\"")
+   (trace-shutdown)
+   (system "ssh -p 22222 root@localhost \"/root/bin/run-the-force stop\" &")
+   ))
  ;; (define-button 3 3 "Start Cameras" #f
  ;;  (lambda () (gamepad-start-cameras)))
  ;; (define-button 3 4 "Stop Cameras" #f
@@ -36,8 +40,10 @@
    (system "ssh -p 22222 root@localhost \"/root/bin/run-the-force start\" &")
    (trace-init)
    ))
- (define-button 2 4 "trace-init" #f
+ (define-button 2 3 "trace-init" #f
   (lambda() (trace-init)))
+  (define-button 2 4 "trace-shutdown" #f
+  (lambda() (trace-shutdown)))
  )
 
 (define (define-keys)
