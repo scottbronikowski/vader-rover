@@ -939,7 +939,23 @@ Goal: Start working on getting robot to drive automatically
 24 Oct 14
 --added 'Stop The Force' calls to 'EMERGENCY STOP' button in driver-gui
 
-***get committee together***
+27 Oct 14
+--Finished ECE661 HW6
+
+28 Oct 14
+--Caught up on CS514 HW10 problems assigned so far
+--ECE661 HW7 assigned--due Tuesday 4 November
+--Talked with Dan a bit about how to calibrate the Kalman filter.  It seems to be relatively straightforward.  We will rotate the robot in place X times and see what the delta is between X and the theta coming out of the KF.  Will use that to adjust the robot width parameter in the KF until X and theta match.  I will have to restructure the-force on the rover to take this width parameter as an argument, but that shouldn't be hard.
+--I wonder if this might be a good time to start adding some other input data to the KF, like accel/gyro, motor input, etc.  Might be a better idea to wait until we have the KF working with just the encoder data before messing with anything else.
+
+29 Oct 14
+--Went back to first principles on equations of motion for rover.
+
+30 Oct 14
+--Changed Odometer.ino to report just ticks instead of cm.
+
+***REMOVE meters/tick from Odometer code and into KF***
+***Have odometer/sensor code output current motor command for each motor***
 
 **Start figuring out how to get robot to drive track automatically--want to publish with Dan & Haonan's stuff by winter break**
 
@@ -948,7 +964,8 @@ Goal: Start working on getting robot to drive automatically
 
 **thought-->do I need to put something into the log files to differentiate between manual and automatic driving?
 
-
+******NOVEL CONTRIBUTIONS (NEED 5)*****
+1. Formulation of a grammar that completely disambiguates robot motion in a given environment.
 
 
 ****DISREGARD STATE MODEL***

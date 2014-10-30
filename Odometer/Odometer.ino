@@ -7,9 +7,9 @@
 
 #include <Encoder.h>
 
-//Derived from drive testing with EncoderTest.ino
-#define right_ticks_per_cm 323.709
-#define left_ticks_per_cm 328.288
+/* //Derived from drive testing with EncoderTest.ino */
+/* #define right_ticks_per_cm 323.709 */
+/* #define left_ticks_per_cm 328.288 */
 
 //serial port baud rate
 #define OUTPUT_BAUD_RATE 57600
@@ -33,33 +33,31 @@ boolean output_single_on;
 #define STATUS_LED_PIN 13
 
 //odometer variables
-//float left_cm;
-//float right_cm;
 unsigned long timestamp;
 unsigned long timestamp_old;
 unsigned long dt;
 long positionLeft;
 long positionRight;
-//float avg_ticks_per_cm = (right_ticks_per_cm + left_ticks_per_cm) / 2;
-
 
 Encoder encoderRight(4,3);
 Encoder encoderLeft(1,2);
 
 void output()
 {
-  float cm[2]; //left is 0, right is 1
-  cm[0] = positionLeft / left_ticks_per_cm;
-  //cm[0] = positionLeft / avg_ticks_per_cm;
-  cm[1] = positionRight / right_ticks_per_cm;
-  //cm[1] = positionRight / avg_ticks_per_cm;
+  //float cm[2]; //left is 0, right is 1
+  float ticks[2]; //left is 0, right is 1
+  ticks[0] = positionLeft / 1.0f;
+  ticks[1] = positionRight / 1.0f;
+  //cm[0] = positionLeft / left_ticks_per_cm;
+  //cm[1] = positionRight / right_ticks_per_cm;
   if (output_format == OUTPUT_FORMAT_BINARY)
   {
     unsigned char buf1[4]; //for timestamp (4-byte unsigned long)
     unsigned char buf2[4]; //for dt (also 4-byte unsigned long)
     memcpy(buf1, &timestamp, 4);
     memcpy(buf2, &dt, 4);
-    Serial.write((byte*) cm, 8); //2 4-byte floats
+    Serial.write((byte*) ticks, 8); //2 4-byte floats
+    //Serial.write((byte*) cm, 8); //2 4-byte floats
     Serial.write(buf1, 4);
     Serial.write(buf2, 4);
     //Serial.write((byte*) left_cm, 4);
@@ -69,8 +67,11 @@ void output()
   {
     Serial.print("timestamp="); Serial.print(timestamp); Serial.print(",");
     Serial.print("dt="); Serial.print(dt); Serial.print(",");
-    Serial.print("L distance="); Serial.print(cm[0]); Serial.print("cm,");
-    Serial.print("R distance="); Serial.print(cm[1]); Serial.print("cm");
+    Serial.print("L ticks="); Serial.print(ticks[0]); Serial.print(",");
+    Serial.print("R ticks="); Serial.print(ticks[1]);
+
+    /* Serial.print("L distance="); Serial.print(cm[0]); Serial.print("cm,"); */
+    /* Serial.print("R distance="); Serial.print(cm[1]); Serial.print("cm"); */
     Serial.println();
   }
 }
