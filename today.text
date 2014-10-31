@@ -954,6 +954,37 @@ Goal: Start working on getting robot to drive automatically
 30 Oct 14
 --Changed Odometer.ino to report just ticks instead of cm.
 
+
+******NEED TO FIX LOG TO TRACK CODE TO READ IN MCL AND MCR******
+
+Buffers 31 Oct 14
+.   research.bib         25251  BibTeX		  /amd/upplysingaoflun/root/aux/home/sbroniko/research/papers/research.bib
+  * *shell*             153166  Shell:run	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/position/
+  * *scheme*           1766420  Inferior Scheme:
+    notes.text           28839  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/research/1_lit_review/notes.text
+  * ch1.tex              43598  LaTeX		  /amd/upplysingaoflun/root/aux/home/sbroniko/research/1_lit_review/ch1.tex
+    log_to_track.cpp     14013  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/position/log_to_track.cpp
+    makefile|position      373  GNUmakefile	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/position/makefile
+    simple.cpp           26400  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/position/simple.cpp
+    today.text          111865  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
+ %  vader-rover           3521  Dired by name	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/
+  * *Messages*            3618  Fundamental
+    driver-gui.sc         3351  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/driver-gui.sc
+    toollib-gamepad-c.c  12464  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-gamepad-c.c
+    toollib-gamepad.sc    1096  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-gamepad.sc
+    toollib-rover-cpp.c: 42362  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover-cpp.cpp
+    data-analysis.h       1640  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/data-analysis.h
+    toollib-analysis.sc  18519  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-analysis.sc
+    data-analysis.cpp    16458  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/data-analysis.cpp
+  * *shell*<2>           63821  Shell:run	  /amd/upplysingaoflun/root/aux/home/sbroniko/darpa-collaboration/ideas/x86_64-Linux-3.2.0-4-amd64/
+    toollib-gamepad-c.h   2148  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-gamepad-c.h
+    makefile|from_dan      373  GNUmakefile	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/from_dan/makefile
+    *scratch*              191  Lisp Interaction
+    ch1.pdf             213968  Fundamental	  /amd/upplysingaoflun/root/aux/home/sbroniko/research/1_lit_review/ch1.pdf
+    *doc-view conversion :   0  Fundamental
+
+
+
 ***REMOVE meters/tick from Odometer code and into KF***
 ***Have odometer/sensor code output current motor command for each motor***
 
@@ -962,7 +993,6 @@ Goal: Start working on getting robot to drive automatically
 
 **AFTER AUTODRIVING DONE: go to MSEE atrium; use 3-5 floorplans; manually drive 1 trace on each floorplan; take points generated from trace and turn them into an automatic route (may need to downsample somehow, since points will be at 50Hz); drive automatic route and record trace; measure chamfer distance (squared chamfer distance) to compare how automatic points match manual points
 
-**thought-->do I need to put something into the log files to differentiate between manual and automatic driving?
 
 ******NOVEL CONTRIBUTIONS (NEED 5)*****
 1. Formulation of a grammar that completely disambiguates robot motion in a given environment.
