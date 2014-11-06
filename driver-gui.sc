@@ -54,7 +54,10 @@
  (define-key escape "Get Images" get-next-image-command) ;;defined in toollib-rover.sc
  (define-key (control #\m) "Enter command"
   (lambda ()
-   (trace-send *input*)
+   (if (equal? (first (string->list *input*)) #\w)
+       (mark-waypoint *input*)
+       (trace-send *input*)
+       )
    (dtrace "the string you typed:" *input*)
    ;;(set! *input* "")
    )))

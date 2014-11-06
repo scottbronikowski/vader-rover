@@ -78,4 +78,7 @@
   ;;     (set! *cdr-viewer-active* #f))
   ))
 
+(define mark-waypoint
+ (c-function void ("mark_waypoint" pointer)))
+
 ;;; comments at the end of a file must be followed by a newline

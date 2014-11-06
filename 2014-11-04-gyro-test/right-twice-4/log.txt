@@ -1,0 +1,19 @@
+Log file created at 2014-11-04-20:35:47 GMT
+1415133350.720592: Logging started
+1415133350.721110: Bump switch monitoring active
+1415133351.629513: executed: pan_15500, tilt_14500
+1415133351.656978: executed: motor_stop
+1415133351.657497: executed: start_cameras
+1415133355.086763: executed: motor_pivot_right_1
+1415133357.633445: executed: motor_pivot_right_2
+1415133363.703814: executed: motor_pivot_right_1
+1415133363.774094: executed: motor_stop
+1415133364.297646: executed: motor_pivot_right_1
+1415133367.805494: executed: motor_stop
+1415133369.336536: executed: motor_pivot_left_1
+1415133369.469499: executed: motor_stop
+1415133372.781885: executed: motor_pivot_left_1
+1415133372.883446: executed: motor_stop
+1415133374.998250: executed: stop_cameras
+1415133376.994176: Logging completed
+Log file closed at 2014-11-04-20:36:16 GMT

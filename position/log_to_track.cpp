@@ -24,9 +24,9 @@
 #define  MAPB (40.42960556)
 
 
-#define right_ticks_per_cm 323.709
-#define left_ticks_per_cm 328.288
-float avg_ticks_per_cm = (right_ticks_per_cm + left_ticks_per_cm) / 2;
+// #define right_ticks_per_cm 323.709
+// #define left_ticks_per_cm 328.288
+// float avg_ticks_per_cm = (right_ticks_per_cm + left_ticks_per_cm) / 2;
 
 using namespace cv;
 
@@ -52,7 +52,8 @@ using namespace cv;
 float mXN = 5.0; //  GPS X noise variance
 float mYN = 5.0; //  GPS Y noise variance
 float mThetaN = 1000000000 * (pi/180); //  orientation noise variance (radians)
-float mdThetaN = 1000000000000 * (pi/180); //  orientation derivative noise variance (radians)
+float mdThetaN = .0001; 
+//1000000000000 * (pi/180); //  orientation derivative noise variance (radians)
 float mSLN = .01; //  left wheel speed noise variance
 float mSRN = .01; //  right wheel speed noise variance
 float mAN  = 100000000; //  acceleration noise variance
@@ -62,7 +63,7 @@ float mAN  = 100000000; //  acceleration noise variance
 float pXN = 1e-6; //  GPS X noise variance
 float pYN = 1e-6; //  GPS Y noise variance
 float pThetaN = 1 * (pi/180); //  orientation noise variance (radians)
-float pdThetaN = 1 * (pi/180); //  orientation derivative noise variance (radians)
+float pdThetaN = 1000000;//1 * (pi/180); //  orientation derivative noise variance (radians)
 float pSLN = 1000000; //  left wheel speed noise variance
 float pSRN = 1000000; //  right wheel speed noise variance
 float pdSLN = 1000000; //  left wheel speed derivative noise variance
@@ -80,7 +81,12 @@ float pdSRN = 1000000; //  right wheel speed derivative noise variance
 // we really should find these by computing stuff from measurements
 float alpha = 1; // ????
 float beta = 1; // ????
-float rover_width = .45; //???? measure/calibrate this
+float rover_width = .3110019808409256; 
+float tau_L = 3.048837255989942e-05; //left meters per tick
+float tau_R = 3.056925451030081e-05; //right meters per tick
+float gyro_offset = 14.98;
+float radians_per_gyro_unit = 2*pi/5.076295665184609e+03; 
+
 
 Point2d local_origin;
 
@@ -127,6 +133,7 @@ int read_log_file(char* filename, Mat measurements[])
   unsigned long encoder_time,encoder_dt,imu_time,imu_dt;
   float L,R;
   float Yaw,Pitch,Roll,Yawa,MAG_ha,MAG_h,Ax,Ay,Az,Mx,My,Mz,Gx,Gy,Gz;
+  int motor_cmd_L, motor_cmd_R;
 
   Mat Measurement = Mat::zeros(7,1,CV_32F);
   int read_encoder=0,read_imu=0;
@@ -134,7 +141,9 @@ int read_log_file(char* filename, Mat measurements[])
   while (fgets(linebuf,1000,fp)!=NULL)
     {
       int correct =0;
-      int encoder_items = sscanf(linebuf,"%lf: ENC:time:%u:dt:%u:L:%f:R:%f",&tmp_logtime,&encoder_time,&encoder_dt,&L,&R);
+      int encoder_items = sscanf(linebuf,"%lf: ENC:time:%u:dt:%u:L:%f:R:%f:MCL:%d:MCR:%d",
+				 &tmp_logtime,&encoder_time,&encoder_dt,&L,&R,
+				 &motor_cmd_L, &motor_cmd_R);
       int imu_items = sscanf(linebuf,"%lf: IMU:time:%u:dt:%u:"
 			     "Y:%f:P:%f:R:%f:"
 			     "Y(a):%f:M_h(a):%f:M_h:%f:"
@@ -147,7 +156,7 @@ int read_log_file(char* filename, Mat measurements[])
 			     &Mx,&My,&Mz,
 			     &Gx,&Gy,&Gz);
 
-      if (encoder_items == 5)
+      if (encoder_items == 7)
       	{
 	  encoder_logtime=tmp_logtime;
       	  read_encoder=1;
@@ -162,11 +171,17 @@ int read_log_file(char* filename, Mat measurements[])
 	  Measurement.at<float>(0) = 0; //no gps for now
 	  Measurement.at<float>(1) = 0; //no gps for now
 	  Measurement.at<float>(2) = (-Yaw+90)*pi/180 ; //degrees north is 0 east is positive->(radians east 0 north positive)
-	  Measurement.at<float>(3) = -Gz*pi/180; // rotation around z in degrees/sec ->(radians/sec)
-	  Measurement.at<float>(4) = L/100.0/(((float)((int)encoder_dt))/1000.0);//*(avg_ticks_per_cm)/(left_ticks_per_cm); 
-// cm traveled in last time period -> (meters/sec)
-	  Measurement.at<float>(5) = R/100.0/(((float)((int)encoder_dt))/1000.0);//*(avg_ticks_per_cm)/(right_ticks_per_cm); 
-// cm traveled in last time period -> (meters/sec)
+	  Measurement.at<float>(3) = -(Gz-gyro_offset)*radians_per_gyro_unit;///(((float)((int)encoder_dt))/1000.0);
+	  //-Gz*pi/180; // rotation around z in degrees/sec ->(radians/sec)
+	  //printf("%f\n", Measurement.at<float>(3));
+	  Measurement.at<float>(4) = L*tau_L/(((float)((int)encoder_dt))/1000.0); 
+	  //L/100.0/(((float)((int)encoder_dt))/1000.0);//*(avg_ticks_per_cm)/(left_ticks_per_cm); 
+	  // cm traveled in last time period -> (meters/sec)
+	  Measurement.at<float>(5) = R*tau_R/(((float)((int)encoder_dt))/1000.0); 
+	  //R/100.0/(((float)((int)encoder_dt))/1000.0);//*(avg_ticks_per_cm)/(right_ticks_per_cm); 
+	  // cm traveled in last time period -> (meters/sec)
+	  // printf("encoder_dt: %d, L: %f, Lspeed: %f, R: %f, Rspeed: %f\n", 
+	  // 	 encoder_dt, L, Measurement.at<float>(4), R, Measurement.at<float>(5));
 
 	  Measurement.at<float>(6) = -(Ax-1)/100; // cm/s^2 -> (m/s^2)       // x forward y right
 	  measurements[n_measurements] = Measurement.clone();
@@ -249,7 +264,8 @@ Mat ComputeTransitionMatrix(Mat state,float dt)
 		      1, 0, 0, 0,  .5*cos(theta)*dt, .5*cos(theta)*dt, 0,  0,
 		      0, 1, 0, 0,  .5*sin(theta)*dt, .5*sin(theta)*dt, 0,  0,
 		      0, 0, 1, dt, 0,                0,                0,  0,
-		      0, 0, 0, 0,  -1/rover_width,   1/rover_width,    0,  0,
+		      0, 0, 0,  0, 0,                0,                0,  0,
+		      //0, 0, 0, 0,  -1/rover_width,   1/rover_width,    0,  0,
 		      0, 0, 0, 0,  1,                0,                dt, 0,
 		      0, 0, 0, 0,  0,                1,                0,  dt,
 		      0, 0, 0, 0, -beta,             0,                0,  0,
@@ -295,7 +311,8 @@ int main(int args, char** argv)
 
 
 
-  read_config_file(configpath);
+  //read_config_file(configpath);
+  printf("using hard-coded values\n");
   Mat measurements[80000];
   //printf("I was lazy, so there is a needless hard limit of 80000 measurements\n");
   int nmeasurements = read_log_file(logpath, measurements);

@@ -954,6 +954,14 @@ Goal: Start working on getting robot to drive automatically
 30 Oct 14
 --Changed Odometer.ino to report just ticks instead of cm.
 
+3 Nov 14
+--What is the lens equation for the pano lens?  Can this get us back to linear x,y,z points?
+--If points were evenly distributed over image plane, a simple summing would cancel all rotation components when going straight, or cancel all translation when purely rotating, or have a combination when doing both.  How can we get evenly distributed points?  Is there a way to normalize random points on either side of the vertical bisector to make them equivalent to a point on the horizontal bisector (or perhaps the origin itself?)
+
+
+***Start looking at OpenCV Optical Flow (lkdemo)
+***Can we get turn info from IMU (gyros)?
+
 
 ******NEED TO FIX LOG TO TRACK CODE TO READ IN MCL AND MCR******
 

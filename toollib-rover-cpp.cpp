@@ -351,6 +351,11 @@ extern "C" void cdr_viewer_cleanup(void)
 extern "C" int read_cdr_viewer_active(void)
 { return cdr_viewer_active; }
 
+extern "C" void mark_waypoint(const char* point)
+{
+  fprintf(imu_log_file, "\nWAYPOINT %s\n\n", point);
+}
+
 // functions not called from Scheme
 void* rover_server_grab(void* args)
 {
