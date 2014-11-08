@@ -959,6 +959,10 @@ Goal: Start working on getting robot to drive automatically
 --If points were evenly distributed over image plane, a simple summing would cancel all rotation components when going straight, or cancel all translation when purely rotating, or have a combination when doing both.  How can we get evenly distributed points?  Is there a way to normalize random points on either side of the vertical bisector to make them equivalent to a point on the horizontal bisector (or perhaps the origin itself?)
 
 
+6 Nov 14
+--Need to improve logic of autodrive
+--Can we log waypoints in imu-log.txt in the same way we do for manually entered waypoints?
+
 ***Start looking at OpenCV Optical Flow (lkdemo)
 ***Can we get turn info from IMU (gyros)?
 

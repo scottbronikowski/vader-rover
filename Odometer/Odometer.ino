@@ -150,7 +150,9 @@ void loop()
     }
   }
   //is it time to get another reading?
-  if ((millis() - timestamp) >= OUTPUT_DATA_INTERVAL)
+  if ((output_single_on) ||
+    ((output_stream_on) &&
+    ((millis() - timestamp) >= OUTPUT_DATA_INTERVAL)))
   {
     //get new timestamp and dt
     timestamp_old = timestamp;
