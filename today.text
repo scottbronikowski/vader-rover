@@ -963,11 +963,13 @@ Goal: Start working on getting robot to drive automatically
 --Need to improve logic of autodrive
 --Can we log waypoints in imu-log.txt in the same way we do for manually entered waypoints?
 
+11 Nov 14
+--Some cleanup of **BAD LINE error at end of rover_server_recv_and_print() in toollib-rover-cpp.cpp-->more still to do
+
+
+
 ***Start looking at OpenCV Optical Flow (lkdemo)
-***Can we get turn info from IMU (gyros)?
 
-
-******NEED TO FIX LOG TO TRACK CODE TO READ IN MCL AND MCR******
 
 Buffers 31 Oct 14
 .   research.bib         25251  BibTeX		  /amd/upplysingaoflun/root/aux/home/sbroniko/research/papers/research.bib
