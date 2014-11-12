@@ -1285,7 +1285,8 @@ int rover_server_recv_and_print(int fd, FILE* my_log_file)
   	      (logbuf[i * k_LogBufSize] != '\n'))
   	    fprintf(my_log_file, format_string, logbuf+(i*k_LogBufSize));
   	  else
-  	    fprintf(my_log_file, "**BAD LINE: %s\n", logbuf+(i*k_LogBufSize) );
+	    fprintf(my_log_file, "%s\n", logbuf+(i*k_LogBufSize) );
+	    //fprintf(my_log_file, "**BAD LINE: %s\n", logbuf+(i*k_LogBufSize) );
   	}
     }
   //if we get here, we handled the message properly, so return true

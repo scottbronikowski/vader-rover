@@ -966,6 +966,8 @@ Goal: Start working on getting robot to drive automatically
 11 Nov 14
 --Some cleanup of **BAD LINE error at end of rover_server_recv_and_print() in toollib-rover-cpp.cpp-->more still to do
 
+12 Nov 14 
+--Removed **BAD LINE error at end of rover_server_recv_and_print() in toollib-rover-cpp.cpp b/c it was interfering with the logging of waypoints from the-force.  Only have 1 extra newline at the beginning of imu-log.txt under the-force.  No problems observed while running emperor.
 
 
 ***Start looking at OpenCV Optical Flow (lkdemo)
