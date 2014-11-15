@@ -2,11 +2,11 @@
 
 (define (define-buttons)
  (standard-buttons 2 (lambda () #f))
- (define-button 4 4
+ (define-button 2 1
   (lambda () (format #f "CDR viewer ~a" *cdr-viewer-active*))
   #f
   (lambda () #f))
- (define-button 2 2 "**EMERGENCY STOP**" #f
+ (define-button 2 0 "**EMERGENCY STOP**" #f
   (lambda ()
    (system "ssh -p 22222 root@localhost \"~/bin/motor_control stop\"")
    (trace-shutdown)
@@ -40,9 +40,9 @@
    (system "ssh -p 22222 root@localhost \"/root/bin/run-the-force start\" &")
    (trace-init)
    ))
- (define-button 2 3 "trace-init" #f
+ (define-button 0 1 "trace-init" #f
   (lambda() (trace-init)))
-  (define-button 2 4 "trace-shutdown" #f
+  (define-button 1 1 "trace-shutdown" #f
   (lambda() (trace-shutdown)))
  )
 
@@ -67,9 +67,9 @@
 (define-application viewer
  ;; Example:
  ;;   (viewer '())
- 1600 800  ; Dimension of the window
+ 1300 500  ; Dimension of the window
  1        ; TRANSCRIPT-LINES
- 5        ; BUTTON-ROWS
+ 2        ; BUTTON-ROWS
  5        ; BUTTON-COLUMNS
  ;;; Pre-initialize procedure:
  (lambda ()

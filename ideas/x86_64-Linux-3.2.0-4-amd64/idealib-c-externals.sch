@@ -1,0 +1,1 @@
+../idealib-c-externals.sch
