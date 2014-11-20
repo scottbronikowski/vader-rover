@@ -3616,3 +3616,22 @@
 
 (define canny
  (c-function imlib-image ("canny" imlib-image int double double double int)))
+
+
+(define (imlib-draw-text-on-image image string colour font-size xc yc
+                                  background-color)
+ (imlib-context-set-image! image)
+ (imlib-add-path-to-font-path (*default-font-path*))
+ (let ((font (imlib-load-font! (string*-append "DejaVuSans/" font-size))))
+  (imlib-context-set-font! font)
+  (when background-color
+   (let* ((text-width-height
+           (c-exact-array->list (imlib-get-text-dimension string)
+                                c-sizeof-int 2 #t)))
+    (imlib-context-set-color!
+     (x background-color) (y background-color) (z background-color) 255)
+    (imlib-image-fill-rectangle
+     xc yc (first text-width-height) (second text-width-height))))
+  (imlib-context-set-color! (x colour) (y colour) (z colour) 255)
+  (imlib-text-draw xc yc string)
+  (imlib-free-font)))

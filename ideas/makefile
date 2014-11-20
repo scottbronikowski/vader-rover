@@ -111,6 +111,9 @@ SC_SRC = \
 	toollib-hog.sc \
 	toollib-rover.sc \
 	toollib-gamepad.sc \
+	learning-mess.sc \
+	toollib-ad.sc \
+	sentence-to-trace-from-learned-models.sc \
 
 # removed because they don't compile
 #	toollib-hack-track-drawable.sc \

@@ -10961,6 +10961,9 @@ void toollib_2dgsl__init();
 void toollib_2dhog__init();
 void toollib_2drover__init();
 void toollib_2dgamepad__init();
+void learning_2dmess__init();
+void toollib_2dad__init();
+void sentence_2dto_2dtrace_2dfrom_2dlearned_2dmodels__init();
 
 static void  init_modules( compiler_version )
         char *compiler_version;
@@ -10990,6 +10993,9 @@ static void  init_modules( compiler_version )
         toollib_2dhog__init();
         toollib_2drover__init();
         toollib_2dgamepad__init();
+        learning_2dmess__init();
+        toollib_2dad__init();
+        sentence_2dto_2dtrace_2dfrom_2dlearned_2dmodels__init();
         MAXDISPLAY( 2 );
 }
 
