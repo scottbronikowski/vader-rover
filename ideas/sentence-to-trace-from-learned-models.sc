@@ -14,6 +14,10 @@
 
 ;;(load (format #f "/home/dpbarret/darpa-collaboration/pose-retraining/felz-baum-welch-plotting.sc"));; (getenv "USER")))
 
+(define *robot-radius* .4)
+(define *objects-radius* .4)
+(define *draw-every-xth-iteration* 10)
+
 (define *learned-one-object-prepositions*
  '(left-of right-of in-front-of behind towards away-from))
 
@@ -37,10 +41,15 @@
   (vector noun-distributions
 	  prep-feats-von-mises)))
 
+;; (define (adverb-preposition->function-old preposition lexicon)
+;;  (lambda (fv object-position)
+;;   (parser-dtrace "fv objpos" (list fv object-position))
+;;   (score-adverb fv (vector-ref (y lexicon) (position preposition *learned-one-object-prepositions*)) object-position)))
+
 (define (adverb-preposition->function preposition lexicon)
- (lambda (fv object-position)
+ (lambda (fvs i object-position)
   (parser-dtrace "fv objpos" (list fv object-position))
-  (score-adverb fv (vector-ref (y lexicon) (position preposition *learned-one-object-prepositions*)) object-position)))
+  (score-adverb fvs i (vector-ref (y lexicon) (position preposition *learned-one-object-prepositions*)) object-position)))
 
 ;;  (case preposition
 ;;   ((left-of)
@@ -170,13 +179,13 @@
     ;;(vector )
     (vector
     	  (lambda (fvs i)
-    	   (trace-adjacent-points-not-too-close (map-vector x fvs) .15))
+    	   (trace-adjacent-points-not-too-close (map-vector x fvs) .1))
     	  (lambda (fvs i)
     	   (trace-not-too-close-to-obstacles
     	    (map-vector x fvs)
     	    (list->vector (map second objects))
-    	    .15
-    	    (list->vector (map (lambda (o) .32) objects)))))
+    	    *robot-radius*
+    	    (list->vector (map (lambda (o) *objects-radius*) objects)))))
     (let* ((time-function-sets 
 	    (map
 	     (lambda (predicate)
@@ -199,7 +208,7 @@
 		      (lambda (fvs i)
 		       (parser-dtrace "this function is asociated with:" (list fvs i object adverb))
 		       (parser-dtrace "function output:"(function
-			(vector-ref fvs i) object)))))
+			fvs i object)))))
 		    (begin
 		     (panic "we don't yet have any multi-object prepositions")
 		     ;; (let* ((object1 (object-phrase->point (second (second adverbial-phrase))
@@ -293,7 +302,7 @@
 (- (dan-log-von-mises v mean kappa)
    (dan-log-von-mises 0 0 kappa)))
 
-(define (score-adverb features models object-position)
+(define (score-adverb-old features models object-position)
  ;; features is the position and velocity of the robot
  (let* ((position-angle (parser-dtrace "position angle"
 				(angle-between (x features) object-position)))
@@ -301,8 +310,25 @@
 					 (angle-between object-position
 							(x features)))))
 	(score (+ (parser-dtrace "position score:" (renormalized-von-mises position-angle (x (x models)) (y (x models))))
-     (parser-dtrace "velocity score:" (renormalized-von-mises velocity-angle (x (y models)) (y (y models))))
-     (- (distance (x features) object-position)))))
+		  (parser-dtrace "velocity score:" (renormalized-von-mises velocity-angle (x (y models)) (y (y models))))
+		  (* (- (sqr (distance (x features) object-position))) 1))))
+  ;;(dtrace "avb score:" (primal* score))
+  score))
+
+(define (score-adverb points-features i models object-position)
+ ;; features is the position and velocity of the robot
+ (let* ((position-angle (parser-dtrace "position angle"
+				(angle-between (x (vector-ref points-features i)) object-position)))
+	(velocity-angle1 (parser-dtrace "velocity angle:"(center-angle-at (y (vector-ref points-features i))
+					 (angle-between object-position
+							(x (vector-ref points-features i))))))
+	(velocity-angle2 (parser-dtrace "velocity angle:"(center-angle-at (y (vector-ref points-features i))
+					 (angle-between object-position
+							(x (vector-ref points-features (- i 1)))))))
+	(score (+ (parser-dtrace "position score:" (renormalized-von-mises position-angle (x (x models)) (y (x models))))
+		  (parser-dtrace "velocity score:" (renormalized-von-mises velocity-angle1 (x (y models)) (y (y models))))
+		  (parser-dtrace "velocity score:" (renormalized-von-mises velocity-angle2 (x (y models)) (y (y models))))
+		  (* (- (distance (x (vector-ref points-features i)) object-position)) 1))))
   ;;(dtrace "avb score:" (primal* score))
   score))
 
@@ -487,11 +513,11 @@
        (rmin (+ radius2 radius2))
        (ravg (/ (+ rmin rmax) 2))
        (v (* (+ rmin rmax) .15)))
- (cond
-  ((> r rmax) 1)
-  (else
+ (smooth-max  (list 1 (+ 1 (/ (- rmax r) r))) .1)));;(cond
+;;  ((> r rmax) 1)
+;;  (else
    ;;(dtrace "not too close:" (primal* (/ (- r rmax) r)))
-   (+ 1 (/ (- rmax r) r))))))
+;;   (+ 1 (/ (- rmax r) r))))))
 ;;   (+ (sigmoid r ravg v) (- 1 (sigmoid rmax ravg v)))))))
 
 (define (trace-adjacent-points-not-too-close trace radius)
@@ -647,13 +673,14 @@
 	    (loop x (magnitude gx) c (* step .5))))))))
 
 (define (maximize f x tol1 tol2 drawing-function)
- (let ((g (gradient-R f)))
+ (let* ((g (gradient-R f))
+       (gx (magnitude (g x))))
   (let loop ((x x)
-	     (gx (magnitude (g x)))
+	     (gx gx)
 	     (c (f x))
-	     (step .0001)
+	     (step (/ .001 (+ gx .001)))
 	     (prev-dx (map-n-vector (lambda (i) 0) (vector-length x))))
-   (when (= (modulo *iteration-count* 1000) 0) (trace-dtrace "x c gx step" (list (primal* x) c gx step))
+   (when (= (modulo *iteration-count* *draw-every-xth-iteration*) 0) (trace-dtrace "x c gx step" (list (primal* x) c gx step))
 	 (when drawing-function (drawing-function x))
 	 ;; (plot-lines-in-matlab (list (cons 0 (vector->list (map-vector (lambda (v) (vector-ref v 0))
 	 ;; 								       (shape-matrix x 2)))))
@@ -662,10 +689,10 @@
 	 ;; 			     (list "'trace'") ".-")
 	 )
    (set! *iteration-count* (+ *iteration-count* 1))
-   (if (or (> c tol1)
+   (if (or ;;(> c tol1)
 	   ;(< gx tol2)
-	   (< step 1e-12)
-	   (< (* step gx) 1e-5)
+	   ;;(< step 1e-12)
+	   (< (* step gx) 1e-15)
 	   )
        x
        (let* ((gx (g x))
@@ -675,7 +702,7 @@
 	;;(trace-dtrace "mgx" (magnitude gx))
 	;;(trace-dtrace "step:" step)
 	(if (> c-prime c)
-	    (loop x-prime (magnitude gx) c-prime (* step 1.5) dx)
+	    (loop x-prime (magnitude gx) c-prime (* step 1.1) dx)
 	    (loop x (magnitude gx) c (* step .5) (k*v .5 prev-dx))))))))
 
 (define (nice-subvector v i j)
@@ -737,14 +764,14 @@
 			      (v+ (subvector initial-trace
 					     (- (vector-length initial-trace) 2)
 					     (- (vector-length initial-trace) 0))
-				  (k*v .1 (if (>= (vector-length initial-trace) 4)
-					      (v- (subvector initial-trace
+				  (k*v .09 (if (>= (vector-length initial-trace) 4)
+					      (unit (v- (subvector initial-trace
 							     (- (vector-length initial-trace) 2)
 							     (- (vector-length initial-trace) 0))
 						  (subvector initial-trace
 							     (- (vector-length initial-trace) 4)
-							     (- (vector-length initial-trace) 2)))
-					      (vector 0 .1)))))
+							     (- (vector-length initial-trace) 2))))
+					      (vector 0 1)))))
 	       drawing-function)))))
 	(result2
 	 (let outer-loop
@@ -977,17 +1004,17 @@
 	    dataset))
   
 
-(define (trace-from-sentence-floorplan-and-lexicon sentence floorplan lexicon)
+(define (trace-from-sentence-floorplan-and-lexicon sentence floorplan lexicon f)
  (trace-from-parse-functions-step-by-step
   (parse-tree->parse-functions
    (parse-sentence sentence)
    floorplan lexicon)
-  #f
+  f
   ;; (objects->plot-function floorplan)
   ))
 
-(define (trace-from-sentence sentence)
-(trace-from-sentence-floorplan-and-lexicon sentence (read-object-from-file "saved-floorplan.sc") (read-object-from-file "learned-lexicon.sc")))
+;; (define (trace-from-sentence sentence)
+;; (trace-from-sentence-floorplan-and-lexicon sentence (read-object-from-file "saved-floorplan.sc") (read-object-from-file "learned-lexicon.sc")))
 
 
 (define (line-intersects-circle? line-p1 line-p2 circle-center circle-radius)

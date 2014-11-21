@@ -5,7 +5,8 @@
 (define *floorplan-index* #f)
 (define *sentence-index* #f)
 (define *dataset* #f)
-
+(define *correctness-pathname* "correctness.sc")
+(define *correctness-list* #f)
 ;;(load "learning-mess.sc")
 ;;(load "sentence-to-trace-from-learned-models.sc")
 
@@ -13,8 +14,15 @@
 (define (initialize-sentences)
   (set! *floorplan-index* 0)
   (set! *sentence-index* 0)
-  (set! *dataset* (list->vector (map list->vector (read-object-from-file "saved-floorplan-and-sentence.sc"))));;"msee1-dataset.sc"))))
+  (set! *dataset* (list->vector (map list->vector (read-object-from-file "msee1-generation-dataset.sc"))));;"msee1-dataset.sc"))))
 #f)
+
+(define (visualize-track-during-optimization dataset x floorplan-index sentence-index)
+  (draw-floorplan-and-sentence 
+   dataset 
+   (vector->list (shape-matrix x 2))
+   floorplan-index 
+   sentence-index))
 
 (define (world->pixel world-xy width height minx maxx miny maxy)
   (vector (+ (* width (/ (x world-xy) (- maxx minx)))
@@ -31,8 +39,19 @@
 (define (draw-trace points image width height minx maxx miny maxy)
   (let loop ((points points))
     (if (< (length points) 2)
-	#f
+	(imlib:draw-ellipse image 
+			    (x (world->pixel (first points) width height minx maxx miny maxy))
+			    (y (world->pixel (first points) width height minx maxx miny maxy))
+			    2 2 `#(0 0 255))
 	(begin (draw-world-line (sublist points 0 2) image width height minx maxx miny maxy `#(0 0 255))
+	       (imlib:draw-ellipse image 
+				   (x (world->pixel (first points) width height minx maxx miny maxy))
+				   (y (world->pixel (first points) width height minx maxx miny maxy))
+				   2 2 `#(0 0 255))
+	       (imlib:draw-ellipse image 
+				   (x (world->pixel (second points) width height minx maxx miny maxy))
+				   (y (world->pixel (second points) width height minx maxx miny maxy))
+				   2 2 `#(0 0 255))
 	       (loop (rest points))))))
 
 (define (draw-object-on-floorplan obj image width height minx maxx miny maxy)
@@ -144,6 +163,21 @@
 				      (vector-length (vector-ref *dataset* *floorplan-index*))))
       (draw-floorplan-and-sentence *dataset* #f *floorplan-index* *sentence-index*)
 (redraw-buttons))))
+(define-button 2 2 (lambda () (format #f "correct? ~a" (if (and *correctness-list* *floorplan-index* *sentence-index*)
+							   (vector-ref
+							    (vector-ref
+							     *correctness-list*
+							     *floorplan-index*)
+							    *sentence-index*)
+							   "N/A"))) #f
+(lambda ()
+(when (and *floorplan-index* *sentence-index* *dataset*)
+      (matrix-set! *correctness-list*
+		   *floorplan-index*
+		   *sentence-index*
+		   (not (matrix-ref *correctness-list* *floorplan-index* *sentence-index*))))
+(write-object-to-file *correctness-list* *correctness-pathname*)
+(redraw-buttons)))
 (define-button 0 1 "generate-trace" #f
 (lambda ()
 (when (and *floorplan-index* *sentence-index* *dataset*)
@@ -158,14 +192,23 @@
 			(vector-ref
 			 (vector-ref *dataset* *floorplan-index*)
 			 *sentence-index*)))
-	     (trace (avoid-objects 
-		     (vector->list 
-		      (first (trace-from-sentence-floorplan-and-lexicon 
-			      sentence 
-			      floorplan 
-			      *lexicon*))) 
-		     floorplan
-		     .35)))
+	     (trace (vector->list
+		     (interpolate-trace
+		      (list->vector 
+		       (avoid-objects 
+			(vector->list 
+			 (first (trace-from-sentence-floorplan-and-lexicon 
+				 sentence 
+				 floorplan 
+				 *lexicon*
+				  (lambda (x)
+				    (visualize-track-during-optimization
+				     *dataset* x *floorplan-index* *sentence-index*))))
+			 ) 
+			floorplan
+			.7))
+		      4)
+		     )))
       (draw-floorplan-and-sentence *dataset* trace *floorplan-index* *sentence-index*)
       (set! *trace* trace)
       ))))
@@ -250,6 +293,17 @@
   (define-keys)
   (rover-server-setup)
   (rover-server-start)
+  
+  (set! *lexicon* (read-object-from-file "learned-lexicon.sc"))
+  (if (file-exists? *correctness-pathname*)
+      (set! *correctness-list* (read-object-from-file *correctness-pathname*))
+      (set! *correctness-list* (map-vector
+					(lambda (f)
+					  (map-vector
+					   (lambda (s)
+					     #t)
+					   f))
+					*dataset*)))
   ;;(gamepad-init) ;;might need to move this into the "Start Emperor" button
   (dtrace "Finished calling the god-damned pre-initialize function" "")
   
@@ -258,9 +312,7 @@
  (lambda () ;(wait-for-next-frame 0)
   (dtrace ""  "Calling Post-init")
   (when (and *floorplan-index* *sentence-index* *dataset*)
-	(draw-floorplan-and-sentence *dataset* #f *floorplan-index* *sentence-index*))
-  (set! *lexicon* (read-object-from-file "learned-lexicon.sc"))
-  )
+	(draw-floorplan-and-sentence *dataset* #f *floorplan-index* *sentence-index*)))
  ;;; Finalize procedure:
  (lambda ()
   (dtrace ""  "Calling Finalize")
