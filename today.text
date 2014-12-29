@@ -1001,14 +1001,6 @@ Buffers 31 Oct 14
 
 
 
-***REMOVE meters/tick from Odometer code and into KF***
-***Have odometer/sensor code output current motor command for each motor***
-
-**Start figuring out how to get robot to drive track automatically--want to publish with Dan & Haonan's stuff by winter break**
-
-
-**AFTER AUTODRIVING DONE: go to MSEE atrium; use 3-5 floorplans; manually drive 1 trace on each floorplan; take points generated from trace and turn them into an automatic route (may need to downsample somehow, since points will be at 50Hz); drive automatic route and record trace; measure chamfer distance (squared chamfer distance) to compare how automatic points match manual points
-
 
 ******NOVEL CONTRIBUTIONS (NEED 5)*****
 1. Formulation of a grammar that completely disambiguates robot motion in a given environment.
@@ -1029,6 +1021,43 @@ Buffers 31 Oct 14
     toollib-analysis.sc  15442  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-analysis.sc
   * *shell*<2>            7001  Shell:run	  ~/vader-rover/
   * *shell*            3891707  Shell:run	  /amd/upplysingaoflun/root/aux/home/sbroniko/Dropbox/grad school stuff/Purdue/2014-2015-1-fall/ECE661/hw3/
+
+OPEN BUFFERS AS OF 18DEC14
+. * *shell*<3>         2021003  Shell:run	  ~/
+  * *shell*<2>          343512  Shell:run	  ~/vader-rover/
+    driver-gui.sc|dsci-: 11508  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/dsci-on-latop/driver-gui.sc
+  * *shell*            3705698  Shell:run	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/ideas/x86_64-Linux-3.2.0-4-amd64/
+    sentence-to-trace-f: 43837  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/ideas/sentence-to-trace-from-learned-models.sc
+    learning-mess.sc     70187  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/ideas/learning-mess.sc
+    makefile|ideas        8957  GNUmakefile	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/ideas/makefile
+    toollib-ad.sc        22151  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/ideas/toollib-ad.sc
+    toollib-hog.sc       24127  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/ideas/toollib-hog.sc
+    toollib-image-proc: 119864  Scheme		  ~/vader-rover/ideas/toollib-image-processing.sc
+    idealib-stuff.sc    200539  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/ideas/idealib-stuff.sc
+    toollib-rover-cpp.c: 42560  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover-cpp.cpp
+    toollib-image-proce: 97076  Scheme		  ~/imitate/tool/toollib-image-processing.sc
+    toollib-rover.sc|x86: 2408  Scheme		  ~/vader-rover/ideas/x86_64-Linux-3.2.0-4-amd64/toollib-rover.sc
+  * *scheme*           2764915  Inferior Scheme:
+    toollib-rover.sc|vad: 2216  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-rover.sc
+    today.text          115496  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/today.text
+    driver-gui.sc|vader-: 3446  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/driver-gui.sc
+    2014-11-13-autodrive: 1222  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/2014-11-13-autodrive-test-error.txt
+    log_to_track.cpp     14818  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/position/log_to_track.cpp
+    research.bib         28090  BibTeX		  /amd/upplysingaoflun/root/aux/home/sbroniko/research/papers/research.bib
+    notes.text           29334  Text		  /amd/upplysingaoflun/root/aux/home/sbroniko/research/1_lit_review/notes.text
+    robot-calibration.sc  6586  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/position/robot-calibration.sc
+    calibrate.cpp         5563  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/position/calibrate.cpp
+    calibration.sc        2580  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/position/calibration.sc
+ %  *Process List*         283  Help
+    toollib-gamepad.sc    1096  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-gamepad.sc
+    toollib-gamepad-c.c  12464  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-gamepad-c.c
+    simple.cpp           26400  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/position/simple.cpp
+    makefile|from_dan      373  GNUmakefile	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/from_dan/makefile
+    toollib-gamepad-c.h   2148  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-gamepad-c.h
+    data-analysis.cpp    16458  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/data-analysis.cpp
+    toollib-analysis.sc  18519  Scheme		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/toollib-analysis.sc
+    data-analysis.h       1640  C++/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/data-analysis.h
+    makefile|position      373  GNUmakefile	  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/position/makefile
 
 
 
