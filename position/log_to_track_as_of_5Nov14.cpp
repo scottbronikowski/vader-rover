@@ -316,8 +316,6 @@ int main(int args, char** argv)
   Mat measurements[80000];
   //printf("I was lazy, so there is a needless hard limit of 80000 measurements\n");
   int nmeasurements = read_log_file(logpath, measurements);
-  FILE* infile = fopen(logpath,"r");
-  char linebuf[1000];
   FILE* outfile = fopen(outpath,"w");
   FILE* outfile2 = fopen(outpath2, "w");
   fprintf(outfile2, "(");
@@ -327,8 +325,6 @@ int main(int args, char** argv)
   Mat MeasurementModel = Mat::zeros(7,8,CV_32F);
   Mat MeasurementModel_noGPS = Mat::zeros(7,8,CV_32F);
   Mat TransitionModel =  Mat::zeros(8,8,CV_32F);
-
-  float estimates[80000][3]; //store estimates here
 
   KalmanFilter KF(8, 7, 2); // 8 state variables, 7 measurements, 2 inputs
   KalmanFilter simulation(8,7,2);
@@ -407,20 +403,16 @@ int main(int args, char** argv)
   else
     for(timestep=0;timestep<nmeasurements;timestep++)
       {
-	// fprintf(outfile,
-	// 	"X:%f,Y:%f,Theta:%f\n",
-	// 	KF.statePost.at<float>(0),
-	// 	KF.statePost.at<float>(1),
-	// 	KF.statePost.at<float>(2));
-	// fprintf(outfile2,
-	// 	"(%f %f %f)\n",
-	// 	KF.statePost.at<float>(0),
-	// 	KF.statePost.at<float>(1),
-	// 	KF.statePost.at<float>(2));
-	estimates[timestep][0] = KF.statePost.at<float>(0);
-	estimates[timestep][1] = KF.statePost.at<float>(1);
-	estimates[timestep][2] = KF.statePost.at<float>(2);
-
+	fprintf(outfile,
+		"X:%f,Y:%f,Theta:%f\n",
+		KF.statePost.at<float>(0),
+		KF.statePost.at<float>(1),
+		KF.statePost.at<float>(2));
+	fprintf(outfile2,
+		"(%f %f %f)\n",
+		KF.statePost.at<float>(0),
+		KF.statePost.at<float>(1),
+		KF.statePost.at<float>(2));
 	float dt = 1.0/50.0; // needs work: hard coded
 	
 	TransitionModel = ComputeTransitionMatrix(KF.statePost,dt);
@@ -443,35 +435,6 @@ int main(int args, char** argv)
 	// needs work: we always ignore GPS
 	KF = execute_time_step(KF, TransitionModel,MeasurementModel_noGPS, KF.controlMatrix, measurement,control);
       }
-  //now write estimates to file with original sensor readings
-  int est_count = 0;
-  bool imu_read = false;
-  bool enc_read = false;
-  while (fgets(linebuf,1000,infile)!=NULL)
-  {
-    //write original line to C file
-    fprintf(outfile, "%s",linebuf);
-    //printf("%c\n", linebuf[18]);
-    if (linebuf[18] == 'I')
-      imu_read = true;
-    if (linebuf[18] == 'E')
-      enc_read = true;
-    if (imu_read && enc_read && (est_count < nmeasurements))
-    {
-      //write estimates to C file
-      fprintf(outfile, "ESTIMATE:X:%f:Y:%f:THETA:%f\n",
-	      estimates[est_count][0],estimates[est_count][1], 
-	      estimates[est_count][2]);
-      //also write estimates to scheme file
-      fprintf(outfile2, "(%f %f %f)\n", estimates[est_count][0],
-	      estimates[est_count][1], estimates[est_count][2]);
-      //cleanup & update
-      imu_read = false;
-      enc_read = false;
-      est_count++;
-    }
-  }
-  fclose(infile);
   fclose(outfile);
   fprintf(outfile2, ")");
   fclose(outfile2);
