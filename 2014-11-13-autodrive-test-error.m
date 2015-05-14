@@ -1,0 +1,1 @@
+/aux/sbroniko/vader-rover/logs/2014-11-13-autodrive-test/autodrive-test-error.m

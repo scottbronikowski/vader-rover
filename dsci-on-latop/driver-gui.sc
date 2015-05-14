@@ -7,8 +7,8 @@
 (define *dataset* #f)
 (define *correctness-pathname* "correctness.sc")
 (define *correctness-list* #f)
-;;(load "learning-mess.sc")
-;;(load "sentence-to-trace-from-learned-models.sc")
+(load "learning-mess.sc")
+(load "sentence-to-trace-from-learned-models.sc")
 
 
 (define (initialize-sentences)

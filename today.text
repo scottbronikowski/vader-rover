@@ -1230,3 +1230,11 @@ Old buffers
     server.c              1583  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server.c
     server2.c             2225  C/l		  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server2.c
     server                 380  Shell-script[bas  /amd/upplysingaoflun/root/aux/home/sbroniko/vader-rover/server
+
+----------------NEW STUFF STARTING 14MAY2015------------------------
+
+14 May 15
+--Got vader-laptop running again by installing debian wheezy, using pkg.sh
+(email from Jeff), installing matlab R2010a, and following new user setup (email
+from Dan).  Also moved latest version of driver-gui.sc from ./dsci-on-latop to
+./ (old driver-gui.sc renamed driver-gui-old.sc).

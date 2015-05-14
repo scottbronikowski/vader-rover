@@ -5,18 +5,54 @@
 (define *floorplan-index* #f)
 (define *sentence-index* #f)
 (define *dataset* #f)
+(define *correctness-pathname* "correctness.sc")
+(define *correctness-list* #f)
+(load "learning-mess.sc")
+(load "sentence-to-trace-from-learned-models.sc")
+
 
 (define (initialize-sentences)
   (set! *floorplan-index* 0)
   (set! *sentence-index* 0)
-  (set! *dataset* (list->vector (map list->vector (read-object-from-file "msee1-dataset.sc"))))
+  (set! *dataset* (list->vector (map list->vector (read-object-from-file "msee1-generation-dataset.sc"))));;"msee1-dataset.sc"))))
 #f)
+
+(define (visualize-track-during-optimization dataset x floorplan-index sentence-index)
+  (draw-floorplan-and-sentence 
+   dataset 
+   (vector->list (shape-matrix x 2))
+   floorplan-index 
+   sentence-index))
 
 (define (world->pixel world-xy width height minx maxx miny maxy)
   (vector (+ (* width (/ (x world-xy) (- maxx minx)))
 			    (/ width 2))
 			 (+ (- (* height (/ (y world-xy) (- maxy miny))))
 			    (/ height 2))))
+(define (draw-world-line line image width height minx maxx miny maxy color)
+(imlib:draw-line image color 
+		 (x (world->pixel (first line) 320 240 minx maxx miny maxy))
+		 (y (world->pixel (first line)  320 240 minx maxx miny maxy))
+		 (x (world->pixel (second line) 320 240 minx maxx miny maxy))
+		 (y (world->pixel (second line)  320 240 minx maxx miny maxy))))
+
+(define (draw-trace points image width height minx maxx miny maxy)
+  (let loop ((points points))
+    (if (< (length points) 2)
+	(imlib:draw-ellipse image 
+			    (x (world->pixel (first points) width height minx maxx miny maxy))
+			    (y (world->pixel (first points) width height minx maxx miny maxy))
+			    2 2 `#(0 0 255))
+	(begin (draw-world-line (sublist points 0 2) image width height minx maxx miny maxy `#(0 0 255))
+	       (imlib:draw-ellipse image 
+				   (x (world->pixel (first points) width height minx maxx miny maxy))
+				   (y (world->pixel (first points) width height minx maxx miny maxy))
+				   2 2 `#(0 0 255))
+	       (imlib:draw-ellipse image 
+				   (x (world->pixel (second points) width height minx maxx miny maxy))
+				   (y (world->pixel (second points) width height minx maxx miny maxy))
+				   2 2 `#(0 0 255))
+	       (loop (rest points))))))
 
 (define (draw-object-on-floorplan obj image width height minx maxx miny maxy)
   (let* ((world-xy (second obj))
@@ -29,13 +65,22 @@
 			      `#(0 0 0) 6 (x pix-xy) (y pix-xy) `#(255 255 255))
     (imlib:draw-ellipse image (x pix-xy) (y pix-xy) 2 2 `#(255 0 0))))
 
-(define (draw-floorplan-and-sentence dataset floorplan-index sentence-index)
+(define (draw-floorplan-and-sentence dataset trace floorplan-index sentence-index)
   (let* ((image (imlib:create 1300 240)))
     (imlib:fill-rectangle image 0 0 1300 240 `#(255 255 255)) 
-    (imlib-draw-text-on-image image 
-			      (second (vector-ref (vector-ref dataset floorplan-index)
-						  sentence-index))
-			      `#(0 0 0) 8 5 200 `#(255 255 255))
+    (let* ((sentence (second (vector-ref (vector-ref dataset floorplan-index)
+						  sentence-index)))
+	   (sub-clauses (map-indexed (lambda (c i)
+				       (if (= i 0)
+					   c
+					   (string-append "then" c)))
+				     (pregexp-split "then" sentence))))
+      (for-each-indexed
+       (lambda (c i)
+	 (imlib-draw-text-on-image image 
+				   c
+				   `#(0 0 0) 8 340 (+ 10 (* i 14)) `#(255 255 255)))
+       sub-clauses))
 (for-each
  (lambda (obj)
    (draw-object-on-floorplan obj image 320 240 -4 4 -4 4))
@@ -63,12 +108,34 @@
       (list `#(-3 1.31) `#(3.05 1.31))
       (list `#(-3 2.62) `#(3.05 2.62))))
 
-
+(when trace
+(draw-trace trace image 320 240 -4 4 -4 4))
 		 
 (draw-imlib-pixmap image 0 250)
 (imlib:free image)))
 			    
-
+(define (number->string-with-n-decimal-places f n)
+  (let* ((non-decimal-length (string-length (number->string (exact-round f))))
+	 (s (number->string
+	      (/ (exact-round (* f (expt 10 n)))
+		 (expt 10 n))))
+	 (s (if (= f 0)
+		"0."
+		s))
+	 (len (string-length s))
+	 (s (string-append s (string-join ""
+					  (map-n (lambda (i)
+						   "0")
+						 (- (+ non-decimal-length
+						       1
+						       n)
+						    len))))))
+	 (substring
+	  s
+	  0 
+	  (+ non-decimal-length
+	     1
+	     n))))
 
 (define (define-buttons)
  (standard-buttons 2 (lambda () #f))
@@ -87,15 +154,77 @@
      (when (and *floorplan-index* *sentence-index* *dataset*)
 	   (set! *floorplan-index* (modulo (+ *floorplan-index* 1)
 					   (vector-length *dataset*)))
-	   (draw-floorplan-and-sentence *dataset* *floorplan-index* *sentence-index*))
+	   (draw-floorplan-and-sentence *dataset*  #f *floorplan-index* *sentence-index*))
      (redraw-buttons)))
 (define-button 1 2 (lambda () (format #f "next-sentence ~a" *sentence-index*)) #f
 (lambda ()
 (when (and *floorplan-index* *sentence-index* *dataset*)
       (set! *sentence-index* (modulo (+ *sentence-index* 1)
 				      (vector-length (vector-ref *dataset* *floorplan-index*))))
-      (draw-floorplan-and-sentence *dataset* *floorplan-index* *sentence-index*)
+      (draw-floorplan-and-sentence *dataset* #f *floorplan-index* *sentence-index*)
 (redraw-buttons))))
+(define-button 2 2 (lambda () (format #f "correct? ~a" (if (and *correctness-list* *floorplan-index* *sentence-index*)
+							   (vector-ref
+							    (vector-ref
+							     *correctness-list*
+							     *floorplan-index*)
+							    *sentence-index*)
+							   "N/A"))) #f
+(lambda ()
+(when (and *floorplan-index* *sentence-index* *dataset*)
+      (matrix-set! *correctness-list*
+		   *floorplan-index*
+		   *sentence-index*
+		   (not (matrix-ref *correctness-list* *floorplan-index* *sentence-index*))))
+(write-object-to-file *correctness-list* *correctness-pathname*)
+(redraw-buttons)))
+(define-button 0 1 "generate-trace" #f
+(lambda ()
+(when (and *floorplan-index* *sentence-index* *dataset*)
+      (let* ((floorplan ;; (map (lambda (f)
+	      ;;        (list (first f)
+	      ;; 	     (vector->list (second f))))
+	      (first
+	       (vector-ref
+		(vector-ref *dataset* *floorplan-index*)
+		*sentence-index*)))
+	     (sentence (second
+			(vector-ref
+			 (vector-ref *dataset* *floorplan-index*)
+			 *sentence-index*)))
+	     (trace (vector->list
+		     (interpolate-trace
+		      (list->vector 
+		       (avoid-objects 
+			(vector->list 
+			 (first (trace-from-sentence-floorplan-and-lexicon 
+				 sentence 
+				 floorplan 
+				 *lexicon*
+				  (lambda (x)
+				    (visualize-track-during-optimization
+				     *dataset* x *floorplan-index* *sentence-index*))))
+			 ) 
+			floorplan
+			.7))
+		      4)
+		     )))
+      (draw-floorplan-and-sentence *dataset* trace *floorplan-index* *sentence-index*)
+      (set! *trace* trace)
+      ))))
+(define-button 1 1 "follow-trace" #f
+(lambda ()
+  (trace-send (dtrace "sending string:"
+		      (string-append
+		       (number->string (length *trace*))
+		       ":"
+		       (string-join
+			";"
+			(map (lambda (p)
+			       (format #f "~a,~a" 
+				       (number->string-with-n-decimal-places (x p) 3)
+				       (number->string-with-n-decimal-places (y p) 3)))
+			     *trace*)))))))
  ;; (define-button 3 3 "Start Cameras" #f
  ;;  (lambda () (gamepad-start-cameras)))
  ;; (define-button 3 4 "Stop Cameras" #f
@@ -164,6 +293,17 @@
   (define-keys)
   (rover-server-setup)
   (rover-server-start)
+  
+  (set! *lexicon* (read-object-from-file "learned-lexicon.sc"))
+  (if (file-exists? *correctness-pathname*)
+      (set! *correctness-list* (read-object-from-file *correctness-pathname*))
+      (set! *correctness-list* (map-vector
+					(lambda (f)
+					  (map-vector
+					   (lambda (s)
+					     #t)
+					   f))
+					*dataset*)))
   ;;(gamepad-init) ;;might need to move this into the "Start Emperor" button
   (dtrace "Finished calling the god-damned pre-initialize function" "")
   
@@ -172,8 +312,7 @@
  (lambda () ;(wait-for-next-frame 0)
   (dtrace ""  "Calling Post-init")
   (when (and *floorplan-index* *sentence-index* *dataset*)
-	(draw-floorplan-and-sentence *dataset* *floorplan-index* *sentence-index*))
-  )
+	(draw-floorplan-and-sentence *dataset* #f *floorplan-index* *sentence-index*)))
  ;;; Finalize procedure:
  (lambda ()
   (dtrace ""  "Calling Finalize")
