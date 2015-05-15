@@ -20,6 +20,7 @@
 
 (define *learned-one-object-prepositions*
  '(left-of right-of in-front-of behind towards away-from))
+;;need mapping to new prepositions
 
 (define (params->lexicon params)
  (let* ((obj-params (subvector params 0 (* 7 7)))
@@ -81,9 +82,11 @@
 
 (define *objects*
  (list 'the-table 'the-chair 'the-box 'the-bucket 'the-cone 'the-stool 'the-bag))
+;;need mapping to new objects
 
 (define *object-code-names*
  (list 'the-table 'the-chair 'the-box 'the-bucket 'the-cone 'the-bag 'the-stool))
+;;need mapping to new objects
 
 (define (object-phrase->scored-points object-phrase objects lexicon)
  (parser-dtrace "input to object-phrase->scored-points:" object-phrase)
@@ -97,7 +100,7 @@
       ;; 		       (second (second object-phrase))))
       ;; 	      objects)))
       ;; 	    1)
-     (let* ((object-class (second (second object-phrase)))
+      (let* ((object-class (second (second object-phrase)))
 	    (object (a-member-of objects))
 	    (object-type-score (parser-dtrace "object-type-score"
 					(vector-ref
@@ -106,7 +109,7 @@
 
 				 (position (first object) *object-code-names*)))))
       (list object (log object-type-score)))
-      
+     
       (let* ((object-class (second (first (second object-phrase))))
 	     (object (a-member-of
 		      objects
@@ -239,6 +242,181 @@
 	     (map-n (lambda (i) (vector )) (maximum (map first (first time-function-sets))))
 	     (list (list->vector (map second (first time-function-sets)))))
 	    (loop (rest time-function-sets))))))))))
+
+(define (extract-path-pps interpretation)
+ (let ((interpretation (rest interpretation)))
+  (remove-if-not
+   (lambda (v)
+    (equal? 'alpha (string->symbol (list->string (nice-sublist (string->list (symbol->string (second v))) 0 5)))))
+   interpretation)))
+
+(define (extract-sr-pps interpretation)
+ (let ((interpretation (rest interpretation)))
+  (remove-if
+   (lambda (v)
+    (or (= (length v) 2)
+	(equal? 'alpha (string->symbol (list->string (nice-sublist (string->list (symbol->string (second v))) 0 5))))))
+   interpretation)))
+
+(define (extract-objects interpretation)
+ (let ((interpretation (rest interpretation)))
+  (remove-if-not
+   (lambda (v)
+    (= (length v) 2))
+   interpretation)))
+
+(define (create-adverbial-phrase path-pp sr-pp-list obj-fn-list)
+ (let loop ((objects-of-interest (list (last path-pp)))
+	    (scanned-objects '())
+	    (adv-phrase (list path-pp)))
+  (if (= 0 (length objects-of-interest))
+      (unique adv-phrase)
+      (let* ((objs (remove-if-not
+		    (lambda (w)
+		     (equal? (first objects-of-interest) (second w)))
+		    obj-fn-list))
+	     (sr-pps (remove-if-not
+		      (lambda (w)
+		       (or (equal? (first objects-of-interest) (second w))
+			   (equal? (first objects-of-interest) (third w))))
+		      sr-pp-list)))
+       (if (= 0 (length sr-pps))
+	   ;;no sr-pps to add
+	   (loop (rest objects-of-interest)
+		 (cons (first objects-of-interest) scanned-objects)
+		 (append adv-phrase objs))
+	   ;;otherwise have to add new objects to objects-of-interest and add sr-pps
+	   (let* ((all-objs (unique
+			     (append (map second sr-pps) (map third sr-pps))))
+		  (new-objs (remove-if
+			     (lambda (v)
+			      (or
+			       (equal? (first objects-of-interest) v)
+			       (member v scanned-objects)))
+			     all-objs)))  
+	    (loop (rest (append objects-of-interest new-objs))
+		  (cons (first objects-of-interest) scanned-objects)
+		  (append adv-phrase objs sr-pps))))))))
+
+(define (interp-object-phrase->scored-points object-phrase
+					     objects
+					     lexicon)
+ (if (= 1 (length object-phrase))
+     ;;simple case--solo object
+     (let* ((object-class (first (first object-phrase)))
+	    (object (a-member-of objects))
+	    (object-type-score (parser-dtrace "object-type-score"
+					      (vector-ref
+					       (vector-ref (x lexicon)
+							   (position
+							    object-class *objects*))
+
+					       (position (first object)
+							 *object-code-names*)))))
+      (list object (log object-type-score)))
+     ;;complex case--object described by prepositions and other objects
+     (let* ((primary-object (first object-phrase))
+	    (other-objects (remove-if-not
+			    (lambda (v)
+			     (= (length v) 2))
+			    (rest object-phrase)))
+	    (prepositions (remove-if-not
+			    (lambda (v)
+			     (= (length v) 3))
+			    (rest object-phrase)))
+	    
+
+(define (interp-object-phrase->point object-phrase
+				     objects
+				     lexicon)
+ (parser-dtrace "object-phrase:" object-phrase)
+ (let* ((scored-objects
+	 (parser-dtrace "scored-objects:"
+			(all-values
+			 (interp-object-phrase->scored-points
+			  object-phrase objects lexicon))))
+	(sorted-objects (sort scored-objects > second)))
+  (dtrace "point" (second (first (first sorted-objects))))))
+
+
+(define (interpretation->parse-functions interpretation objects lexicon)
+ (list->vector
+   (cons
+    ;;(vector )
+    (vector
+    	  (lambda (fvs i)
+    	   (trace-adjacent-points-not-too-close (map-vector x fvs) .1))
+    	  (lambda (fvs i)
+    	   (trace-not-too-close-to-obstacles
+    	    (map-vector x fvs)
+    	    (list->vector (map second objects))
+    	    *robot-radius*
+    	    (list->vector (map (lambda (o) *objects-radius*) objects)))))
+    (let* ((path-phrases (extract-path-pps interpretation))
+	   (sr-phrases (extract-sr-pps interpretation))
+	   (object-functions (extract-objects interpretation))
+	   (adverbial-phrases
+	    (map (lambda (p) (create-adverbial-phrase p sr-phrases object-functions))
+		 path-phrases))
+	   (time-function-sets
+	    (map (lambda (adverbial-phrase)
+		  (let* ((adverb (first (first adverbial-phrase)))
+			 (function
+			  (adverb-preposition->function adverb lexicon))
+			 (object (interp-object-phrase->point (rest adverbial-phrase)
+							      objects
+							      lexicon)))
+		   (lambda (fvs i) (function fvs i object))))
+		 adverbial-phrases)))
+     
+	   ;;REPLACE THIS
+	   ;; (time-function-sets 
+	   ;;  (map
+	   ;;   (lambda (predicate)
+	   ;;    (map
+	   ;;     (lambda (adverbial-phrase)
+	   ;; 	(parser-dtrace "adverbial-phrase" adverbial-phrase)
+	   ;; 	(if (equal? (first (first (second adverbial-phrase)))
+	   ;; 		    'ONE-OBJECT-ADVERB-PREPOSITION)
+	   ;; 	    (let* ((object (object-phrase->point (second (second adverbial-phrase))
+	   ;; 						 objects
+	   ;; 						 lexicon))
+	   ;; 		   (adverb (second (first (second adverbial-phrase))))
+	   ;; 		   (function (parser-dtrace "prep->function output:"
+	   ;; 				     (adverb-preposition->function adverb lexicon))))
+	   ;; 	     (list
+	   ;; 	      (cond
+	   ;; 	       ((equal? adverb 'past) 1)
+	   ;; 	       ((equal? adverb 'around) 2)
+	   ;; 	       (else 0))
+	   ;; 	      (lambda (fvs i)
+	   ;; 	       (parser-dtrace "this function is asociated with:" (list fvs i object adverb))
+	   ;; 	       (parser-dtrace "function output:"(function
+	   ;; 		fvs i object)))))
+	   ;; 	    (begin
+	   ;; 	     (panic "we don't yet have any multi-object prepositions")
+	   ;; 	     )))
+	       
+	   ;;     predicate))
+	   ;;   simplified-parse-tree))
+	   )
+     (list 
+      (dtrace "input: " interpretation)
+      (dtrace "path-ph: " path-phrases)
+      (dtrace "sr-ph: " sr-phrases)
+      (dtrace "obj-fn: " object-functions)
+      (dtrace "adverbial-phrases: " adverbial-phrases))
+      ;; (let loop ((time-function-sets time-function-sets))
+      ;;  (if (null? time-function-sets)
+      ;; 	   '()
+      ;; 	   (append
+      ;; 	    (append
+      ;; 	     (map-n (lambda (i) (vector )) (maximum (map first (first time-function-sets))))
+      ;; 	     (list (list->vector (map second (first time-function-sets)))))
+      ;; 	    (loop (rest time-function-sets)))))
+     
+      ))))
+		
 
 (define *directions* '("left of" "in front of" "right of" "behind"))
 

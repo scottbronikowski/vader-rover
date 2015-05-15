@@ -1238,3 +1238,12 @@ Old buffers
 (email from Jeff), installing matlab R2010a, and following new user setup (email
 from Dan).  Also moved latest version of driver-gui.sc from ./dsci-on-latop to
 ./ (old driver-gui.sc renamed driver-gui-old.sc).
+
+----------------git commit 44e010d----------------
+
+15 May 15
+
+--End of week commit.  Working in ideas/sentence-to-trace-from-learned-models.sc
+  on converting comprehension to work with new interpreter output.  Main
+  function is interpretation->parse-functions, currently working on helper
+  function interp-object-phrase->scored-points.
