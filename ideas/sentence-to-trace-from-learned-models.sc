@@ -243,6 +243,11 @@
 	     (list (list->vector (map second (first time-function-sets)))))
 	    (loop (rest time-function-sets))))))))))
 
+;;;START SCOTT NEW STUFF
+
+(define *objects2*
+ (list 'table 'chair 'box 'bucket 'cone 'stool 'bag))
+
 (define (extract-path-pps interpretation)
  (let ((interpretation (rest interpretation)))
   (remove-if-not
@@ -309,21 +314,73 @@
 					      (vector-ref
 					       (vector-ref (x lexicon)
 							   (position
-							    object-class *objects*))
-
+							    object-class *objects2*))
+					       ;;;CHANGE *objects2* BACK TO *objects* IF INTERPRETER INCLUDES THE- WITH OBJECT NAMES
 					       (position (first object)
 							 *object-code-names*)))))
       (list object (log object-type-score)))
      ;;complex case--object described by prepositions and other objects
      (let* ((primary-object (first object-phrase))
-	    (other-objects (remove-if-not
-			    (lambda (v)
-			     (= (length v) 2))
-			    (rest object-phrase)))
+	    (primary-object-class (first primary-object))
+	    (primary-object-instantiated (a-member-of-objects))
+	    (primary-object-type-score
+	     (vector-ref
+	      (vector-ref (x lexicon) (position object-class *objects2*))
+				       ;;;CHANGE *objects2* BACK TO *objects* IF INTERPRETER INCLUDES THE- WITH OBJECT NAMES
+	      (position (first object) *object-code-names*)))
+
+	    (all-objects (remove-if-not
+			  (lambda (v)
+			   (= (length v) 2))
+			  object-phrase))
+	    (all-objects-variables (map second all-objects))
 	    (prepositions (remove-if-not
 			    (lambda (v)
 			     (= (length v) 3))
-			    (rest object-phrase)))
+			    object-phrase))
+	    (preposition-functions
+	     (map (lambda (p) (adjective-preposition->function  (first p) *lexicon*))
+		  *my-prepositions*))
+	    (all-objects-classes (map first all-objects))
+	    (all-objects-instantiated (map (lambda (x) (a-member-of objects))
+					   all-objects-classes))
+	    (all-objects-type-score
+	     (map (lambda (foo bar)
+		   (vector-ref
+		    (vector-ref (x lexicon)
+				(position foo *objects2*)) ;;;CHANGE *objects2* BACK TO *objects* IF INTERPRETER INCLUDES THE- WITH OBJECT NAMES
+		    (position (first bar) *object-code-names*)))
+		  all-objects-classes
+		  all-objects-instantiated))
+	    (all-objects-scores
+	     (map
+	      (lambda (o)
+	       (interp-object-phrase->scored-points (list o) objects lexicon))
+	      all-objects))
+	    (score
+	     (+ (log primary-object-type-score)
+		(reduce
+		 +
+		 (map
+		  (lambda (p pf)
+		   (let* ((obj1-index (position (second p) all-objects-variables))
+			  (obj2-index (position (third p) all-objects-variables))
+			  (obj1-instantiated (list-ref all-objects-instantiated
+						       obj1-index))
+			  (obj2-instantiated (list-ref all-objects-instantiated
+						       obj2-index))
+			  (obj1-score (list-ref all-objects-scores obj1-index))
+			  (obj2-score (list-ref all-objects-scores obj2-index))
+			 )
+		    (+ (pf (second obj1-instantiated) (second obj2-instantiated))
+		       (obj1-score)
+		       (obj2-score))
+			 
+		    ))
+		  prepositions preposition-functions)
+		 0)))
+	    )
+      (list primary-object-instantiated score))))
 	    
 
 (define (interp-object-phrase->point object-phrase
@@ -360,14 +417,14 @@
 		 path-phrases))
 	   (time-function-sets
 	    (map (lambda (adverbial-phrase)
-		  (let* ((adverb (first (first adverbial-phrase)))
-			 (function
-			  (adverb-preposition->function adverb lexicon))
-			 (object (interp-object-phrase->point (rest adverbial-phrase)
-							      objects
-							      lexicon)))
-		   (lambda (fvs i) (function fvs i object))))
-		 adverbial-phrases)))
+	   	  (let* ((adverb (first (first adverbial-phrase)))
+	   		 (function
+	   		  (adverb-preposition->function adverb lexicon))
+	   		 (object (interp-object-phrase->point (rest adverbial-phrase)
+	   						      objects
+	   						      lexicon)))
+	   	   (lambda (fvs i) (function fvs i object))))
+	   	 adverbial-phrases))
      
 	   ;;REPLACE THIS
 	   ;; (time-function-sets 
@@ -416,6 +473,8 @@
       ;; 	    (loop (rest time-function-sets)))))
      
       ))))
+
+;;;;END SCOTT NEW STUFF
 		
 
 (define *directions* '("left of" "in front of" "right of" "behind"))

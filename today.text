@@ -1247,3 +1247,5 @@ from Dan).  Also moved latest version of driver-gui.sc from ./dsci-on-latop to
   on converting comprehension to work with new interpreter output.  Main
   function is interpretation->parse-functions, currently working on helper
   function interp-object-phrase->scored-points.
+
+----------------git commit 4353c68----------------
