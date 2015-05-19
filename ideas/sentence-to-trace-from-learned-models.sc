@@ -18,9 +18,9 @@
 (define *objects-radius* .4)
 (define *draw-every-xth-iteration* 10)
 
-(define *learned-one-object-prepositions*
- '(left-of right-of in-front-of behind towards away-from))
-;;need mapping to new prepositions
+;; (define *learned-one-object-prepositions*
+;;  '(left-of right-of in-front-of behind towards away-from))
+;;REDEFINED BELOW TO USE WITH CURRENT INTERPRETER OUTPUT
 
 (define (params->lexicon params)
  (let* ((obj-params (subvector params 0 (* 7 7)))
@@ -247,6 +247,11 @@
 
 (define *objects2*
  (list 'table 'chair 'box 'bucket 'cone 'stool 'bag))
+;;NOT NEEDED if interpreter outputs the- with object names
+
+(define *learned-one-object-prepositions*
+ '(left right front behind towards away))
+;;CHANGE BACK to old definition if interpreter outputs old style (left-of, etc.)
 
 (define (extract-path-pps interpretation)
  (let ((interpretation (rest interpretation)))
@@ -322,12 +327,12 @@
      ;;complex case--object described by prepositions and other objects
      (let* ((primary-object (first object-phrase))
 	    (primary-object-class (first primary-object))
-	    (primary-object-instantiated (a-member-of-objects))
+	    (primary-object-instantiated (a-member-of objects))
 	    (primary-object-type-score
 	     (vector-ref
-	      (vector-ref (x lexicon) (position object-class *objects2*))
+	      (vector-ref (x lexicon) (position primary-object-class *objects2*))
 				       ;;;CHANGE *objects2* BACK TO *objects* IF INTERPRETER INCLUDES THE- WITH OBJECT NAMES
-	      (position (first object) *object-code-names*)))
+	      (position (first primary-object-instantiated) *object-code-names*)))
 
 	    (all-objects (remove-if-not
 			  (lambda (v)
@@ -369,12 +374,14 @@
 						       obj1-index))
 			  (obj2-instantiated (list-ref all-objects-instantiated
 						       obj2-index))
-			  (obj1-score (list-ref all-objects-scores obj1-index))
-			  (obj2-score (list-ref all-objects-scores obj2-index))
+			  (obj1-score
+			   (second (list-ref all-objects-scores obj1-index)))
+			  (obj2-score
+			   (second (list-ref all-objects-scores obj2-index)))
 			 )
 		    (+ (pf (second obj1-instantiated) (second obj2-instantiated))
-		       (obj1-score)
-		       (obj2-score))
+		       obj1-score
+		       obj2-score)
 			 
 		    ))
 		  prepositions preposition-functions)
@@ -425,44 +432,15 @@
 	   						      lexicon)))
 	   	   (lambda (fvs i) (function fvs i object))))
 	   	 adverbial-phrases))
-     
-	   ;;REPLACE THIS
-	   ;; (time-function-sets 
-	   ;;  (map
-	   ;;   (lambda (predicate)
-	   ;;    (map
-	   ;;     (lambda (adverbial-phrase)
-	   ;; 	(parser-dtrace "adverbial-phrase" adverbial-phrase)
-	   ;; 	(if (equal? (first (first (second adverbial-phrase)))
-	   ;; 		    'ONE-OBJECT-ADVERB-PREPOSITION)
-	   ;; 	    (let* ((object (object-phrase->point (second (second adverbial-phrase))
-	   ;; 						 objects
-	   ;; 						 lexicon))
-	   ;; 		   (adverb (second (first (second adverbial-phrase))))
-	   ;; 		   (function (parser-dtrace "prep->function output:"
-	   ;; 				     (adverb-preposition->function adverb lexicon))))
-	   ;; 	     (list
-	   ;; 	      (cond
-	   ;; 	       ((equal? adverb 'past) 1)
-	   ;; 	       ((equal? adverb 'around) 2)
-	   ;; 	       (else 0))
-	   ;; 	      (lambda (fvs i)
-	   ;; 	       (parser-dtrace "this function is asociated with:" (list fvs i object adverb))
-	   ;; 	       (parser-dtrace "function output:"(function
-	   ;; 		fvs i object)))))
-	   ;; 	    (begin
-	   ;; 	     (panic "we don't yet have any multi-object prepositions")
-	   ;; 	     )))
-	       
-	   ;;     predicate))
-	   ;;   simplified-parse-tree))
 	   )
      (list 
       (dtrace "input: " interpretation)
       (dtrace "path-ph: " path-phrases)
       (dtrace "sr-ph: " sr-phrases)
       (dtrace "obj-fn: " object-functions)
-      (dtrace "adverbial-phrases: " adverbial-phrases))
+      (dtrace "adverbial-phrases: " adverbial-phrases)
+      (dtrace "time-function-sets: " time-function-sets)
+      )
       ;; (let loop ((time-function-sets time-function-sets))
       ;;  (if (null? time-function-sets)
       ;; 	   '()

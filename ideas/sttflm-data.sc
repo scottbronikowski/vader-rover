@@ -12,3 +12,4 @@
 
 ;;test sentence
 ;; (interpretation->parse-functions (first (semantic-interpreter "the robot went behind the cone then went away from of the table which is left of the table and which is in front of the stool")) *floorplan* *lexicon*)
+

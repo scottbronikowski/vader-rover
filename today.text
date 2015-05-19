@@ -1249,3 +1249,19 @@ from Dan).  Also moved latest version of driver-gui.sc from ./dsci-on-latop to
   function interp-object-phrase->scored-points.
 
 ----------------git commit 4353c68----------------
+
+18 May 15
+
+--Finished first draft of new interpreter stuff.  Still need to get main
+  function (interpretation->parse-functions) working.  Need to get to testing it
+  with Dan.
+
+----------------git commit bf63cad----------------
+
+19 May 15
+
+--Finished debugging interpretation->parse-functions.  Dtrace of output looks
+  correct.  Just need to figure out what the final output of that function
+  should be and then integrate it with the rest of the new parser system.  Also
+  should probably look at fixing my dsci so that it is the same as Dan's (same
+  things compiled into it, etc...).
