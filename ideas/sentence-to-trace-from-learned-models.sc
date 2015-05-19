@@ -400,7 +400,7 @@
 			 (interp-object-phrase->scored-points
 			  object-phrase objects lexicon))))
 	(sorted-objects (sort scored-objects > second)))
-  (dtrace "point" (second (first (first sorted-objects))))))
+  (parser-dtrace "point" (second (first (first sorted-objects))))))
 
 
 (define (interpretation->parse-functions interpretation objects lexicon)
@@ -430,26 +430,24 @@
 	   		 (object (interp-object-phrase->point (rest adverbial-phrase)
 	   						      objects
 	   						      lexicon)))
-	   	   (lambda (fvs i) (function fvs i object))))
+	   	   (lambda (fvs i) (list fvs i object adverb)
+			   (function fvs i object))))
 	   	 adverbial-phrases))
 	   )
-     (list 
-      (dtrace "input: " interpretation)
-      (dtrace "path-ph: " path-phrases)
-      (dtrace "sr-ph: " sr-phrases)
-      (dtrace "obj-fn: " object-functions)
-      (dtrace "adverbial-phrases: " adverbial-phrases)
-      (dtrace "time-function-sets: " time-function-sets)
-      )
-      ;; (let loop ((time-function-sets time-function-sets))
-      ;;  (if (null? time-function-sets)
-      ;; 	   '()
-      ;; 	   (append
-      ;; 	    (append
-      ;; 	     (map-n (lambda (i) (vector )) (maximum (map first (first time-function-sets))))
-      ;; 	     (list (list->vector (map second (first time-function-sets)))))
-      ;; 	    (loop (rest time-function-sets)))))
-     
+     ;; (begin
+     ;; ;;this is the debugging/testing output
+     ;;  (dtrace "input: " interpretation)
+     ;;  (dtrace "path-ph: " path-phrases)
+     ;;  (dtrace "sr-ph: " sr-phrases)
+     ;;  (dtrace "obj-fn: " object-functions)
+     ;;  (dtrace "adverbial-phrases: " adverbial-phrases)
+     ;;  (dtrace "time-function-sets: " time-function-sets)
+     ;;  (dtrace "first time-function-sets" (first time-function-sets))
+     ;;  (dtrace "rest time-function-sets" (rest time-function-sets))
+     ;;this is the real output
+     (parser-dtrace "time-function-sets otput:"
+		    (map vector time-function-sets))
+      ;; )     
       ))))
 
 ;;;;END SCOTT NEW STUFF

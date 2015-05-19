@@ -1265,3 +1265,10 @@ from Dan).  Also moved latest version of driver-gui.sc from ./dsci-on-latop to
   should be and then integrate it with the rest of the new parser system.  Also
   should probably look at fixing my dsci so that it is the same as Dan's (same
   things compiled into it, etc...).
+
+----------------git commit dabfdb4----------------
+
+19 May 15 (2)
+
+--Final output fixed, looks like it will work.  Need to integrate new code with
+  rest of Dan's system.
