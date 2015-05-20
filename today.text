@@ -1272,3 +1272,14 @@ from Dan).  Also moved latest version of driver-gui.sc from ./dsci-on-latop to
 
 --Final output fixed, looks like it will work.  Need to integrate new code with
   rest of Dan's system.
+
+----------------git commit 2c30160----------------
+
+20 May 15
+
+--Got comprehension running on laptop.  Ran first 118 (through
+  plan-3-sentence-27) runs before batteries all ran out.  Made some changes to
+  how files are saved within driver-gui.sc.  Also had to copy over all of
+  Stanford Parser from Dan into dsci-on-latop/stanford-parser and make some
+  changes in parser-wrapper.sc and script that it calls in order to get parser
+  working on laptop.

@@ -345,7 +345,7 @@
 			    object-phrase))
 	    (preposition-functions
 	     (map (lambda (p) (adjective-preposition->function  (first p) *lexicon*))
-		  *my-prepositions*))
+		  prepositions))
 	    (all-objects-classes (map first all-objects))
 	    (all-objects-instantiated (map (lambda (x) (a-member-of objects))
 					   all-objects-classes))
@@ -445,7 +445,7 @@
      ;;  (dtrace "first time-function-sets" (first time-function-sets))
      ;;  (dtrace "rest time-function-sets" (rest time-function-sets))
      ;;this is the real output
-     (parser-dtrace "time-function-sets otput:"
+     (parser-dtrace "time-function-sets output:"
 		    (map vector time-function-sets))
       ;; )     
       ))))

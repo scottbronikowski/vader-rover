@@ -727,12 +727,12 @@
 					     (- (vector-length initial-trace) 2)
 					     (- (vector-length initial-trace) 0))
 				  (k*v .1 (if (>= (vector-length initial-trace) 4)
-					      (v- (subvector initial-trace
+					      (unit (v- (subvector initial-trace
 							     (- (vector-length initial-trace) 2)
 							     (- (vector-length initial-trace) 0))
 						  (subvector initial-trace
 							     (- (vector-length initial-trace) 4)
-							     (- (vector-length initial-trace) 2)))
+							     (- (vector-length initial-trace) 2))))
 					      (vector 0 .1)))))
 	       drawing-function)))))
 	(result2
@@ -966,12 +966,12 @@
 	    dataset))
   
 
-(define (trace-from-sentence-floorplan-and-lexicon sentence floorplan lexicon)
+(define (trace-from-sentence-floorplan-and-lexicon sentence floorplan lexicon f)
  (trace-from-parse-functions-step-by-step
   (parse-tree->parse-functions
    (parse-sentence sentence)
    floorplan lexicon)
-  #f
+  f
   ;; (objects->plot-function floorplan)
   ))
 

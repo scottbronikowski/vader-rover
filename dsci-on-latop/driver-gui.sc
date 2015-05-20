@@ -8,13 +8,21 @@
 (define *correctness-pathname* "correctness.sc")
 (define *correctness-list* #f)
 (load "learning-mess.sc")
-(load "sentence-to-trace-from-learned-models.sc")
+(load "sentence-to-trace-from-learned-models3.sc")
 
+(define (rename-folder)
+ (let* ((tmpfolder 
+			   (first (system-output "ls /aux/sbroniko/vader-rover/logs/ | grep 2015")))
+	(newfolder (format #f "/aux/sbroniko/vader-rover/logs/floorplan-~a-sentence-~a"  *floorplan-index* *sentence-index*))) 
+ (system (format #f "mv  '/aux/sbroniko/vader-rover/logs/~a' '~a'" tmpfolder newfolder))
+ ))
 
 (define (initialize-sentences)
   (set! *floorplan-index* 0)
   (set! *sentence-index* 0)
-  (set! *dataset* (list->vector (map list->vector (read-object-from-file "msee1-generation-dataset.sc"))));;"msee1-dataset.sc"))))
+  (set! *dataset*
+	(list->vector
+	 (map list->vector (read-object-from-file "turk-comprehension-dataset.sc"))));;"msee1-dataset.sc"))))
 #f)
 
 (define (visualize-track-during-optimization dataset x floorplan-index sentence-index)
@@ -117,8 +125,8 @@
 (define (number->string-with-n-decimal-places f n)
   (let* ((non-decimal-length (string-length (number->string (exact-round f))))
 	 (s (number->string
-	      (/ (exact-round (* f (expt 10 n)))
-		 (expt 10 n))))
+	     (* 1.0 (/ (exact-round (* f (expt 10 n)))
+		       (expt 10 n)))))
 	 (s (if (= f 0)
 		"0."
 		s))
@@ -294,7 +302,8 @@
   (rover-server-setup)
   (rover-server-start)
   
-  (set! *lexicon* (read-object-from-file "learned-lexicon.sc"))
+  (set! *lexicon* (read-object-from-file "turk-lexicon600.sc"))
+  (dtrace "turk lexicon:" *lexicon*)
   (if (file-exists? *correctness-pathname*)
       (set! *correctness-list* (read-object-from-file *correctness-pathname*))
       (set! *correctness-list* (map-vector
@@ -317,6 +326,7 @@
  (lambda ()
   (dtrace ""  "Calling Finalize")
   (rover-server-cleanup)
+  (rename-folder)
   ;;(gamepad-shutdown) ;;might need to move into "Stop Emperor" button
   (imlib-context-disconnect-display))
  ;;; Redraw procedure:

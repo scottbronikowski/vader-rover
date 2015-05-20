@@ -1,0 +1,10 @@
+(define (run-stanford-parser sentence)
+ (let* ((tmp-filename (format #f "/tmp/~a-~a-sentence.txt"
+			      (get-env "USER")
+			      (random-integer 10000)))
+	(raw-output (system-output
+		     (format #f "/home/dpbarret/stanford-parser/stanford-parser-full-2015-04-20/newlexparser.sh ~a"
+			     tmp-filename)))
+	(foo (system (format #f "rm ~a" tmp-filename))))
+  raw-output))
+	
