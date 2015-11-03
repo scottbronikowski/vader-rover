@@ -1284,6 +1284,8 @@ from Dan).  Also moved latest version of driver-gui.sc from ./dsci-on-latop to
   changes in parser-wrapper.sc and script that it calls in order to get parser
   working on laptop.
 
+----------------git commit 034c204----------------
+
 3 Nov 15
 
 --Updated the cv::VideoWriter object in toollib-rover.cpp to use a frame rate
@@ -1295,3 +1297,5 @@ from Dan).  Also moved latest version of driver-gui.sc from ./dsci-on-latop to
   ~/vader-rover/ideas and not in the usual location.  The authoritative versions
   of the C++ and Scheme files are there as well.  Put symlink to the output of
   that compilation in ~/vader-rover/dsci-on-latop
+
+----------------git commit 69aed44----------------
