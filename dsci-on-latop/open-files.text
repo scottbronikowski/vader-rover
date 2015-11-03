@@ -1,0 +1,11 @@
+.   sentence-to-trace-f: 53509  Scheme		  ~/vader-rover/dsci-on-latop/sentence-to-trace-from-learned-models3.sc
+  * *shell*<2>          148034  Shell:run	  ~/vader-rover/dsci-on-latop/
+    parser-wrapper.sc     4076  Scheme		  ~/vader-rover/dsci-on-latop/parser-wrapper.sc
+    nice-interpreter.sc  16525  Scheme		  ~/vader-rover/dsci-on-latop/nice-interpreter.sc
+    driver-gui.sc        11560  Scheme		  ~/vader-rover/dsci-on-latop/driver-gui.sc
+  * *shell*              35951  Shell:run	  /home/dpbarret/dsci-on-latop/
+    driver-gui-old.sc    11504  Scheme		  ~/vader-rover/dsci-on-latop/driver-gui-old.sc
+    out-parser-output.s: 14303  Scheme		  ~/vader-rover/ideas/x86_64-Linux-3.2.0-4-amd64/out-parser-output.sc
+    QobiScheme-AD.sc    295402  Scheme		  ~/QobiScheme/source/QobiScheme-AD.sc
+    *scratch*              191  Lisp Interaction
+  * *Messages*            3161  Fundamental

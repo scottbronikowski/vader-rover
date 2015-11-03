@@ -1,0 +1,9 @@
+. * *scheme*            260686  Inferior Scheme:
+    sentence-to-trace-f: 53039  Scheme		  ~/vader-rover/ideas/sentence-to-trace-from-learned-models.sc
+    sttflm-data.sc         669  Scheme		  ~/vader-rover/ideas/sttflm-data.sc
+  * *shell*             329716  Shell:run	  ~/vader-rover/ideas/
+    out-parser-output.s: 14303  Scheme		  ~/vader-rover/ideas/x86_64-Linux-3.2.0-4-amd64/out-parser-output.sc
+    learning-mess.sc     70187  Scheme		  ~/vader-rover/ideas/learning-mess.sc
+ %  updated-interpreter: 18077  Scheme		  /home/dpbarret/aws-mturk-clt-1.3.1/hits/rover-sentences/updated-interpreter.sc
+    *scratch*              191  Lisp Interaction
+  * *Messages*            3015  Fundamental

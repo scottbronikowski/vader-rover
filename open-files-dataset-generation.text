@@ -1,0 +1,7 @@
+. * *shell*<2>          228565  Shell:run	  ~/darpa-collaboration/rover/
+  * *scratch*              190  Lisp Interaction
+    generate-msee1-data: 53728  Scheme		  ~/darpa-collaboration/rover/generate-msee1-dataset.sc
+ %  msee1-generation-d: 741629  Scheme		  /home/dpbarret/darpa-collaboration/rover/msee1-generation-datasetb.sc
+    driver-gui.sc        11916  Scheme		  ~/vader-rover/dsci-on-latop/driver-gui.sc
+    today.text          120740  Text		  ~/vader-rover/today.text
+  * *Messages*            2773  Fundamental
