@@ -1283,3 +1283,15 @@ from Dan).  Also moved latest version of driver-gui.sc from ./dsci-on-latop to
   Stanford Parser from Dan into dsci-on-latop/stanford-parser and make some
   changes in parser-wrapper.sc and script that it calls in order to get parser
   working on laptop.
+
+3 Nov 15
+
+--Updated the cv::VideoWriter object in toollib-rover.cpp to use a frame rate
+  that is the variable frame_rate rather than a hard-coded 10.5.  frame_rate
+  currently set at 10.0 fps (this controls the fps setting of the output avi
+  file from each camera).
+
+--Remembered that the working copy of dsci that we are running is located in
+  ~/vader-rover/ideas and not in the usual location.  The authoritative versions
+  of the C++ and Scheme files are there as well.  Put symlink to the output of
+  that compilation in ~/vader-rover/dsci-on-latop
