@@ -51,12 +51,12 @@ using namespace cv;
 // there is actually a whole covariance matrix to specify, but i am assuming independence between them
 float mXN = 5.0; //  GPS X noise variance
 float mYN = 5.0; //  GPS Y noise variance
-float mThetaN = 1000000000 * (pi/180); //  orientation noise variance (radians)
-float mdThetaN = .0001; 
+float mThetaN = 20000000*(pi/180);//1000000000 * (pi/180); //  orientation noise variance (radians)
+float mdThetaN = .01;//.0001; 
 //1000000000000 * (pi/180); //  orientation derivative noise variance (radians)
 float mSLN = .01; //  left wheel speed noise variance
 float mSRN = .01; //  right wheel speed noise variance
-float mAN  = 100000000; //  acceleration noise variance
+float mAN  = .01;//100000000; //  acceleration noise variance
 
 // process noise variance
 // there is actually a whole covariance matrix to specify, but i am assuming independence between them
@@ -86,6 +86,7 @@ float tau_L = 3.048837255989942e-05; //left meters per tick
 float tau_R = 3.056925451030081e-05; //right meters per tick
 float gyro_offset = 14.98;
 float radians_per_gyro_unit = 2*pi/5.076295665184609e+03; 
+const float theta_offset_per_timestep = 0.0001281453144064105; //empirically determined 3feb16
 
 
 Point2d local_origin;
@@ -124,7 +125,7 @@ int read_config_file(char* filename)
     } 
 }
 
-int read_log_file(char* filename, Mat measurements[])
+int read_log_file(char* filename, Mat measurements[], float* dts)
 {
 
   FILE* fp = fopen(filename,"r");
@@ -171,7 +172,7 @@ int read_log_file(char* filename, Mat measurements[])
 	  Measurement.at<float>(0) = 0; //no gps for now
 	  Measurement.at<float>(1) = 0; //no gps for now
 	  Measurement.at<float>(2) = (-Yaw+90)*pi/180 ; //degrees north is 0 east is positive->(radians east 0 north positive)
-	  Measurement.at<float>(3) = -(Gz-gyro_offset)*radians_per_gyro_unit;///(((float)((int)encoder_dt))/1000.0);
+	  Measurement.at<float>(3) = -(Gz-gyro_offset)*radians_per_gyro_unit-theta_offset_per_timestep;///(((float)((int)encoder_dt))/1000.0);
 	  //-Gz*pi/180; // rotation around z in degrees/sec ->(radians/sec)
 	  //printf("%f\n", Measurement.at<float>(3));
 	  Measurement.at<float>(4) = L*tau_L/(((float)((int)encoder_dt))/1000.0); 
@@ -185,6 +186,7 @@ int read_log_file(char* filename, Mat measurements[])
 
 	  Measurement.at<float>(6) = -(Ax-1)/100; // cm/s^2 -> (m/s^2)       // x forward y right
 	  measurements[n_measurements] = Measurement.clone();
+	  dts[n_measurements]=(((float)((int)encoder_dt))/1000.0);
 	  n_measurements++;
 	  read_imu=0;
 	  read_encoder=0;
@@ -314,8 +316,9 @@ int main(int args, char** argv)
   //read_config_file(configpath);
   printf("using hard-coded values\n");
   Mat measurements[80000];
+  float dts[80000];
   //printf("I was lazy, so there is a needless hard limit of 80000 measurements\n");
-  int nmeasurements = read_log_file(logpath, measurements);
+  int nmeasurements = read_log_file(logpath, measurements,dts);
   FILE* infile = fopen(logpath,"r");
   char linebuf[1000];
   FILE* outfile = fopen(outpath,"w");
@@ -329,6 +332,10 @@ int main(int args, char** argv)
   Mat TransitionModel =  Mat::zeros(8,8,CV_32F);
 
   float estimates[80000][3]; //store estimates here
+
+  //for (int i = 0; i< nmeasurements; i++)
+  //  measurements[i].at<float>(3) = measurements[i].at<float>(3) - theta_offset_per_timestep;
+
 
   KalmanFilter KF(8, 7, 2); // 8 state variables, 7 measurements, 2 inputs
   KalmanFilter simulation(8,7,2);
@@ -421,7 +428,7 @@ int main(int args, char** argv)
 	estimates[timestep][1] = KF.statePost.at<float>(1);
 	estimates[timestep][2] = KF.statePost.at<float>(2);
 
-	float dt = 1.0/50.0; // needs work: hard coded
+	float dt = dts[timestep];//1.0/50.0; // needs work: hard coded
 	
 	TransitionModel = ComputeTransitionMatrix(KF.statePost,dt);
 	
@@ -449,8 +456,9 @@ int main(int args, char** argv)
   bool enc_read = false;
   while (fgets(linebuf,1000,infile)!=NULL)
   {
-    //write original line to C file
-    fprintf(outfile, "%s",linebuf);
+    //write original line to C file EXCEPT FOR OLD ESTIMATES
+    if (linebuf[0] != 'E')
+      fprintf(outfile, "%s",linebuf);
     //printf("%c\n", linebuf[18]);
     if (linebuf[18] == 'I')
       imu_read = true;

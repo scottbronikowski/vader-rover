@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 34
+/svn/!svn/ver/21/trunk/src/ratslam
+END
+Visual_Template_Match.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/2/trunk/src/ratslam/Visual_Template_Match.cpp
+END
+Pose_Cell_Network.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/2/trunk/src/ratslam/Pose_Cell_Network.cpp
+END
+Visual_Template_Match.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/2/trunk/src/ratslam/Visual_Template_Match.h
+END
+Pose_Cell_Network.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/2/trunk/src/ratslam/Pose_Cell_Network.h
+END
+Ratslam.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/2/trunk/src/ratslam/Ratslam.cpp
+END
+Experience_Map.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/2/trunk/src/ratslam/Experience_Map.cpp
+END
+Ratslam.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/21/trunk/src/ratslam/Ratslam.hpp
+END
+Experience_Map.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/2/trunk/src/ratslam/Experience_Map.h
+END
